@@ -7,96 +7,167 @@ const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
 const message = ref('')
 const loading = ref(false)
 const error = ref('')
+const turns = ref([])
 
-const surfaces = ref(new Map())
-const dataModel = ref({})
+const hasTurns = computed(() => turns.value.length > 0)
 
-const hasSurfaces = computed(() => surfaces.value.size > 0)
-const orderedSurfaces = computed(() => Array.from(surfaces.value.values()))
-
-function applyMessage(payload) {
-  const type = payload.type || payload.messageType
-  if (!type) return
-
-  if (type === 'createSurface') {
-    const surface = payload.surface || {
-      id: payload.surfaceId || `surface-${Date.now()}`,
-      components: payload.components || payload.rootComponents || [],
-      title: payload.title,
-    }
-    surfaces.value.set(surface.id, {
-      components: [],
-      ...surface,
-    })
-    return
-  }
-
-  if (type === 'updateComponents') {
-    const sid = payload.surfaceId || payload.surface?.id
-    if (!sid || !surfaces.value.has(sid)) return
-    const current = surfaces.value.get(sid)
-    const incoming = payload.components || payload.patch || []
-    current.components = Array.isArray(incoming) ? incoming : current.components
-    surfaces.value.set(sid, { ...current })
-    return
-  }
-
-  if (type === 'updateDataModel') {
-    const update = payload.data || payload.dataModel || payload.patch || {}
-    dataModel.value = { ...dataModel.value, ...update }
-    return
-  }
-
-  if (type === 'deleteSurface') {
-    const sid = payload.surfaceId || payload.id
-    if (sid) surfaces.value.delete(sid)
+function createTurn(userText) {
+  return {
+    id: `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    userText,
+    surfaces: {},
+    dataModel: {},
   }
 }
 
-function processRawChunk(chunk) {
-  const text = chunk.trim()
-  if (!text) return
+function normalizeProtocolMessage(raw) {
+  if (raw.beginRendering) {
+    return {
+      type: 'createSurface',
+      surfaceId: raw.beginRendering.surfaceId,
+      root: raw.beginRendering.root,
+    }
+  }
 
-  if (text.startsWith('data:')) {
-    const lines = text
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean)
+  if (raw.surfaceUpdate) {
+    return {
+      type: 'surfaceUpdate',
+      surfaceId: raw.surfaceUpdate.surfaceId,
+      components: raw.surfaceUpdate.components ?? [],
+    }
+  }
 
-    for (const line of lines) {
-      if (!line.startsWith('data:')) continue
-      const raw = line.slice(5).trim()
-      if (!raw || raw === '[DONE]') continue
-      try {
-        applyMessage(JSON.parse(raw))
-      } catch {
-        // ignore malformed data line
+  if (raw.dataModelUpdate) {
+    return {
+      type: 'dataModelUpdate',
+      surfaceId: raw.dataModelUpdate.surfaceId,
+      path: raw.dataModelUpdate.path,
+      contents: raw.dataModelUpdate.contents ?? [],
+    }
+  }
+
+  return raw
+}
+
+function ensureSurface(turn, surfaceId) {
+  if (!turn.surfaces[surfaceId]) {
+    turn.surfaces[surfaceId] = {
+      id: surfaceId,
+      root: null,
+      componentsById: {},
+    }
+  }
+  return turn.surfaces[surfaceId]
+}
+
+function applyMessage(turn, rawPayload) {
+  const payload = normalizeProtocolMessage(rawPayload)
+  const type = payload.type || payload.messageType
+
+  if (type === 'createSurface') {
+    const sid = payload.surfaceId || payload.surface?.id
+    if (!sid) return
+    const surface = ensureSurface(turn, sid)
+    surface.root = payload.root || payload.surface?.root || surface.root
+    if (Array.isArray(payload.components)) {
+      for (const item of payload.components) {
+        if (!item?.id) continue
+        surface.componentsById[item.id] = item
       }
     }
     return
   }
 
-  for (const line of text.split('\n')) {
-    const raw = line.trim()
-    if (!raw) continue
-    try {
-      applyMessage(JSON.parse(raw))
-    } catch {
-      // ignore malformed json chunk
+  if (type === 'surfaceUpdate' || type === 'updateComponents') {
+    const sid = payload.surfaceId || payload.surface?.id
+    if (!sid) return
+    const surface = ensureSurface(turn, sid)
+    const list = payload.components || payload.patch || []
+    if (Array.isArray(list)) {
+      for (const item of list) {
+        if (!item?.id) continue
+        surface.componentsById[item.id] = item
+      }
     }
+    return
+  }
+
+  if (type === 'dataModelUpdate' || type === 'updateDataModel') {
+    if (Array.isArray(payload.contents)) {
+      for (const entry of payload.contents) {
+        const key = entry.key
+        if (!key) continue
+        if ('valueString' in entry) turn.dataModel[key] = entry.valueString
+        else if ('valueNumber' in entry) turn.dataModel[key] = entry.valueNumber
+        else if ('valueBool' in entry) turn.dataModel[key] = entry.valueBool
+        else if ('valueJson' in entry) turn.dataModel[key] = entry.valueJson
+      }
+      return
+    }
+
+    const update = payload.data || payload.dataModel || payload.patch || {}
+    Object.assign(turn.dataModel, update)
+    return
   }
 }
 
-async function send(payload) {
+function extractJsonObjects(input) {
+  const objects = []
+  let depth = 0
+  let start = -1
+  let inString = false
+  let escaped = false
+  let lastConsumedIndex = 0
+
+  for (let i = 0; i < input.length; i += 1) {
+    const ch = input[i]
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === '"') {
+        inString = false
+      }
+      continue
+    }
+
+    if (ch === '"') {
+      inString = true
+      continue
+    }
+
+    if (ch === '{') {
+      if (depth === 0) start = i
+      depth += 1
+      continue
+    }
+
+    if (ch === '}') {
+      depth -= 1
+      if (depth === 0 && start >= 0) {
+        objects.push(input.slice(start, i + 1))
+        lastConsumedIndex = i + 1
+        start = -1
+      }
+    }
+  }
+
+  return {
+    objects,
+    remainder: input.slice(lastConsumedIndex),
+  }
+}
+
+async function send(turn, payload) {
   loading.value = true
   error.value = ''
 
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
@@ -110,19 +181,31 @@ async function send(payload) {
     while (true) {
       const { value, done } = await reader.read()
       if (done) break
+
       buffer += decoder.decode(value, { stream: true })
 
-      const segments = buffer.split('\n\n')
-      buffer = segments.pop() ?? ''
-      for (const seg of segments) processRawChunk(seg)
+      const { objects, remainder } = extractJsonObjects(buffer)
+      buffer = remainder
 
-      if (!buffer.includes('\n')) continue
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-      for (const line of lines) processRawChunk(line)
+      for (const raw of objects) {
+        try {
+          applyMessage(turn, JSON.parse(raw))
+        } catch {
+          // skip malformed object in stream
+        }
+      }
     }
 
-    if (buffer.trim()) processRawChunk(buffer)
+    if (buffer.trim()) {
+      const { objects } = extractJsonObjects(buffer)
+      for (const raw of objects) {
+        try {
+          applyMessage(turn, JSON.parse(raw))
+        } catch {
+          // skip malformed object in stream tail
+        }
+      }
+    }
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Unknown error'
   } finally {
@@ -133,14 +216,16 @@ async function send(payload) {
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
-  await send({ message: text })
+
+  const turn = createTurn(text)
+  turns.value.push(turn)
+
+  await send(turn, { message: text })
   message.value = ''
 }
 
-async function handleAction(action) {
-  await send({
-    message: JSON.stringify({ userAction: action }),
-  })
+async function handleAction(turn, action) {
+  await send(turn, { message: JSON.stringify({ userAction: action }) })
 }
 
 function fillPreset(text) {
@@ -153,7 +238,7 @@ function fillPreset(text) {
     <section class="content">
       <header class="topbar">json-render Chat Example</header>
 
-      <div v-if="!hasSurfaces" class="hero">
+      <div v-if="!hasTurns" class="hero">
         <h1>What would you like to explore?</h1>
         <p>
           Ask about weather, GitHub repos, crypto prices, or Hacker News — the agent will fetch
@@ -168,11 +253,21 @@ function fillPreset(text) {
         </div>
       </div>
 
-      <div v-else class="surface-list">
-        <article v-for="surface in orderedSurfaces" :key="surface.id" class="surface">
-          <h3 v-if="surface.title" class="surface-title">{{ surface.title }}</h3>
-          <A2UIRenderer :surface="surface" :data-model="dataModel" :on-action="handleAction" />
-        </article>
+      <div v-else class="conversation">
+        <div v-for="turn in turns" :key="turn.id" class="turn">
+          <div class="bubble bubble-user">{{ turn.userText }}</div>
+
+          <div class="bubble bubble-assistant">
+            <template v-if="Object.keys(turn.surfaces).length">
+              <article v-for="surface in Object.values(turn.surfaces)" :key="surface.id" class="surface">
+                <A2UIRenderer :surface="surface" :data-model="turn.dataModel" :on-action="(action) => handleAction(turn, action)" />
+              </article>
+            </template>
+            <template v-else>
+              <span class="placeholder">正在等待后端 UI 响应...</span>
+            </template>
+          </div>
+        </div>
       </div>
 
       <p v-if="error" class="error">Error: {{ error }}</p>
@@ -209,7 +304,7 @@ function fillPreset(text) {
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   letter-spacing: 0.02em;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .hero {
@@ -247,22 +342,43 @@ function fillPreset(text) {
   cursor: pointer;
 }
 
-.surface-list {
+.conversation {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.bubble-user {
+  align-self: flex-end;
+  max-width: 82%;
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.bubble-assistant {
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .surface {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
+  margin-top: 8px;
 }
 
-.surface-title {
-  margin-top: 0;
-  margin-bottom: 10px;
+.placeholder {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .error {

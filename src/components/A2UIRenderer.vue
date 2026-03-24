@@ -1,6 +1,4 @@
 <script setup>
-import { computed } from 'vue'
-
 const props = defineProps({
   surface: {
     type: Object,
@@ -12,149 +10,208 @@ const props = defineProps({
   },
   onAction: {
     type: Function,
-    required: true,
+    default: null,
   },
 })
 
-const rootComponents = computed(() => {
-  const candidate = props.surface?.components ?? []
-  return Array.isArray(candidate) ? candidate : []
-})
+const getNode = (id) => props.surface?.componentsById?.[id] ?? null
 
-const valueFromPath = (path) => {
+const readPath = (path) => {
   if (!path || typeof path !== 'string') return undefined
-  const normalized = path.replace(/^\$\.?/, '')
-  return normalized.split('.').reduce((acc, key) => (acc ? acc[key] : undefined), props.dataModel)
+  const normalized = path.replace(/^\//, '')
+  if (!normalized) return props.dataModel
+  return normalized.split('/').filter(Boolean).reduce((acc, key) => (acc == null ? undefined : acc[key]), props.dataModel)
 }
 
-const resolveChildren = (component) => {
-  if (Array.isArray(component.children)) return component.children
-  if (Array.isArray(component.items)) return component.items
+const decodeTextValue = (textDef) => {
+  if (textDef == null) return ''
+  if (typeof textDef === 'string') return textDef
+  if (typeof textDef.valueString === 'string') return textDef.valueString
+  if (typeof textDef.path === 'string') {
+    const val = readPath(textDef.path)
+    return val == null ? '' : String(val)
+  }
+  return ''
+}
+
+const kindOf = (node) => {
+  const data = node?.component
+  if (!data || typeof data !== 'object') return null
+  return Object.keys(data)[0] ?? null
+}
+
+const payloadOf = (node) => {
+  const kind = kindOf(node)
+  return kind ? node.component[kind] : null
+}
+
+const childrenOf = (node) => {
+  const kind = kindOf(node)
+  const payload = payloadOf(node) || {}
+
+  if (kind === 'Column' || kind === 'Row') {
+    return payload?.children?.explicitList ?? []
+  }
+
+  if (kind === 'Card') {
+    return payload?.child ? [payload.child] : []
+  }
+
   return []
 }
 
-const typeMap = {
-  heading: 'h2',
-  title: 'h2',
-  subtitle: 'h3',
-  paragraph: 'p',
-  text: 'p',
-  caption: 'small',
-  code: 'pre',
-  markdown: 'pre',
-}
-
-const actionOf = (component) => component.action ?? component.onClick ?? null
-
-const handleComponentAction = (component) => {
-  const action = actionOf(component)
-  if (!action) return
+const triggerAction = (node, eventName = 'tap') => {
+  if (!props.onAction) return
   props.onAction({
-    actionName: action.name ?? action.actionName ?? 'unknown_action',
+    actionName: eventName,
+    componentId: node.id,
     surfaceId: props.surface.id,
-    componentId: component.id,
-    args: action.args ?? action.payload ?? {},
+    args: {},
   })
-}
-
-const contentOf = (component) => {
-  if (component.text != null) return component.text
-  if (component.content != null) return component.content
-  if (component.label != null) return component.label
-  if (component.path != null) {
-    const resolved = valueFromPath(component.path)
-    return resolved == null ? '' : String(resolved)
-  }
-  return ''
 }
 </script>
 
 <template>
-  <div class="surface-wrapper">
-    <div v-for="component in rootComponents" :key="component.id || component.key" class="node" :class="`node--${component.type || 'unknown'}`">
-      <template v-if="component.type === 'button'">
-        <button class="ui-button" :disabled="component.disabled" @click="handleComponentAction(component)">
-          {{ contentOf(component) || 'Action' }}
-        </button>
-      </template>
+  <RenderNode
+    v-if="surface.root"
+    :node-id="surface.root"
+    :get-node="getNode"
+    :children-of="childrenOf"
+    :kind-of="kindOf"
+    :payload-of="payloadOf"
+    :decode-text-value="decodeTextValue"
+    :trigger-action="triggerAction"
+  />
+</template>
 
-      <template v-else-if="component.type === 'image'">
-        <img class="ui-image" :src="component.src" :alt="component.alt || 'image'" />
-      </template>
-
-      <template v-else-if="component.type === 'chip' || component.type === 'badge'">
-        <button class="ui-chip" @click="handleComponentAction(component)">{{ contentOf(component) }}</button>
-      </template>
-
-      <template v-else-if="component.type === 'row' || component.type === 'column' || component.type === 'container' || component.type === 'card'">
-        <div class="ui-group" :class="`ui-group--${component.type}`">
-          <A2UIRenderer
-            :surface="{ id: surface.id, components: resolveChildren(component) }"
-            :data-model="dataModel"
-            :on-action="onAction"
+<script>
+const RenderNode = {
+  name: 'RenderNode',
+  props: {
+    nodeId: { type: String, required: true },
+    getNode: { type: Function, required: true },
+    childrenOf: { type: Function, required: true },
+    kindOf: { type: Function, required: true },
+    payloadOf: { type: Function, required: true },
+    decodeTextValue: { type: Function, required: true },
+    triggerAction: { type: Function, required: true },
+  },
+  computed: {
+    node() {
+      return this.getNode(this.nodeId)
+    },
+    kind() {
+      return this.kindOf(this.node)
+    },
+    payload() {
+      return this.payloadOf(this.node) || {}
+    },
+    childIds() {
+      return this.childrenOf(this.node)
+    },
+  },
+  methods: {
+    textTag() {
+      const hint = this.payload?.usageHint
+      if (hint === 'h1') return 'h1'
+      if (hint === 'h2') return 'h2'
+      return 'p'
+    },
+  },
+  template: `
+    <div v-if="node" class="render-node" :class="'kind-' + (kind || 'Unknown')">
+      <template v-if="kind === 'Column' || kind === 'Row'">
+        <div class="layout" :class="kind === 'Row' ? 'layout-row' : 'layout-col'">
+          <RenderNode
+            v-for="cid in childIds"
+            :key="cid"
+            :node-id="cid"
+            :get-node="getNode"
+            :children-of="childrenOf"
+            :kind-of="kindOf"
+            :payload-of="payloadOf"
+            :decode-text-value="decodeTextValue"
+            :trigger-action="triggerAction"
           />
         </div>
       </template>
 
+      <template v-else-if="kind === 'Card'">
+        <div class="card">
+          <RenderNode
+            v-for="cid in childIds"
+            :key="cid"
+            :node-id="cid"
+            :get-node="getNode"
+            :children-of="childrenOf"
+            :kind-of="kindOf"
+            :payload-of="payloadOf"
+            :decode-text-value="decodeTextValue"
+            :trigger-action="triggerAction"
+          />
+        </div>
+      </template>
+
+      <template v-else-if="kind === 'Text'">
+        <component :is="textTag()" class="text">{{ decodeTextValue(payload.text) }}</component>
+      </template>
+
       <template v-else>
-        <component :is="typeMap[component.type] || 'p'" class="ui-text" @click="handleComponentAction(component)">
-          {{ contentOf(component) }}
-        </component>
+        <div class="unknown" @click="triggerAction(node)">
+          Unsupported component: {{ kind || 'Unknown' }}
+        </div>
       </template>
     </div>
-  </div>
-</template>
+  `,
+}
+
+export default {
+  name: 'A2UIRenderer',
+  components: { RenderNode },
+}
+</script>
 
 <style scoped>
-.surface-wrapper {
+.layout {
   display: flex;
+  gap: 12px;
+}
+
+.layout-col {
   flex-direction: column;
-  gap: 10px;
-  width: min(980px, 100%);
 }
 
-.node {
-  width: 100%;
-}
-
-.ui-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.ui-group--row {
+.layout-row {
   flex-direction: row;
   flex-wrap: wrap;
 }
 
-.ui-button,
-.ui-chip {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #f9fafb;
-  padding: 8px 13px;
-  cursor: pointer;
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
 }
 
-.ui-button:hover,
-.ui-chip:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.ui-text {
+.text {
   margin: 0;
   color: #e5e7eb;
+  line-height: 1.6;
 }
 
-.ui-image {
-  max-width: 100%;
-  border-radius: 12px;
+h1.text {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+h2.text {
+  font-size: 22px;
+}
+
+.unknown {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 10px;
+  color: rgba(255, 255, 255, 0.6);
 }
 </style>
