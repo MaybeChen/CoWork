@@ -13,6 +13,7 @@ import ListComponent from './components/ListComponent.vue'
 import CardComponent from './components/CardComponent.vue'
 import TabsComponent from './components/TabsComponent.vue'
 import ModalComponent from './components/ModalComponent.vue'
+import FlowDiagramComponent from './components/FlowDiagramComponent.vue'
 
 import ButtonComponent from './components/ButtonComponent.vue'
 import TextFieldComponent from './components/TextFieldComponent.vue'
@@ -35,6 +36,7 @@ export const defaultRegistry = createComponentRegistry({
   Card: CardComponent,
   Tabs: TabsComponent,
   Modal: ModalComponent,
+  FlowDiagram: FlowDiagramComponent,
 
   Button: ButtonComponent,
   TextField: TextFieldComponent,

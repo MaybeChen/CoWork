@@ -62,6 +62,19 @@ function ensureSurface(turn, surfaceId) {
 }
 
 
+
+function ensureObjectPath(root, rawPath) {
+  const normalized = (rawPath || '/').replace(/^\//, '')
+  if (!normalized) return root
+  const segments = normalized.split('/').filter(Boolean)
+  let cursor = root
+  for (const seg of segments) {
+    if (!cursor[seg] || typeof cursor[seg] !== 'object') cursor[seg] = {}
+    cursor = cursor[seg]
+  }
+  return cursor
+}
+
 function decodeEntryValue(entry) {
   if ('valueString' in entry) return entry.valueString
   if ('valueNumber' in entry) return entry.valueNumber
@@ -118,11 +131,12 @@ function applyMessage(turn, rawPayload) {
 
   if (type === 'dataModelUpdate' || type === 'updateDataModel') {
     if (Array.isArray(payload.contents)) {
+      const pathRoot = ensureObjectPath(turn.dataModel, payload.path || '/')
       for (const entry of payload.contents) {
         const key = entry.key
         if (!key) continue
         const value = decodeEntryValue(entry)
-        if (value !== undefined) turn.dataModel[key] = value
+        if (value !== undefined) pathRoot[key] = value
       }
       turn.dataModel = { ...turn.dataModel }
       return

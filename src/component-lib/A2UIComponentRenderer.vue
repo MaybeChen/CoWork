@@ -32,7 +32,7 @@ const childIds = computed(() => {
   if (kind.value === 'Column' || kind.value === 'Row' || kind.value === 'List') {
     return extractChildIds(p.children ?? p.items)
   }
-  if (kind.value === 'Card' || kind.value === 'Modal') {
+  if (kind.value === 'Card' || kind.value === 'Modal' || kind.value === 'Button') {
     return extractChildIds(p.child ? [p.child] : p.children)
   }
   if (kind.value === 'Tabs') {
