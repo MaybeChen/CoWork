@@ -75,6 +75,7 @@ function applyMessage(turn, rawPayload) {
         surface.componentsById[item.id] = item
       }
     }
+    turn.surfaces = { ...turn.surfaces }
     return
   }
 
@@ -89,6 +90,7 @@ function applyMessage(turn, rawPayload) {
         surface.componentsById[item.id] = item
       }
     }
+    turn.surfaces = { ...turn.surfaces }
     return
   }
 
@@ -102,11 +104,13 @@ function applyMessage(turn, rawPayload) {
         else if ('valueBool' in entry) turn.dataModel[key] = entry.valueBool
         else if ('valueJson' in entry) turn.dataModel[key] = entry.valueJson
       }
+      turn.dataModel = { ...turn.dataModel }
       return
     }
 
     const update = payload.data || payload.dataModel || payload.patch || {}
     Object.assign(turn.dataModel, update)
+    turn.dataModel = { ...turn.dataModel }
     return
   }
 }
