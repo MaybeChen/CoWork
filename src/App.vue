@@ -206,6 +206,11 @@ async function flushToFrame() {
   }
 }
 
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function applyMessageProgressively(turn, parsed) {
   const normalized = normalizeProtocolMessage(parsed)
   const type = normalized.type || normalized.messageType
@@ -218,6 +223,7 @@ async function applyMessageProgressively(turn, parsed) {
         components: [component],
       })
       await flushToFrame()
+      await sleep(12)
     }
     return
   }
@@ -231,12 +237,14 @@ async function applyMessageProgressively(turn, parsed) {
         contents: [entry],
       })
       await flushToFrame()
+      await sleep(12)
     }
     return
   }
 
   applyMessage(turn, parsed)
   await flushToFrame()
+  await sleep(8)
 }
 
 async function applyObjectsProgressively(turn, objectList) {
