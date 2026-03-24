@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { defaultRegistry } from './defaultRegistry'
+import { extractChildIds, normalizePayload } from './components/utils'
 
 defineOptions({ name: 'A2UIComponentRenderer' })
 
@@ -19,31 +20,34 @@ const kind = computed(() => {
   if (!component || typeof component !== 'object') return null
   return Object.keys(component)[0] ?? null
 })
-const payload = computed(() => {
+const rawPayload = computed(() => {
   const k = kind.value
   return k ? node.value.component[k] : {}
 })
+const payload = computed(() => normalizePayload(rawPayload.value))
 const resolvedComponent = computed(() => props.registry.resolve(kind.value))
+
 const childIds = computed(() => {
+  const p = payload.value
   if (kind.value === 'Column' || kind.value === 'Row' || kind.value === 'List') {
-    return payload.value?.children?.explicitList ?? payload.value?.items?.explicitList ?? []
+    return extractChildIds(p.children ?? p.items)
   }
   if (kind.value === 'Card' || kind.value === 'Modal') {
-    return payload.value?.child ? [payload.value.child] : []
+    return extractChildIds(p.child ? [p.child] : p.children)
   }
   if (kind.value === 'Tabs') {
-    return payload.value?.tabs?.explicitList ?? payload.value?.children?.explicitList ?? []
+    return extractChildIds(p.tabs ?? p.children)
   }
   return []
 })
 
-function triggerAction(eventName = 'tap') {
+function triggerAction(eventName = 'tap', args = {}) {
   if (!props.onAction || !node.value) return
   props.onAction({
     actionName: eventName,
     componentId: node.value.id,
     surfaceId: props.surfaceId,
-    args: {},
+    args,
   })
 }
 </script>
@@ -56,10 +60,11 @@ function triggerAction(eventName = 'tap') {
       :node="node"
       :kind="kind"
       :payload="payload"
+      :raw-payload="rawPayload"
       :data-model="dataModel"
       :surface-id="surfaceId"
       :on-action="onAction"
-      @click="triggerAction()"
+      :trigger-action="triggerAction"
     >
       <A2UIComponentRenderer
         v-for="cid in childIds"
@@ -73,7 +78,7 @@ function triggerAction(eventName = 'tap') {
       />
     </component>
 
-    <div v-else class="fallback" @click="triggerAction()">Unregistered component type: {{ kind || 'Unknown' }}</div>
+    <div v-else class="fallback">Unregistered component type: {{ kind || 'Unknown' }}</div>
   </div>
 </template>
 

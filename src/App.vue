@@ -60,6 +60,27 @@ function ensureSurface(turn, surfaceId) {
   return turn.surfaces[surfaceId]
 }
 
+
+function decodeEntryValue(entry) {
+  if ('valueString' in entry) return entry.valueString
+  if ('valueNumber' in entry) return entry.valueNumber
+  if ('valueBool' in entry) return entry.valueBool
+  if ('valueJson' in entry) return entry.valueJson
+  if (entry.value && typeof entry.value === 'object') {
+    if ('stringData' in entry.value) return entry.value.stringData
+    if ('numberData' in entry.value) return entry.value.numberData
+    if ('boolData' in entry.value) return entry.value.boolData
+    if ('jsonData' in entry.value) return entry.value.jsonData
+  }
+  if (entry.literal && typeof entry.literal === 'object') {
+    if ('stringData' in entry.literal) return entry.literal.stringData
+    if ('numberData' in entry.literal) return entry.literal.numberData
+    if ('boolData' in entry.literal) return entry.literal.boolData
+    if ('jsonData' in entry.literal) return entry.literal.jsonData
+  }
+  return undefined
+}
+
 function applyMessage(turn, rawPayload) {
   const payload = normalizeProtocolMessage(rawPayload)
   const type = payload.type || payload.messageType
@@ -99,10 +120,8 @@ function applyMessage(turn, rawPayload) {
       for (const entry of payload.contents) {
         const key = entry.key
         if (!key) continue
-        if ('valueString' in entry) turn.dataModel[key] = entry.valueString
-        else if ('valueNumber' in entry) turn.dataModel[key] = entry.valueNumber
-        else if ('valueBool' in entry) turn.dataModel[key] = entry.valueBool
-        else if ('valueJson' in entry) turn.dataModel[key] = entry.valueJson
+        const value = decodeEntryValue(entry)
+        if (value !== undefined) turn.dataModel[key] = value
       }
       turn.dataModel = { ...turn.dataModel }
       return
