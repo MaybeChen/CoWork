@@ -206,17 +206,46 @@ async function flushToFrame() {
   }
 }
 
+async function applyMessageProgressively(turn, parsed) {
+  const normalized = normalizeProtocolMessage(parsed)
+  const type = normalized.type || normalized.messageType
+
+  if ((type === 'surfaceUpdate' || type === 'updateComponents') && Array.isArray(normalized.components) && normalized.components.length > 1) {
+    for (const component of normalized.components) {
+      applyMessage(turn, {
+        type,
+        surfaceId: normalized.surfaceId,
+        components: [component],
+      })
+      await flushToFrame()
+    }
+    return
+  }
+
+  if ((type === 'dataModelUpdate' || type === 'updateDataModel') && Array.isArray(normalized.contents) && normalized.contents.length > 1) {
+    for (const entry of normalized.contents) {
+      applyMessage(turn, {
+        type,
+        surfaceId: normalized.surfaceId,
+        path: normalized.path,
+        contents: [entry],
+      })
+      await flushToFrame()
+    }
+    return
+  }
+
+  applyMessage(turn, parsed)
+  await flushToFrame()
+}
+
 async function applyObjectsProgressively(turn, objectList) {
-  for (let i = 0; i < objectList.length; i += 1) {
-    const raw = objectList[i]
+  for (const raw of objectList) {
     try {
-      applyMessage(turn, JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      await applyMessageProgressively(turn, parsed)
     } catch {
       // skip malformed object in stream
-    }
-
-    if (i % 2 === 0) {
-      await flushToFrame()
     }
   }
 }
