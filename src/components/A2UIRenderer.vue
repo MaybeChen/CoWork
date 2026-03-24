@@ -1,5 +1,5 @@
 <script setup>
-import RenderNode from './RenderNode.vue'
+import { A2UIComponentRenderer, defaultRegistry } from '../component-lib'
 
 defineProps({
   surface: {
@@ -18,12 +18,13 @@ defineProps({
 </script>
 
 <template>
-  <RenderNode
+  <A2UIComponentRenderer
     v-if="surface?.root"
     :node-id="surface.root"
     :components-by-id="surface.componentsById || {}"
     :data-model="dataModel"
     :surface-id="surface.id"
+    :registry="defaultRegistry"
     :on-action="onAction"
   />
   <div v-else class="empty-tip">Surface is waiting for root...</div>
