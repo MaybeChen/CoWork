@@ -1,0 +1,9 @@
+<script setup>
+import { computed } from 'vue'
+import { resolveText } from './utils'
+const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel: { type: Object, default: () => ({}) }, onAction:{type:Function,default:null}, node:{type:Object,default:null}, surfaceId:{type:String,default:''} })
+const label = computed(() => resolveText(props.dataModel, props.payload?.label || props.payload?.text || {literalString:'Button'}))
+function emitAction(){ props.onAction?.({ actionName: props.payload?.action?.name || 'click', componentId: props.node?.id, surfaceId: props.surfaceId, args: props.payload?.action?.args || {} }) }
+</script>
+<template><button class="a2-btn" @click.stop="emitAction">{{ label }}</button></template>
+<style scoped>.a2-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff}</style>
