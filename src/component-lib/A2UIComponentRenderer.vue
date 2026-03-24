@@ -20,11 +20,11 @@ const kind = computed(() => {
   if (!component || typeof component !== 'object') return null
   return Object.keys(component)[0] ?? null
 })
-const rawPayload = computed(() => {
+const payload = computed(() => {
   const k = kind.value
-  return k ? node.value.component[k] : {}
+  const raw = k ? node.value.component[k] : {}
+  return normalizePayload(raw)
 })
-const payload = computed(() => normalizePayload(rawPayload.value))
 const resolvedComponent = computed(() => props.registry.resolve(kind.value))
 
 const childIds = computed(() => {
@@ -41,15 +41,6 @@ const childIds = computed(() => {
   return []
 })
 
-function triggerAction(eventName = 'tap', args = {}) {
-  if (!props.onAction || !node.value) return
-  props.onAction({
-    actionName: eventName,
-    componentId: node.value.id,
-    surfaceId: props.surfaceId,
-    args,
-  })
-}
 </script>
 
 <template>
@@ -60,11 +51,9 @@ function triggerAction(eventName = 'tap', args = {}) {
       :node="node"
       :kind="kind"
       :payload="payload"
-      :raw-payload="rawPayload"
       :data-model="dataModel"
       :surface-id="surfaceId"
       :on-action="onAction"
-      :trigger-action="triggerAction"
     >
       <A2UIComponentRenderer
         v-for="cid in childIds"
