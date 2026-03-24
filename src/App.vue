@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import A2UIRenderer from './components/A2UIRenderer.vue'
 
-const endpoint = 'http://localhost:8010/api/chat/stream'
+const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
 
 const message = ref('')
 const loading = ref(false)
