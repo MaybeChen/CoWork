@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import A2UIRenderer from './components/A2UIRenderer.vue'
 
 const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
@@ -17,6 +17,7 @@ function createTurn(userText) {
     userText,
     surfaces: {},
     dataModel: {},
+    streaming: false,
   }
 }
 
@@ -183,8 +184,32 @@ function extractJsonObjects(input) {
   }
 }
 
+
+async function flushToFrame() {
+  await nextTick()
+  if (typeof requestAnimationFrame === 'function') {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve()))
+  }
+}
+
+async function applyObjectsProgressively(turn, objectList) {
+  for (let i = 0; i < objectList.length; i += 1) {
+    const raw = objectList[i]
+    try {
+      applyMessage(turn, JSON.parse(raw))
+    } catch {
+      // skip malformed object in stream
+    }
+
+    if (i % 2 === 0) {
+      await flushToFrame()
+    }
+  }
+}
+
 async function send(turn, payload) {
   loading.value = true
+  turn.streaming = true
   error.value = ''
 
   try {
@@ -210,28 +235,17 @@ async function send(turn, payload) {
       const { objects, remainder } = extractJsonObjects(buffer)
       buffer = remainder
 
-      for (const raw of objects) {
-        try {
-          applyMessage(turn, JSON.parse(raw))
-        } catch {
-          // skip malformed object in stream
-        }
-      }
+      await applyObjectsProgressively(turn, objects)
     }
 
     if (buffer.trim()) {
       const { objects } = extractJsonObjects(buffer)
-      for (const raw of objects) {
-        try {
-          applyMessage(turn, JSON.parse(raw))
-        } catch {
-          // skip malformed object in stream tail
-        }
-      }
+      await applyObjectsProgressively(turn, objects)
     }
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Unknown error'
   } finally {
+    turn.streaming = false
     loading.value = false
   }
 }
@@ -279,6 +293,7 @@ function fillPreset(text) {
       <div v-else class="conversation">
         <div v-for="turn in turns" :key="turn.id" class="turn">
           <div class="bubble bubble-user">{{ turn.userText }}</div>
+          <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
           <div class="bubble bubble-assistant">
             <template v-if="Object.keys(turn.surfaces).length">
@@ -394,6 +409,12 @@ function fillPreset(text) {
 .bubble-assistant {
   align-self: stretch;
   background: rgba(255, 255, 255, 0.03);
+}
+
+.streaming-tip {
+  color: rgba(125, 211, 252, 0.95);
+  font-size: 12px;
+  padding-left: 8px;
 }
 
 .surface {
