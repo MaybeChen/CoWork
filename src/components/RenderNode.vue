@@ -1,5 +1,9 @@
 <script setup>
 import { computed } from 'vue'
+import SweetCard from './sweetui/SweetCard.vue'
+import SweetStack from './sweetui/SweetStack.vue'
+import SweetText from './sweetui/SweetText.vue'
+
 defineOptions({ name: 'RenderNode' })
 
 const props = defineProps({
@@ -23,12 +27,8 @@ const payload = computed(() => {
 })
 
 const childIds = computed(() => {
-  if (kind.value === 'Column' || kind.value === 'Row') {
-    return payload.value?.children?.explicitList ?? []
-  }
-  if (kind.value === 'Card') {
-    return payload.value?.child ? [payload.value.child] : []
-  }
+  if (kind.value === 'Column' || kind.value === 'Row') return payload.value?.children?.explicitList ?? []
+  if (kind.value === 'Card') return payload.value?.child ? [payload.value.child] : []
   return []
 })
 
@@ -74,7 +74,7 @@ function triggerAction(eventName = 'tap') {
 <template>
   <div v-if="node" class="render-node" :class="'kind-' + (kind || 'Unknown')">
     <template v-if="kind === 'Column' || kind === 'Row'">
-      <div class="layout" :class="kind === 'Row' ? 'layout-row' : 'layout-col'">
+      <SweetStack :direction="kind === 'Row' ? 'row' : 'column'" :gap="12">
         <RenderNode
           v-for="cid in childIds"
           :key="cid"
@@ -84,11 +84,11 @@ function triggerAction(eventName = 'tap') {
           :surface-id="surfaceId"
           :on-action="onAction"
         />
-      </div>
+      </SweetStack>
     </template>
 
     <template v-else-if="kind === 'Card'">
-      <div class="card">
+      <SweetCard>
         <RenderNode
           v-for="cid in childIds"
           :key="cid"
@@ -98,60 +98,23 @@ function triggerAction(eventName = 'tap') {
           :surface-id="surfaceId"
           :on-action="onAction"
         />
-      </div>
+      </SweetCard>
     </template>
 
     <template v-else-if="kind === 'Text'">
-      <component :is="textTag()" class="text">{{ decodeTextValue(payload.text) }}</component>
+      <SweetText :as="textTag()">{{ decodeTextValue(payload.text) }}</SweetText>
     </template>
 
     <template v-else>
-      <div class="unknown" @click="triggerAction()">Unsupported component: {{ kind || 'Unknown' }}</div>
+      <SweetCard interactive @click="triggerAction()">
+        <div class="unknown">Unsupported component: {{ kind || 'Unknown' }}</div>
+      </SweetCard>
     </template>
   </div>
 </template>
 
 <style scoped>
-.layout {
-  display: flex;
-  gap: 12px;
-}
-
-.layout-col {
-  flex-direction: column;
-}
-
-.layout-row {
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 14px;
-}
-
-.text {
-  margin: 0;
-  color: #e5e7eb;
-  line-height: 1.6;
-}
-
-h1.text {
-  font-size: 28px;
-  margin-bottom: 8px;
-}
-
-h2.text {
-  font-size: 22px;
-}
-
 .unknown {
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 10px;
   color: rgba(255, 255, 255, 0.6);
 }
 </style>
