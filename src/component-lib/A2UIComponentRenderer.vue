@@ -25,8 +25,15 @@ const payload = computed(() => {
 })
 const resolvedComponent = computed(() => props.registry.resolve(kind.value))
 const childIds = computed(() => {
-  if (kind.value === 'Column' || kind.value === 'Row') return payload.value?.children?.explicitList ?? []
-  if (kind.value === 'Card') return payload.value?.child ? [payload.value.child] : []
+  if (kind.value === 'Column' || kind.value === 'Row' || kind.value === 'List') {
+    return payload.value?.children?.explicitList ?? payload.value?.items?.explicitList ?? []
+  }
+  if (kind.value === 'Card' || kind.value === 'Modal') {
+    return payload.value?.child ? [payload.value.child] : []
+  }
+  if (kind.value === 'Tabs') {
+    return payload.value?.tabs?.explicitList ?? payload.value?.children?.explicitList ?? []
+  }
   return []
 })
 
