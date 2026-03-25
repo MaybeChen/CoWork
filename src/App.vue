@@ -501,6 +501,19 @@ function fillPreset(text) {
 
 .surface {
   margin-top: 8px;
+  transform-origin: top center;
+  animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes surface-grow-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .placeholder {
