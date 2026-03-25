@@ -16,7 +16,7 @@ function createTurn(userText) {
     id: `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     userText,
     surfaces: {},
-    dataModel: {},
+    dataModels: {},
     streaming: false,
   }
 }
@@ -56,6 +56,7 @@ function ensureSurface(turn, surfaceId) {
       id: surfaceId,
       root: null,
       componentsById: {},
+      ready: false,
     }
   }
   return turn.surfaces[surfaceId]
@@ -75,11 +76,32 @@ function ensureObjectPath(root, rawPath) {
   return cursor
 }
 
+
+function ensureSurfaceDataModel(turn, surfaceId) {
+  if (!turn.dataModels[surfaceId] || typeof turn.dataModels[surfaceId] !== 'object') {
+    turn.dataModels[surfaceId] = {}
+  }
+  return turn.dataModels[surfaceId]
+}
+
+function decodeValueMap(entries) {
+  const out = {}
+  if (!Array.isArray(entries)) return out
+  for (const item of entries) {
+    if (!item?.key) continue
+    const value = decodeEntryValue(item)
+    if (value !== undefined) out[item.key] = value
+  }
+  return out
+}
+
 function decodeEntryValue(entry) {
   if ('valueString' in entry) return entry.valueString
   if ('valueNumber' in entry) return entry.valueNumber
   if ('valueBool' in entry) return entry.valueBool
   if ('valueJson' in entry) return entry.valueJson
+  if ('valueBoolean' in entry) return entry.valueBoolean
+  if ('valueMap' in entry) return decodeValueMap(entry.valueMap)
   if (entry.value && typeof entry.value === 'object') {
     if ('stringData' in entry.value) return entry.value.stringData
     if ('numberData' in entry.value) return entry.value.numberData
@@ -104,6 +126,7 @@ function applyMessage(turn, rawPayload) {
     if (!sid) return
     const surface = ensureSurface(turn, sid)
     surface.root = payload.root || payload.surface?.root || surface.root
+    surface.ready = true
     if (Array.isArray(payload.components)) {
       for (const item of payload.components) {
         if (!item?.id) continue
@@ -130,21 +153,29 @@ function applyMessage(turn, rawPayload) {
   }
 
   if (type === 'dataModelUpdate' || type === 'updateDataModel') {
+    const sid = payload.surfaceId || payload.surface?.id || 'main'
+    const surfaceModel = ensureSurfaceDataModel(turn, sid)
+
     if (Array.isArray(payload.contents)) {
-      const pathRoot = ensureObjectPath(turn.dataModel, payload.path || '/')
-      for (const entry of payload.contents) {
-        const key = entry.key
-        if (!key) continue
-        const value = decodeEntryValue(entry)
-        if (value !== undefined) pathRoot[key] = value
+      if (!payload.path) {
+        const rebuilt = decodeValueMap(payload.contents)
+        turn.dataModels[sid] = rebuilt
+      } else {
+        const pathRoot = ensureObjectPath(surfaceModel, payload.path)
+        for (const entry of payload.contents) {
+          const key = entry.key
+          if (!key) continue
+          const value = decodeEntryValue(entry)
+          if (value !== undefined) pathRoot[key] = value
+        }
       }
-      turn.dataModel = { ...turn.dataModel }
+      turn.dataModels = { ...turn.dataModels }
       return
     }
 
     const update = payload.data || payload.dataModel || payload.patch || {}
-    Object.assign(turn.dataModel, update)
-    turn.dataModel = { ...turn.dataModel }
+    Object.assign(surfaceModel, update)
+    turn.dataModels = { ...turn.dataModels }
     return
   }
 }
@@ -347,13 +378,13 @@ function fillPreset(text) {
           <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
           <div class="bubble bubble-assistant">
-            <template v-if="Object.keys(turn.surfaces).length">
-              <article v-for="surface in Object.values(turn.surfaces)" :key="surface.id" class="surface">
-                <A2UIRenderer :surface="surface" :data-model="turn.dataModel" :on-action="(action) => handleAction(turn, action)" />
+            <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
+              <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
+                <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
               </article>
             </template>
             <template v-else>
-              <span class="placeholder">正在等待后端 UI 响应...</span>
+              <span class="placeholder">正在等待 beginRendering（已缓冲更新）...</span>
             </template>
           </div>
         </div>
