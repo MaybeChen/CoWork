@@ -72,10 +72,28 @@ const childIds = computed(() => {
 </template>
 
 <style scoped>
+.a2ui-node {
+  transform-origin: top center;
+  animation: atom-grow-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .fallback {
   border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   padding: 10px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes atom-grow-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+    filter: blur(1.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
 </style>
