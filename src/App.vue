@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import A2UIRenderer from './components/A2UIRenderer.vue'
 
 const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
@@ -8,8 +8,52 @@ const message = ref('')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
+const contentRef = ref(null)
+let mutationObserver
+let scrollScheduled = false
 
 const hasTurns = computed(() => turns.value.length > 0)
+
+
+async function scrollToBottom() {
+  await nextTick()
+  if (typeof window !== 'undefined') {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    })
+  }
+}
+
+function scheduleAutoScroll() {
+  if (scrollScheduled) return
+  scrollScheduled = true
+  const run = async () => {
+    scrollScheduled = false
+    await scrollToBottom()
+  }
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(run)
+  } else {
+    setTimeout(run, 0)
+  }
+}
+
+onMounted(() => {
+  if (typeof MutationObserver !== 'function' || !contentRef.value) return
+  mutationObserver = new MutationObserver(() => {
+    scheduleAutoScroll()
+  })
+  mutationObserver.observe(contentRef.value, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  })
+})
+
+onBeforeUnmount(() => {
+  if (mutationObserver) mutationObserver.disconnect()
+})
 
 function createTurn(userText) {
   return {
@@ -134,6 +178,7 @@ function applyMessage(turn, rawPayload) {
       }
     }
     turn.surfaces = { ...turn.surfaces }
+    scheduleAutoScroll()
     return
   }
 
@@ -149,6 +194,7 @@ function applyMessage(turn, rawPayload) {
       }
     }
     turn.surfaces = { ...turn.surfaces }
+    scheduleAutoScroll()
     return
   }
 
@@ -170,12 +216,14 @@ function applyMessage(turn, rawPayload) {
         }
       }
       turn.dataModels = { ...turn.dataModels }
+      scheduleAutoScroll()
       return
     }
 
     const update = payload.data || payload.dataModel || payload.patch || {}
     Object.assign(surfaceModel, update)
     turn.dataModels = { ...turn.dataModels }
+    scheduleAutoScroll()
     return
   }
 }
@@ -338,6 +386,7 @@ async function submit() {
 
   const turn = reactive(createTurn(text))
   turns.value.push(turn)
+  scheduleAutoScroll()
 
   await send(turn, { message: text })
   message.value = ''
@@ -354,7 +403,7 @@ function fillPreset(text) {
 
 <template>
   <main class="page">
-    <section class="content">
+    <section ref="contentRef" class="content">
       <header class="topbar">json-render Chat Example</header>
 
       <div v-if="!hasTurns" class="hero">
