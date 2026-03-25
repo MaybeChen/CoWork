@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import A2UIRenderer from './components/A2UIRenderer.vue'
 
 const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
@@ -336,7 +336,7 @@ async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
 
-  const turn = createTurn(text)
+  const turn = reactive(createTurn(text))
   turns.value.push(turn)
 
   await send(turn, { message: text })
