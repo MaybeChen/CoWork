@@ -1,6 +1,10 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import A2UIRenderer from './components/A2UIRenderer.vue'
+import { streamChat } from './modules/network/chatStreamClient'
+import { createTurn, applyMessage } from './modules/message/messageApplier'
+import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
+import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
 
@@ -8,376 +12,30 @@ const message = ref('')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
-const contentRef = ref(null)
-let mutationObserver
-let scrollScheduled = false
 
+const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
 
-
-async function scrollToBottom() {
-  await nextTick()
-  if (typeof window !== 'undefined') {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    })
-  }
-}
-
-function scheduleAutoScroll() {
-  if (scrollScheduled) return
-  scrollScheduled = true
-  const run = async () => {
-    scrollScheduled = false
-    await scrollToBottom()
-  }
-  if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(run)
-  } else {
-    setTimeout(run, 0)
-  }
-}
-
-onMounted(() => {
-  if (typeof MutationObserver !== 'function' || !contentRef.value) return
-  mutationObserver = new MutationObserver(() => {
-    scheduleAutoScroll()
-  })
-  mutationObserver.observe(contentRef.value, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  })
-})
-
-onBeforeUnmount(() => {
-  if (mutationObserver) mutationObserver.disconnect()
-})
-
-function createTurn(userText) {
-  return {
-    id: `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    userText,
-    surfaces: {},
-    dataModels: {},
-    streaming: false,
-  }
-}
-
-function normalizeProtocolMessage(raw) {
-  if (raw.beginRendering) {
-    return {
-      type: 'createSurface',
-      surfaceId: raw.beginRendering.surfaceId,
-      root: raw.beginRendering.root,
-    }
-  }
-
-  if (raw.surfaceUpdate) {
-    return {
-      type: 'surfaceUpdate',
-      surfaceId: raw.surfaceUpdate.surfaceId,
-      components: raw.surfaceUpdate.components ?? [],
-    }
-  }
-
-  if (raw.dataModelUpdate) {
-    return {
-      type: 'dataModelUpdate',
-      surfaceId: raw.dataModelUpdate.surfaceId,
-      path: raw.dataModelUpdate.path,
-      contents: raw.dataModelUpdate.contents ?? [],
-    }
-  }
-
-  return raw
-}
-
-function ensureSurface(turn, surfaceId) {
-  if (!turn.surfaces[surfaceId]) {
-    turn.surfaces[surfaceId] = {
-      id: surfaceId,
-      root: null,
-      componentsById: {},
-      ready: false,
-    }
-  }
-  return turn.surfaces[surfaceId]
-}
-
-
-
-function ensureObjectPath(root, rawPath) {
-  const normalized = (rawPath || '/').replace(/^\//, '')
-  if (!normalized) return root
-  const segments = normalized.split('/').filter(Boolean)
-  let cursor = root
-  for (const seg of segments) {
-    if (!cursor[seg] || typeof cursor[seg] !== 'object') cursor[seg] = {}
-    cursor = cursor[seg]
-  }
-  return cursor
-}
-
-
-function ensureSurfaceDataModel(turn, surfaceId) {
-  if (!turn.dataModels[surfaceId] || typeof turn.dataModels[surfaceId] !== 'object') {
-    turn.dataModels[surfaceId] = {}
-  }
-  return turn.dataModels[surfaceId]
-}
-
-function decodeValueMap(entries) {
-  const out = {}
-  if (!Array.isArray(entries)) return out
-  for (const item of entries) {
-    if (!item?.key) continue
-    const value = decodeEntryValue(item)
-    if (value !== undefined) out[item.key] = value
-  }
-  return out
-}
-
-function decodeEntryValue(entry) {
-  if ('valueString' in entry) return entry.valueString
-  if ('valueNumber' in entry) return entry.valueNumber
-  if ('valueBool' in entry) return entry.valueBool
-  if ('valueJson' in entry) return entry.valueJson
-  if ('valueBoolean' in entry) return entry.valueBoolean
-  if ('valueMap' in entry) return decodeValueMap(entry.valueMap)
-  if (entry.value && typeof entry.value === 'object') {
-    if ('stringData' in entry.value) return entry.value.stringData
-    if ('numberData' in entry.value) return entry.value.numberData
-    if ('boolData' in entry.value) return entry.value.boolData
-    if ('jsonData' in entry.value) return entry.value.jsonData
-  }
-  if (entry.literal && typeof entry.literal === 'object') {
-    if ('stringData' in entry.literal) return entry.literal.stringData
-    if ('numberData' in entry.literal) return entry.literal.numberData
-    if ('boolData' in entry.literal) return entry.literal.boolData
-    if ('jsonData' in entry.literal) return entry.literal.jsonData
-  }
-  return undefined
-}
-
-function applyMessage(turn, rawPayload) {
-  const payload = normalizeProtocolMessage(rawPayload)
-  const type = payload.type || payload.messageType
-
-  if (type === 'createSurface') {
-    const sid = payload.surfaceId || payload.surface?.id
-    if (!sid) return
-    const surface = ensureSurface(turn, sid)
-    surface.root = payload.root || payload.surface?.root || surface.root
-    surface.ready = true
-    if (Array.isArray(payload.components)) {
-      for (const item of payload.components) {
-        if (!item?.id) continue
-        surface.componentsById[item.id] = item
-      }
-    }
-    turn.surfaces = { ...turn.surfaces }
-    scheduleAutoScroll()
-    return
-  }
-
-  if (type === 'surfaceUpdate' || type === 'updateComponents') {
-    const sid = payload.surfaceId || payload.surface?.id
-    if (!sid) return
-    const surface = ensureSurface(turn, sid)
-    const list = payload.components || payload.patch || []
-    if (Array.isArray(list)) {
-      for (const item of list) {
-        if (!item?.id) continue
-        surface.componentsById[item.id] = item
-      }
-    }
-    turn.surfaces = { ...turn.surfaces }
-    scheduleAutoScroll()
-    return
-  }
-
-  if (type === 'dataModelUpdate' || type === 'updateDataModel') {
-    const sid = payload.surfaceId || payload.surface?.id || 'main'
-    const surfaceModel = ensureSurfaceDataModel(turn, sid)
-
-    if (Array.isArray(payload.contents)) {
-      if (!payload.path) {
-        const rebuilt = decodeValueMap(payload.contents)
-        turn.dataModels[sid] = rebuilt
-      } else {
-        const pathRoot = ensureObjectPath(surfaceModel, payload.path)
-        for (const entry of payload.contents) {
-          const key = entry.key
-          if (!key) continue
-          const value = decodeEntryValue(entry)
-          if (value !== undefined) pathRoot[key] = value
-        }
-      }
-      turn.dataModels = { ...turn.dataModels }
-      scheduleAutoScroll()
-      return
-    }
-
-    const update = payload.data || payload.dataModel || payload.patch || {}
-    Object.assign(surfaceModel, update)
-    turn.dataModels = { ...turn.dataModels }
-    scheduleAutoScroll()
-    return
-  }
-}
-
-function extractJsonObjects(input) {
-  const objects = []
-  let depth = 0
-  let start = -1
-  let inString = false
-  let escaped = false
-  let lastConsumedIndex = 0
-
-  for (let i = 0; i < input.length; i += 1) {
-    const ch = input[i]
-
-    if (inString) {
-      if (escaped) {
-        escaped = false
-      } else if (ch === '\\') {
-        escaped = true
-      } else if (ch === '"') {
-        inString = false
-      }
-      continue
-    }
-
-    if (ch === '"') {
-      inString = true
-      continue
-    }
-
-    if (ch === '{') {
-      if (depth === 0) start = i
-      depth += 1
-      continue
-    }
-
-    if (ch === '}') {
-      depth -= 1
-      if (depth === 0 && start >= 0) {
-        objects.push(input.slice(start, i + 1))
-        lastConsumedIndex = i + 1
-        start = -1
-      }
-    }
-  }
-
-  return {
-    objects,
-    remainder: input.slice(lastConsumedIndex),
-  }
-}
-
-
-async function flushToFrame() {
-  await nextTick()
-  if (typeof requestAnimationFrame === 'function') {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve()))
-  }
-}
-
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function applyMessageProgressively(turn, parsed) {
-  const normalized = normalizeProtocolMessage(parsed)
-  const type = normalized.type || normalized.messageType
-
-  if ((type === 'surfaceUpdate' || type === 'updateComponents') && Array.isArray(normalized.components) && normalized.components.length > 1) {
-    for (const component of normalized.components) {
-      applyMessage(turn, {
-        type,
-        surfaceId: normalized.surfaceId,
-        components: [component],
-      })
-      await flushToFrame()
-      await sleep(12)
-    }
-    return
-  }
-
-  if ((type === 'dataModelUpdate' || type === 'updateDataModel') && Array.isArray(normalized.contents) && normalized.contents.length > 1) {
-    for (const entry of normalized.contents) {
-      applyMessage(turn, {
-        type,
-        surfaceId: normalized.surfaceId,
-        path: normalized.path,
-        contents: [entry],
-      })
-      await flushToFrame()
-      await sleep(12)
-    }
-    return
-  }
-
-  applyMessage(turn, parsed)
-  await flushToFrame()
-  await sleep(8)
-}
-
-async function applyObjectsProgressively(turn, objectList) {
-  for (const raw of objectList) {
-    try {
-      const parsed = JSON.parse(raw)
-      await applyMessageProgressively(turn, parsed)
-    } catch {
-      // skip malformed object in stream
-    }
-  }
-}
+const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: scheduleAutoScroll })
 
 async function send(turn, payload) {
   loading.value = true
   turn.streaming = true
   error.value = ''
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+  await streamChat({
+    endpoint,
+    payload,
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+  })
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    if (!res.body) throw new Error('Response body is empty')
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    let buffer = ''
-
-    while (true) {
-      const { value, done } = await reader.read()
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-
-      const { objects, remainder } = extractJsonObjects(buffer)
-      buffer = remainder
-
-      await applyObjectsProgressively(turn, objects)
-    }
-
-    if (buffer.trim()) {
-      const { objects } = extractJsonObjects(buffer)
-      await applyObjectsProgressively(turn, objects)
-    }
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Unknown error'
-  } finally {
-    turn.streaming = false
-    loading.value = false
-  }
+  turn.streaming = false
+  loading.value = false
 }
 
 async function submit() {
