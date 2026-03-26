@@ -28,14 +28,14 @@ const title = computed(() => {
 
 const nodes = computed(() => specObject.value?.nodes || [])
 const edges = computed(() => specObject.value?.edges || [])
-const colCount = computed(() => Math.max(0, ...nodes.value.map((n) => Number(n.column || 0))) + 1)
 
-function nodeStyle(n) {
-  return {
-    gridColumn: String(Number(n.column || 0) + 1),
-    gridRow: String(Number(n.lane || 0) + 1),
-  }
-}
+const orderedNodes = computed(() =>
+  [...nodes.value].sort((a, b) => {
+    const laneDiff = Number(a.lane || 0) - Number(b.lane || 0)
+    if (laneDiff !== 0) return laneDiff
+    return Number(a.column || 0) - Number(b.column || 0)
+  }),
+)
 </script>
 
 <template>
@@ -43,8 +43,8 @@ function nodeStyle(n) {
     <h3 class="flow-title">{{ title }}</h3>
 
     <div class="flow-grid-scroll">
-      <div v-if="nodes.length" class="flow-grid" :style="{ gridTemplateColumns: `repeat(${colCount}, minmax(160px, 1fr))` }">
-        <div v-for="node in nodes" :key="node.id" class="flow-node" :class="`kind-${node.kind || 'process'}`" :style="nodeStyle(node)">
+      <div v-if="nodes.length" class="flow-grid" >
+        <div v-for="node in orderedNodes" :key="node.id" class="flow-node" :class="`kind-${node.kind || 'process'}`" >
           <strong>{{ node.label || node.id }}</strong>
         </div>
       </div>
@@ -85,7 +85,7 @@ function nodeStyle(n) {
 .flow-grid {
   display: grid;
   gap: 10px;
-  min-width: fit-content;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .flow-node {
