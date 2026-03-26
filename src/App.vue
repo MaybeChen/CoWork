@@ -62,7 +62,7 @@ function fillPreset(text) {
 <template>
   <main class="page">
     <section ref="contentRef" class="content">
-      <header class="topbar">json-render Chat Example</header>
+      <header class="topbar">GTS-CoWorker</header>
 
       <div v-if="!hasTurns" class="hero">
         <h1>What would you like to explore?</h1>
