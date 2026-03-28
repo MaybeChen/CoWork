@@ -18,15 +18,16 @@ defineProps({
 </script>
 
 <template>
-  <A2UIComponentRenderer
-    v-if="surface?.root"
-    :node-id="surface.root"
-    :components-by-id="surface.componentsById || {}"
-    :data-model="dataModel"
-    :surface-id="surface.id"
-    :registry="defaultRegistry"
-    :on-action="onAction"
-  />
+  <div v-if="surface?.root" class="a2ui-surface">
+    <A2UIComponentRenderer
+      :node-id="surface.root"
+      :components-by-id="surface.componentsById || {}"
+      :data-model="dataModel"
+      :surface-id="surface.id"
+      :registry="defaultRegistry"
+      :on-action="onAction"
+    />
+  </div>
   <div v-else class="empty-tip">Surface is waiting for root...</div>
 </template>
 
