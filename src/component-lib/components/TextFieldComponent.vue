@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { resolveText } from './utils'
+import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveText } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -13,6 +13,9 @@ const props = defineProps({
 const val = ref('')
 const placeholder = computed(() => resolveText(props.dataModel, props.payload?.placeholder || { literalString: '' }))
 const action = computed(() => props.payload?.action ?? props.payload?.onSubmit ?? {})
+const hidden = computed(() => isHidden(props.dataModel, props.payload))
+const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
 
 watch(
   () => [props.payload?.text, props.payload?.value, props.dataModel],
@@ -24,7 +27,7 @@ watch(
 
 function submit() {
   props.onAction?.({
-    actionName: action.value?.name || action.value?.actionName || 'submit_text',
+    actionName: resolveActionName(action.value, 'submit_text'),
     componentId: props.node?.id,
     surfaceId: props.surfaceId,
     args: { ...(action.value?.args || {}), value: val.value },
@@ -33,7 +36,7 @@ function submit() {
 </script>
 
 <template>
-  <div class="a2-tf">
+  <div v-if="!hidden" class="a2-tf" :class="customClasses" :style="styleObject">
     <input v-model="val" :placeholder="placeholder" @keydown.enter.prevent="submit" />
   </div>
 </template>
