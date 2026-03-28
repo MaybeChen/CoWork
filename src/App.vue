@@ -6,7 +6,7 @@ import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
-const endpoint = 'http://10.136.125.119:8010/api/chat/stream'
+const endpoint = '/api/chat/stream'
 
 const message = ref('')
 const loading = ref(false)
@@ -183,9 +183,6 @@ function fillPreset(text) {
 }
 
 .bubble {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 12px 14px;
 }
 
 .bubble-user {
