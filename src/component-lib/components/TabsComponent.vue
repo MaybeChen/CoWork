@@ -1,13 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, normalizeChildren, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, normalizeChildren, resolveText } from './utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel:{type:Object,default:()=>({})}, node:{type:Object,default:null} })
 const active = ref(0)
 const tabs = computed(() => normalizeChildren(props.payload?.tabs ?? props.payload?.children))
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 function label(tab, idx) {
   return resolveText(props.dataModel, tab?.label ?? tab?.title ?? { literalString: `Tab ${idx + 1}` })

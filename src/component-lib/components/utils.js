@@ -136,10 +136,11 @@ export function stylesToObject(input) {
     }, {})
 }
 
-export function hostStyleFromNode(node, payload = {}) {
+export function hostStyleFromNode(node, payload = {}, usageHint = 'default') {
   const style = {
     ...stylesToObject(payload.style),
     ...stylesToObject(payload.styles),
+    ...resolveComponentStyles(payload, usageHint),
   }
   if (node?.weight !== undefined && node?.weight !== null) {
     style['--weight'] = node.weight
@@ -154,4 +155,51 @@ export function isHidden(dataModel, payload = {}) {
 
 export function resolveActionName(action, fallback) {
   return action?.name || action?.actionName || fallback
+}
+
+
+export function mergeClassMaps(...maps) {
+  const merged = {}
+  for (const map of maps) {
+    if (!map || typeof map !== 'object') continue
+    for (const [k, v] of Object.entries(map)) merged[k] = Boolean(v)
+  }
+  return merged
+}
+
+function isHintedStyleMap(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  return 'all' in value || 'default' in value || Object.values(value).some((v) => v && typeof v === 'object')
+}
+
+export function resolveComponentClasses(payload = {}, usageHint = 'default') {
+  const className = payload?.className
+  const classMap = payload?.classMap
+
+  const classNameText = classMapToString(className)
+
+  if (!classMap || typeof classMap !== 'object' || Array.isArray(classMap)) {
+    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
+  }
+
+  if (!isHintedStyleMap(classMap)) {
+    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
+  }
+
+  const merged = mergeClassMaps(classMap.all, classMap.default, classMap[usageHint])
+  return [classMapToString(merged), classNameText].filter(Boolean).join(' ').trim()
+}
+
+export function resolveComponentStyles(payload = {}, usageHint = 'default') {
+  const styles = payload?.additionalStyles
+  if (!styles || typeof styles !== 'object') return {}
+  if (Array.isArray(styles)) return {}
+
+  if (!isHintedStyleMap(styles)) return stylesToObject(styles)
+
+  return {
+    ...stylesToObject(styles.all),
+    ...stylesToObject(styles.default),
+    ...stylesToObject(styles[usageHint]),
+  }
 }

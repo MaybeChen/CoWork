@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -17,9 +17,9 @@ const hidden = computed(() => isHidden(props.dataModel, props.payload))
 const hostStyle = computed(() => ({
   justifyContent: justify[distribution.value] || 'flex-start',
   alignItems: align[alignment.value] || 'stretch',
-  ...hostStyleFromNode(props.node, props.payload),
+  ...hostStyleFromNode(props.node, props.payload, props.payload?.usageHint),
 }))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
 </script>
 <template>
   <div v-if="!hidden" class="a2-row" :class="customClasses" :style="hostStyle" :data-alignment="alignment" :data-distribution="distribution"><slot/></div>

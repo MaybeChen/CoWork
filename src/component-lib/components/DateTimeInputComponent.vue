@@ -1,13 +1,13 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveActionName, resolveText } from './utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel:{type:Object,default:()=>({})}, onAction:{type:Function,default:null}, node:{type:Object,default:null}, surfaceId:{type:String,default:''} })
 const value = ref('')
 const action = computed(() => props.payload?.action ?? {})
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 watch(() => [props.payload?.value, props.dataModel], () => {
   value.value = resolveText(props.dataModel, props.payload?.value)

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveNumber } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveActionName, resolveNumber } from './utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel:{type:Object,default:()=>({})}, onAction:{type:Function,default:null}, node:{type:Object,default:null}, surfaceId:{type:String,default:''} })
 const value = ref(0)
@@ -9,8 +9,8 @@ const min = computed(() => resolveNumber(props.dataModel, props.payload?.min, 0)
 const max = computed(() => resolveNumber(props.dataModel, props.payload?.max, 100))
 const step = computed(() => resolveNumber(props.dataModel, props.payload?.step, 1))
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 watch(() => [props.payload?.value, props.dataModel], () => {
   value.value = resolveNumber(props.dataModel, props.payload?.value, min.value)

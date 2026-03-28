@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveActionName, resolveText } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -14,8 +14,8 @@ const action = computed(() => props.payload?.action ?? props.payload?.onClick ??
 const label = computed(() => resolveText(props.dataModel, props.payload?.label ?? props.payload?.text ?? { literalString: 'Button' }))
 const hasChild = computed(() => Boolean(props.payload?.child))
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 function emitAction() {
   props.onAction?.({

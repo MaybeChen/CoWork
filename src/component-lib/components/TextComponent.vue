@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import MarkdownIt from '../vendors/markdown-it'
-import { classMapToString, hostStyleFromNode, isHidden, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -14,8 +14,8 @@ const md = new MarkdownIt()
 const text = computed(() => resolveText(props.dataModel, props.payload?.text))
 const usageHint = computed(() => props.payload?.usageHint || 'body')
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 const markdownText = computed(() => {
   const raw = text.value

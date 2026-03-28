@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveActionName, resolveText } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -14,8 +14,8 @@ const val = ref('')
 const placeholder = computed(() => resolveText(props.dataModel, props.payload?.placeholder || { literalString: '' }))
 const action = computed(() => props.payload?.action ?? props.payload?.onSubmit ?? {})
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 watch(
   () => [props.payload?.text, props.payload?.value, props.dataModel],

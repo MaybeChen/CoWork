@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, normalizeChildren, resolveActionName, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, normalizeChildren, resolveActionName, resolveText } from './utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -13,8 +13,8 @@ const props = defineProps({
 const options = computed(() => normalizeChildren(props.payload?.options ?? props.payload?.choices))
 const action = computed(() => props.payload?.action ?? {})
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 function labelOf(opt) {
   return resolveText(props.dataModel, opt?.label ?? opt?.text ?? opt?.value ?? opt)

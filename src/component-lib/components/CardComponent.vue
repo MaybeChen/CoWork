@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses } from './utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel:{type:Object,default:()=>({})}, node:{type:Object,default:null} })
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template>
   <section v-if="!hidden" class="a2-card a2-card-enter" :class="customClasses" :style="styleObject">

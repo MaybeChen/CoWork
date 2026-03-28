@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { classMapToString, hostStyleFromNode, isHidden, resolveActionName, resolveBool, resolveText } from './utils'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveActionName, resolveBool, resolveText } from './utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, dataModel:{type:Object,default:()=>({})}, onAction:{type:Function,default:null}, node:{type:Object,default:null}, surfaceId:{type:String,default:''} })
 const checked = ref(false)
 const action = computed(() => props.payload?.action ?? {})
 const label = computed(() => resolveText(props.dataModel, props.payload?.label || { literalString: 'Check' }))
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
-const customClasses = computed(() => classMapToString(props.payload?.classMap || props.payload?.className))
-const styleObject = computed(() => hostStyleFromNode(props.node, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 watch(() => [props.payload?.checked, props.payload?.value, props.dataModel], () => {
   checked.value = resolveBool(props.dataModel, props.payload?.checked ?? props.payload?.value, false)
