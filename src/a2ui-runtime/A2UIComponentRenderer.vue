@@ -53,8 +53,11 @@ const childIds = computed(() => {
   if (kind.value === 'Tabs') {
     return extractChildIds(p.tabs ?? p.children)
   }
-  if (kind.value === 'Timeline' || kind.value === 'TimelineItem') {
+  if (kind.value === 'Timeline') {
     return extractChildIds(p.children ?? p.items)
+  }
+  if (kind.value === 'TimelineItem') {
+    return extractChildIds(p.child ? [p.child] : (p.children ?? p.items))
   }
   return []
 })

@@ -23,4 +23,9 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 
 <style scoped>
 .a2-timeline { width: 100%; }
+
+.a2-timeline :deep(.el-timeline-item__tail) {
+  border-left-color: #22c55e;
+  border-left-width: 2px;
+}
 </style>
