@@ -1,26 +1,27 @@
 import { createComponentRegistry } from './registry'
 
-import TextComponent from './components/TextComponent.vue'
-import ImageComponent from './components/ImageComponent.vue'
-import IconComponent from './components/IconComponent.vue'
-import DividerComponent from './components/DividerComponent.vue'
-import VideoComponent from './components/VideoComponent.vue'
-import AudioPlayerComponent from './components/AudioPlayerComponent.vue'
+import TextComponent from './components/content/TextComponent.vue'
+import ImageComponent from './components/content/ImageComponent.vue'
+import IconComponent from './components/content/IconComponent.vue'
+import DividerComponent from './components/content/DividerComponent.vue'
+import VideoComponent from './components/content/VideoComponent.vue'
+import AudioPlayerComponent from './components/content/AudioPlayerComponent.vue'
+import FlowDiagramComponent from './components/content/FlowDiagramComponent.vue'
 
-import RowComponent from './components/RowComponent.vue'
-import ColumnComponent from './components/ColumnComponent.vue'
-import ListComponent from './components/ListComponent.vue'
-import CardComponent from './components/CardComponent.vue'
-import TabsComponent from './components/TabsComponent.vue'
-import ModalComponent from './components/ModalComponent.vue'
-import FlowDiagramComponent from './components/FlowDiagramComponent.vue'
+import RowComponent from './components/layout/RowComponent.vue'
+import ColumnComponent from './components/layout/ColumnComponent.vue'
+import ListComponent from './components/layout/ListComponent.vue'
+import CardComponent from './components/layout/CardComponent.vue'
+import TabsComponent from './components/layout/TabsComponent.vue'
+import ModalComponent from './components/layout/ModalComponent.vue'
+import TimelineComponent from './components/layout/TimelineComponent.vue'
 
-import ButtonComponent from './components/ButtonComponent.vue'
-import TextFieldComponent from './components/TextFieldComponent.vue'
-import CheckBoxComponent from './components/CheckBoxComponent.vue'
-import SliderComponent from './components/SliderComponent.vue'
-import DateTimeInputComponent from './components/DateTimeInputComponent.vue'
-import MultipleChoiceComponent from './components/MultipleChoiceComponent.vue'
+import ButtonComponent from './components/interactive/ButtonComponent.vue'
+import TextFieldComponent from './components/interactive/TextFieldComponent.vue'
+import CheckBoxComponent from './components/interactive/CheckBoxComponent.vue'
+import SliderComponent from './components/interactive/SliderComponent.vue'
+import DateTimeInputComponent from './components/interactive/DateTimeInputComponent.vue'
+import MultipleChoiceComponent from './components/interactive/MultipleChoiceComponent.vue'
 
 export const defaultRegistry = createComponentRegistry({
   Text: TextComponent,
@@ -29,6 +30,7 @@ export const defaultRegistry = createComponentRegistry({
   Divider: DividerComponent,
   Video: VideoComponent,
   AudioPlayer: AudioPlayerComponent,
+  FlowDiagram: FlowDiagramComponent,
 
   Row: RowComponent,
   Column: ColumnComponent,
@@ -36,7 +38,7 @@ export const defaultRegistry = createComponentRegistry({
   Card: CardComponent,
   Tabs: TabsComponent,
   Modal: ModalComponent,
-  FlowDiagram: FlowDiagramComponent,
+  Timeline: TimelineComponent,
 
   Button: ButtonComponent,
   TextField: TextFieldComponent,

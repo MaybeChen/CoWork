@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { defaultRegistry } from './defaultRegistry'
+import { defaultTheme } from './theme'
 import { extractChildIds, normalizePayload } from './components/utils'
 
 defineOptions({ name: 'A2UIComponentRenderer' })
@@ -11,6 +12,7 @@ const props = defineProps({
   dataModel: { type: Object, required: true },
   surfaceId: { type: String, required: true },
   registry: { type: Object, default: () => defaultRegistry },
+  theme: { type: Object, default: () => defaultTheme },
   onAction: { type: Function, default: null },
 })
 
@@ -20,11 +22,24 @@ const kind = computed(() => {
   if (!component || typeof component !== 'object') return null
   return Object.keys(component)[0] ?? null
 })
+
 const payload = computed(() => {
   const k = kind.value
   const raw = k ? node.value.component[k] : {}
-  return normalizePayload(raw)
+  const normalized = normalizePayload(raw)
+
+  const usageHint = normalized.usageHint || 'default'
+  const themeClassMap = props.theme?.components?.[k] ?? {}
+  const themeAdditionalStyles = props.theme?.additionalStyles?.[k] ?? {}
+
+  return {
+    ...normalized,
+    usageHint,
+    __themeClassMap: themeClassMap,
+    __themeAdditionalStyles: themeAdditionalStyles,
+  }
 })
+
 const resolvedComponent = computed(() => props.registry.resolve(kind.value))
 
 const childIds = computed(() => {
@@ -63,6 +78,7 @@ const childIds = computed(() => {
         :data-model="dataModel"
         :surface-id="surfaceId"
         :registry="registry"
+        :theme="theme"
         :on-action="onAction"
       />
     </component>

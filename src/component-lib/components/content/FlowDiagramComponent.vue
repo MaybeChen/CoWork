@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { resolveText, resolveValue } from './utils'
+import { resolveText, resolveValue } from '../utils'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
