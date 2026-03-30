@@ -42,7 +42,7 @@ const renderedHtml = computed(() => md.render(markdownText.value || ''))
 
 <style scoped>
 .a2ui-text { width: 100%; }
-.a2-text :deep(p) { margin: 0; color:#e5e7eb; line-height:1.6; }
+.a2-text :deep(p) { margin: 0; color: inherit; line-height:1.6; }
 .a2-text :deep(h1), .a2-text :deep(h2), .a2-text :deep(h3), .a2-text :deep(h4), .a2-text :deep(h5) { margin: 0.2em 0; line-height:1.3; }
 .a2-text :deep(code) { background: rgba(255,255,255,0.08); padding: 0 4px; border-radius: 4px; }
 .a2-text :deep(pre) { background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; overflow:auto; }
