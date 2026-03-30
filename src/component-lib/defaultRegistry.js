@@ -15,6 +15,7 @@ import CardComponent from './components/layout/CardComponent.vue'
 import TabsComponent from './components/layout/TabsComponent.vue'
 import ModalComponent from './components/layout/ModalComponent.vue'
 import TimelineComponent from './components/layout/TimelineComponent.vue'
+import TimelineItemComponent from './components/layout/TimelineItemComponent.vue'
 
 import ButtonComponent from './components/interactive/ButtonComponent.vue'
 import TextFieldComponent from './components/interactive/TextFieldComponent.vue'
@@ -39,6 +40,7 @@ export const defaultRegistry = createComponentRegistry({
   Tabs: TabsComponent,
   Modal: ModalComponent,
   Timeline: TimelineComponent,
+  TimelineItem: TimelineItemComponent,
 
   Button: ButtonComponent,
   TextField: TextFieldComponent,
