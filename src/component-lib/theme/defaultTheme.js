@@ -12,7 +12,7 @@ export const defaultTheme = {
       h1: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
       h2: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
       h3: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
-      h4: {}, h5: {}, body: {}, caption: {},
+      h4: {}, h5: {}, body: {}, caption: {}, warning: { color: '#facc15' },
     },
     Card: {
       background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))',
@@ -48,7 +48,7 @@ export const defaultTheme = {
       h3: { 'typography-sz-tl': true },
       h4: { 'typography-sz-bl': true },
       h5: { 'typography-sz-bm': true },
-      body: {}, caption: {},
+      body: {}, caption: {}, warning: { 'color-c-warning': true },
     },
     TextField: { container: { 'layout-w-100': true, 'layout-g-2': true }, label: { 'color-c-p30': true }, element: { 'border-br-2': true, 'border-bw-1': true } },
     Video: { 'border-br-5': true, 'layout-el-cv': true },

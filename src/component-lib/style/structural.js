@@ -28,6 +28,7 @@ export const structuralStyles = `
 .a2ui-surface .typography-h2 { font-size: 22px; line-height: 1.3; font-weight: 650; }
 
 .a2ui-surface .color-c-n100 { color: var(--n-100, #f8fafc); }
+.a2ui-surface .color-c-warning { color: #facc15; }
 .a2ui-surface .color-bgc-n10 { background-color: var(--n-10, rgba(255,255,255,0.03)); }
 .a2ui-surface .color-bgc-p30 { background-color: var(--p-30, #2563eb); }
 
