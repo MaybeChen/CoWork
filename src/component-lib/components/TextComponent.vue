@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import MarkdownIt from '../vendors/markdown-it'
+import MarkdownIt from 'markdown-it'
 import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText } from './utils'
 
 const props = defineProps({

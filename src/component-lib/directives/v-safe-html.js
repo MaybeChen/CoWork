@@ -1,4 +1,4 @@
-import DOMPurify from '../vendors/dompurify'
+import DOMPurify from 'dompurify'
 
 function apply(el, value) {
   const next = DOMPurify.sanitize(String(value ?? ''))
