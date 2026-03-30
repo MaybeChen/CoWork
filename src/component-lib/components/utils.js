@@ -58,6 +58,23 @@ export function resolveText(dataModel, value) {
   return result == null ? '' : String(result)
 }
 
+export function resolveNumber(dataModel, value, fallback = 0) {
+  const resolved = resolveValue(dataModel, value)
+  if (resolved == null || resolved === '') return fallback
+  const n = Number(resolved)
+  return Number.isFinite(n) ? n : fallback
+}
+
+export function resolveBool(dataModel, value, fallback = false) {
+  const resolved = resolveValue(dataModel, value)
+  if (typeof resolved === 'boolean') return resolved
+  if (typeof resolved === 'string') {
+    if (resolved.toLowerCase() === 'true') return true
+    if (resolved.toLowerCase() === 'false') return false
+  }
+  return fallback
+}
+
 export function normalizePayload(payload) {
   if (!payload || typeof payload !== 'object') return {}
   return payload.properties && typeof payload.properties === 'object' ? payload.properties : payload
@@ -68,6 +85,7 @@ export function normalizeChildren(raw) {
   if (Array.isArray(raw)) return raw
   if (Array.isArray(raw.explicitList)) return raw.explicitList
   if (Array.isArray(raw.implicitList)) return raw.implicitList
+  if (Array.isArray(raw.items)) return raw.items
   return []
 }
 
@@ -83,4 +101,105 @@ export function extractChildIds(raw) {
       return null
     })
     .filter(Boolean)
+}
+
+export function classMapToString(value) {
+  if (!value) return ''
+  if (typeof value === 'string') return value.trim()
+  if (Array.isArray(value)) return value.map(classMapToString).filter(Boolean).join(' ')
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([key]) => key)
+      .join(' ')
+  }
+  return ''
+}
+
+export function stylesToObject(input) {
+  if (!input) return {}
+  if (typeof input === 'object') return input
+  if (typeof input !== 'string') return {}
+
+  return input
+    .split(';')
+    .map((pair) => pair.trim())
+    .filter(Boolean)
+    .reduce((acc, pair) => {
+      const idx = pair.indexOf(':')
+      if (idx === -1) return acc
+      const key = pair.slice(0, idx).trim()
+      const value = pair.slice(idx + 1).trim()
+      if (!key) return acc
+      acc[key] = value
+      return acc
+    }, {})
+}
+
+export function hostStyleFromNode(node, payload = {}, usageHint = 'default') {
+  const style = {
+    ...stylesToObject(payload.style),
+    ...stylesToObject(payload.styles),
+    ...resolveComponentStyles(payload, usageHint),
+  }
+  if (node?.weight !== undefined && node?.weight !== null) {
+    style['--weight'] = node.weight
+    style.flex = `${Number(node.weight) || 0} 1 0%`
+  }
+  return style
+}
+
+export function isHidden(dataModel, payload = {}) {
+  return resolveBool(dataModel, payload.hidden ?? payload.isHidden, false)
+}
+
+export function resolveActionName(action, fallback) {
+  return action?.name || action?.actionName || fallback
+}
+
+
+export function mergeClassMaps(...maps) {
+  const merged = {}
+  for (const map of maps) {
+    if (!map || typeof map !== 'object') continue
+    for (const [k, v] of Object.entries(map)) merged[k] = Boolean(v)
+  }
+  return merged
+}
+
+function isHintedStyleMap(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  return 'all' in value || 'default' in value || Object.values(value).some((v) => v && typeof v === 'object')
+}
+
+export function resolveComponentClasses(payload = {}, usageHint = 'default') {
+  const className = payload?.className
+  const classMap = payload?.classMap
+
+  const classNameText = classMapToString(className)
+
+  if (!classMap || typeof classMap !== 'object' || Array.isArray(classMap)) {
+    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
+  }
+
+  if (!isHintedStyleMap(classMap)) {
+    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
+  }
+
+  const merged = mergeClassMaps(classMap.all, classMap.default, classMap[usageHint])
+  return [classMapToString(merged), classNameText].filter(Boolean).join(' ').trim()
+}
+
+export function resolveComponentStyles(payload = {}, usageHint = 'default') {
+  const styles = payload?.additionalStyles
+  if (!styles || typeof styles !== 'object') return {}
+  if (Array.isArray(styles)) return {}
+
+  if (!isHintedStyleMap(styles)) return stylesToObject(styles)
+
+  return {
+    ...stylesToObject(styles.all),
+    ...stylesToObject(styles.default),
+    ...stylesToObject(styles[usageHint]),
+  }
 }
