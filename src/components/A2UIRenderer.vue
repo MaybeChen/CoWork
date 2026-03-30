@@ -1,5 +1,5 @@
 <script setup>
-import { A2UIComponentRenderer, defaultRegistry } from '../component-lib'
+import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../component-lib'
 
 defineProps({
   surface: {
@@ -14,19 +14,25 @@ defineProps({
     type: Function,
     default: null,
   },
+  theme: {
+    type: Object,
+    default: () => defaultTheme,
+  },
 })
 </script>
 
 <template>
-  <A2UIComponentRenderer
-    v-if="surface?.root"
-    :node-id="surface.root"
-    :components-by-id="surface.componentsById || {}"
-    :data-model="dataModel"
-    :surface-id="surface.id"
-    :registry="defaultRegistry"
-    :on-action="onAction"
-  />
+  <div v-if="surface?.root" class="a2ui-surface">
+    <A2UIComponentRenderer
+      :node-id="surface.root"
+      :components-by-id="surface.componentsById || {}"
+      :data-model="dataModel"
+      :surface-id="surface.id"
+      :registry="defaultRegistry"
+      :theme="theme"
+      :on-action="onAction"
+    />
+  </div>
   <div v-else class="empty-tip">Surface is waiting for root...</div>
 </template>
 
