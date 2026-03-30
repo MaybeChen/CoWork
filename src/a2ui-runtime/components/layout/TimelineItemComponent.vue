@@ -37,4 +37,12 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
 
 <style scoped>
 .a2-timeline-item { width: 100%; }
+
+.a2-timeline-item :deep(.el-timeline-item__content) {
+  color: inherit;
+}
+
+.a2-timeline-item :deep(.el-timeline-item__content p) {
+  color: inherit;
+}
 </style>

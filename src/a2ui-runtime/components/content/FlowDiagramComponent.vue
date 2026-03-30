@@ -49,6 +49,13 @@ const orderedNodes = computed(() =>
         </div>
       </div>
     </div>
+
+    <div v-if="edges.length" class="flow-edges">
+      <div v-for="(e, idx) in edges" :key="idx" class="edge-item">
+        <span>{{ e.from_id }} → {{ e.to_id }}</span>
+        <em v-if="e.label">（{{ e.label }}）</em>
+      </div>
+    </div>
   </div>
 </template>
 
