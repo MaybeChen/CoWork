@@ -3,7 +3,6 @@
  */
 export const componentSpecificStyles = `
 .a2ui-surface .a2ui-node {
-  width: 100%;
 }
 
 .a2ui-surface .a2-card,
