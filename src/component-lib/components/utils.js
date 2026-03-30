@@ -175,31 +175,40 @@ function isHintedStyleMap(value) {
 export function resolveComponentClasses(payload = {}, usageHint = 'default') {
   const className = payload?.className
   const classMap = payload?.classMap
+  const themeMap = payload?.__themeClassMap
 
   const classNameText = classMapToString(className)
 
-  if (!classMap || typeof classMap !== 'object' || Array.isArray(classMap)) {
-    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
+  const resolveMap = (map) => {
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return classMapToString(map)
+    if (!isHintedStyleMap(map)) return classMapToString(map)
+    return classMapToString(mergeClassMaps(map.all, map.default, map[usageHint]))
   }
 
-  if (!isHintedStyleMap(classMap)) {
-    return [classMapToString(classMap), classNameText].filter(Boolean).join(' ').trim()
-  }
+  const mergedClassMap = mergeClassMaps(
+    isHintedStyleMap(themeMap) ? mergeClassMaps(themeMap.all, themeMap.default, themeMap[usageHint]) : themeMap,
+    isHintedStyleMap(classMap) ? mergeClassMaps(classMap.all, classMap.default, classMap[usageHint]) : classMap,
+  )
 
-  const merged = mergeClassMaps(classMap.all, classMap.default, classMap[usageHint])
-  return [classMapToString(merged), classNameText].filter(Boolean).join(' ').trim()
+  return [resolveMap(mergedClassMap), classNameText].filter(Boolean).join(' ').trim()
 }
 
 export function resolveComponentStyles(payload = {}, usageHint = 'default') {
   const styles = payload?.additionalStyles
-  if (!styles || typeof styles !== 'object') return {}
-  if (Array.isArray(styles)) return {}
+  const themeStyles = payload?.__themeAdditionalStyles
 
-  if (!isHintedStyleMap(styles)) return stylesToObject(styles)
+  const resolve = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return stylesToObject(value)
+    if (!isHintedStyleMap(value)) return stylesToObject(value)
+    return {
+      ...stylesToObject(value.all),
+      ...stylesToObject(value.default),
+      ...stylesToObject(value[usageHint]),
+    }
+  }
 
   return {
-    ...stylesToObject(styles.all),
-    ...stylesToObject(styles.default),
-    ...stylesToObject(styles[usageHint]),
+    ...resolve(themeStyles),
+    ...resolve(styles),
   }
 }

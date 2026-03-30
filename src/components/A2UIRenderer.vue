@@ -1,5 +1,5 @@
 <script setup>
-import { A2UIComponentRenderer, defaultRegistry } from '../component-lib'
+import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../component-lib'
 
 defineProps({
   surface: {
@@ -14,6 +14,10 @@ defineProps({
     type: Function,
     default: null,
   },
+  theme: {
+    type: Object,
+    default: () => defaultTheme,
+  },
 })
 </script>
 
@@ -25,6 +29,7 @@ defineProps({
       :data-model="dataModel"
       :surface-id="surface.id"
       :registry="defaultRegistry"
+      :theme="theme"
       :on-action="onAction"
     />
   </div>
