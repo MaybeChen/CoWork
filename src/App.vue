@@ -133,9 +133,10 @@ async function copyUserText(text) {
         <section class="panel">
           <h3>最近</h3>
           <ul class="list">
-            <li>这是早工单名称名称 <em>2026-03-31</em></li>
-            <li>这是工单名称名称 <em>2026-03-30</em></li>
-            <li>这是早工单名称名称 <em>2026-03-29</em></li>
+            <li>推理模型应时延过长 <em>2026-03-31</em></li>
+            <li>转发引擎整体功能失效告警转工单 <em>2026-03-30</em></li>
+            <li>License试用 <em>2026-03-29</em></li>
+            <li>内存使用率过高 <em>2026-03-28</em></li>
           </ul>
         </section>
         <section class="panel">
@@ -283,7 +284,8 @@ async function copyUserText(text) {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .center {
@@ -349,6 +351,7 @@ async function copyUserText(text) {
   position: relative;
   height: 238px;
   margin-bottom: 8px;
+  overflow: hidden;
 }
 
 .todo-node {
@@ -395,7 +398,7 @@ async function copyUserText(text) {
 .todo-node.n4 { left: 110px; top: 152px; }
 .todo-node.n5 { left: 0; top: 170px; width: 64px; height: 64px; }
 .todo-node.n6 { left: 188px; top: 150px; width: 64px; height: 64px; }
-.todo-node.n7 { left: 248px; top: 122px; width: 62px; height: 62px; }
+.todo-node.n7 { left: 198px; top: 122px; width: 62px; height: 62px; }
 
 .todo-footer {
   text-align: center;
@@ -430,14 +433,16 @@ async function copyUserText(text) {
 .list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 10px;
   display: grid;
   gap: 8px;
 }
 
 .list li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: 8px;
   font-size: 12px;
 }
 
