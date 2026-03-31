@@ -14,7 +14,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 
 const timestamp = computed(() => resolveText(props.dataModel, props.payload?.timestamp ?? props.payload?.time ?? ''))
 const type = computed(() => resolveText(props.dataModel, props.payload?.type ?? ''))
-const color = computed(() => resolveText(props.dataModel, props.payload?.color ?? ''))
+const color = computed(() => resolveText(props.dataModel, props.payload?.color ?? '#22c55e'))
 const size = computed(() => resolveText(props.dataModel, props.payload?.size ?? ''))
 const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payload?.hollow ?? false)))
 </script>
@@ -37,4 +37,12 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
 
 <style scoped>
 .a2-timeline-item { width: 100%; }
+
+.a2-timeline-item :deep(.el-timeline-item__content) {
+  color: inherit;
+}
+
+.a2-timeline-item :deep(.el-timeline-item__content p) {
+  color: inherit;
+}
 </style>
