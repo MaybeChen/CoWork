@@ -47,8 +47,8 @@ function normalizeWidth(width) {
 <template>
   <div v-if="!hidden" class="a2-table-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-table-title">{{ title }}</div>
-    <sweet-table :data="rows" :stripe="striped" :border="bordered" :row-key="rowKey" style="width: 100%">
-      <sweet-table-column
+    <el-table :data="rows" :stripe="striped" :border="bordered" :row-key="rowKey" style="width: 100%">
+      <el-table-column
         v-for="col in columns"
         :key="col.key"
         :prop="col.key"
@@ -57,7 +57,7 @@ function normalizeWidth(width) {
         :width="normalizeWidth(col.width)"
         :show-overflow-tooltip="Boolean(col.ellipsis)"
       />
-    </sweet-table>
+    </el-table>
   </div>
 </template>
 
