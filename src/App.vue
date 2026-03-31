@@ -182,7 +182,7 @@ async function copyUserText(text) {
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
 
-        <footer class="composer panel">
+        <footer class="composer">
           <form class="composer-inner" @submit.prevent="submit">
             <input
               v-model="message"
@@ -267,6 +267,7 @@ async function copyUserText(text) {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: auto;
 }
 
 .center {
@@ -286,7 +287,7 @@ async function copyUserText(text) {
 .panel h3 {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #9db2d6;
+  color: #d6d8dd;
 }
 
 .content {
@@ -362,7 +363,8 @@ async function copyUserText(text) {
   font-size: 12px;
   border-radius: 999px;
   padding: 6px 10px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(14, 165, 233, 0.35));
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .tool-list {
@@ -441,7 +443,7 @@ async function copyUserText(text) {
 .bubble-user {
   align-self: flex-end;
   max-width: 82%;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 12px;
   padding: 10px 12px;
@@ -516,7 +518,7 @@ async function copyUserText(text) {
 }
 
 .composer {
-  padding: 8px;
+  padding: 8px 0 0;
 }
 
 .composer-inner {
@@ -527,6 +529,28 @@ async function copyUserText(text) {
   display: flex;
   align-items: center;
   padding: 6px;
+}
+
+.content,
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.content::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
 }
 
 .composer-inner input {
