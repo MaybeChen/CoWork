@@ -858,7 +858,7 @@ async function copyUserText(text) {
 .composer-inner button {
   height: 34px;
   min-width: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   color: #f9fafb;
