@@ -7,6 +7,13 @@ export function useAutoScroll() {
 
   async function scrollToBottom() {
     await nextTick()
+    if (contentRef.value) {
+      contentRef.value.scrollTo({
+        top: contentRef.value.scrollHeight,
+        behavior: 'smooth',
+      })
+      return
+    }
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
     }
