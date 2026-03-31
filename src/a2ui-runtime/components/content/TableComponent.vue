@@ -35,11 +35,10 @@ const columns = computed(() => {
 })
 const rows = computed(() => (Array.isArray(spec.value?.rows) ? spec.value.rows : []))
 const striped = computed(() => Boolean(spec.value?.striped))
-const bordered = computed(() => Boolean(spec.value?.bordered))
 const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) : undefined))
-const headerCellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#aeb8ca', fontWeight: 600, letterSpacing: '0.02em' }
+const headerCellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#aeb8ca', fontWeight: 600, letterSpacing: '0.02em', borderBottom: '1px solid rgba(89, 97, 112, 0.35)' }
 const rowStyle = { background: 'rgba(12, 15, 21, 0.96)' }
-const cellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#d8dfec', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.5' }
+const cellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#d8dfec', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.5', borderBottom: '1px solid rgba(89, 97, 112, 0.25)' }
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
@@ -53,12 +52,12 @@ function normalizeWidth(width) {
     <el-table
       :data="rows"
       :stripe="striped"
-      :border="bordered"
+      :border="false"
       :row-key="rowKey"
       :header-cell-style="headerCellStyle"
       :row-style="rowStyle"
       :cell-style="cellStyle"
-      style="width: 100%; --el-table-border-color: rgba(89, 97, 112, 0.45); --el-table-row-hover-bg-color: rgba(18, 23, 32, 0.96);"
+      style="width: 100%; --el-table-row-hover-bg-color: rgba(18, 23, 32, 0.96);"
     >
       <el-table-column
         v-for="col in columns"
