@@ -30,7 +30,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.9) 0%, rgba(34, 197, 94, 0) 100%);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.9) 0%, rgba(34, 197, 94, 0) 20%, rgba(34, 197, 94, 0) 80%, rgba(34, 197, 94, 0.9) 100%);
 }
 
 /*
