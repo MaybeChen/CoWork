@@ -122,8 +122,6 @@ async function copyUserText(text) {
             <div class="todo-node n3 red"><b>工单名称</b><small>阶段</small></div>
             <div class="todo-node n4 red"><b>工单名称</b><small>阶段</small></div>
             <div class="todo-node n5 blue"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n6 blue"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n7 blue"><b>工单名称</b><small>阶段</small></div>
           </div>
           <div class="todo-footer">
             目前共有 <strong>19</strong> 个故障单
@@ -133,10 +131,10 @@ async function copyUserText(text) {
         <section class="panel">
           <h3>最近</h3>
           <ul class="list">
-            <li>推理模型应时延过长 <em>2026-03-31</em></li>
-            <li>转发引擎整体功能失效告警转工单 <em>2026-03-30</em></li>
-            <li>License试用 <em>2026-03-29</em></li>
-            <li>内存使用率过高 <em>2026-03-28</em></li>
+            <li><span class="list-title">推理模型应时延过长</span> <em>2026-03-31</em></li>
+            <li><span class="list-title">转发引擎整体功能失效告警转工单</span> <em>2026-03-30</em></li>
+            <li><span class="list-title">License试用</span> <em>2026-03-29</em></li>
+            <li><span class="list-title">内存使用率过高</span> <em>2026-03-28</em></li>
           </ul>
         </section>
         <section class="panel">
@@ -349,7 +347,7 @@ async function copyUserText(text) {
 
 .todo-board {
   position: relative;
-  height: 238px;
+  height: 220px;
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -392,13 +390,11 @@ async function copyUserText(text) {
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18), 0 0 14px rgba(96, 165, 250, 0.28);
 }
 
-.todo-node.n1 { left: 10px; top: 72px; }
-.todo-node.n2 { left: 92px; top: 28px; }
-.todo-node.n3 { left: 172px; top: 78px; }
-.todo-node.n4 { left: 110px; top: 152px; }
-.todo-node.n5 { left: 0; top: 170px; width: 64px; height: 64px; }
-.todo-node.n6 { left: 188px; top: 150px; width: 64px; height: 64px; }
-.todo-node.n7 { left: 198px; top: 122px; width: 62px; height: 62px; }
+.todo-node.n1 { left: 12px; top: 72px; }
+.todo-node.n2 { left: 96px; top: 18px; }
+.todo-node.n3 { left: 176px; top: 72px; }
+.todo-node.n4 { left: 96px; top: 142px; }
+.todo-node.n5 { left: 12px; top: 148px; width: 64px; height: 64px; }
 
 .todo-footer {
   text-align: center;
@@ -444,6 +440,13 @@ async function copyUserText(text) {
   align-items: start;
   column-gap: 8px;
   font-size: 12px;
+}
+
+.list-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .list em {
