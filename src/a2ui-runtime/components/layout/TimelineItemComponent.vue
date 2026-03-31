@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText, resolveValue } from '../utils'
+import dotIcon from '@/assets/dot.svg'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },
@@ -31,12 +32,21 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
     :size="size || undefined"
     :hollow="hollow"
   >
+    <template #dot>
+      <img class="timeline-dot" :src="dotIcon" alt="" />
+    </template>
     <slot />
   </el-timeline-item>
 </template>
 
 <style scoped>
 .a2-timeline-item { width: 100%; }
+
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
 
 .a2-timeline-item :deep(.el-timeline-item__content) {
   color: inherit;
