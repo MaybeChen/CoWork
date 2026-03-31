@@ -79,7 +79,17 @@ async function copyUserText(text) {
   try {
     await navigator.clipboard.writeText(text)
   } catch {
-    error.value = '复制失败，请检查浏览器权限'
+    try {
+      const el = document.createElement('textarea')
+      el.setAttribute('readonly', '')
+      el.value = text
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    } catch {
+      error.value = '复制失败，请检查浏览器权限'
+    }
   }
 }
 </script>
