@@ -480,7 +480,6 @@ async function copyUserText(text) {
   align-self: stretch;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 8px;
 }
 
 .streaming-tip {
@@ -491,6 +490,7 @@ async function copyUserText(text) {
 
 .surface {
   margin-top: 8px;
+  padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
