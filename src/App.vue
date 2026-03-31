@@ -97,7 +97,7 @@ async function copyUserText(text) {
 <template>
   <main class="page">
     <header class="global-header">
-      <div class="brand">FAE</div>
+      <div class="brand">CoWorker</div>
       <nav class="top-nav">
         <a href="#">故障诊断</a>
         <a href="#">健康预测</a>
