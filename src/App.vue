@@ -163,11 +163,11 @@ async function copyUserText(text) {
             <span class="stage-node dark-green n-reason">推理图</span>
 
             <svg class="stage-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M12,58 C16,58 18,58 24,58" />
-              <path d="M34,58 C39,47 44,38 49,34" />
-              <path d="M34,58 C39,66 44,73 49,75" />
-              <path d="M66,34 C74,34 81,43 87,53" />
-              <path d="M66,75 C74,75 81,65 87,55" />
+              <path d="M12,56 C16,56 19,56 24,56" />
+              <path d="M35,56 C40,46 45,37 50,34" />
+              <path d="M35,56 C40,64 45,72 50,75" />
+              <path d="M67,34 C74,34 80,42 86,52" />
+              <path d="M67,75 C74,75 80,66 86,56" />
             </svg>
           </div>
         </div>
@@ -532,19 +532,19 @@ async function copyUserText(text) {
 
 .stage-canvas {
   position: relative;
-  min-height: 188px;
+  min-height: 156px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background: rgba(11, 13, 17, 0.92);
-  padding: 18px 16px 16px;
+  padding: 12px 12px 10px;
   overflow: hidden;
 }
 
 .stage-node {
   position: absolute;
   border-radius: 10px;
-  font-size: 13px;
-  padding: 8px 18px;
+  font-size: 12px;
+  padding: 6px 14px;
   color: #e8efff;
   border: 1px solid transparent;
   z-index: 2;
@@ -561,18 +561,18 @@ async function copyUserText(text) {
 .stage-step {
   position: absolute;
   right: 14px;
-  top: 10px;
+  top: 8px;
   font-size: 12px;
   color: #c6d0e4;
   z-index: 3;
 }
 
-.n-start { left: 3%; top: 52%; }
-.n-search { left: 16%; top: 52%; }
-.n-instance { left: 40%; top: 30%; }
-.n-state { left: 58%; top: 30%; }
-.n-knowledge { left: 58%; top: 70%; }
-.n-reason { left: 84%; top: 52%; }
+.n-start { left: 3%; top: 56%; }
+.n-search { left: 17%; top: 56%; }
+.n-instance { left: 41%; top: 34%; }
+.n-state { left: 58%; top: 34%; }
+.n-knowledge { left: 58%; top: 74%; }
+.n-reason { left: 84%; top: 56%; }
 
 .stage-lines {
   position: absolute;
@@ -586,9 +586,10 @@ async function copyUserText(text) {
 
 .stage-lines path {
   fill: none;
-  stroke: rgba(216, 225, 241, 0.55);
-  stroke-width: 1.5;
+  stroke: rgba(216, 225, 241, 0.5);
+  stroke-width: 1;
   stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 
 .tool-head {
