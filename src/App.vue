@@ -218,18 +218,18 @@ async function copyUserText(text) {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #070b13;
-  color: #dbe7ff;
+  background: #d9d9d9;
+  color: #d5def0;
 }
 
 .global-header {
   height: 52px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: #0b111c;
+  background: #0a0d12;
 }
 
 .brand {
@@ -244,7 +244,7 @@ async function copyUserText(text) {
 }
 
 .top-nav a {
-  color: #70b7ff;
+  color: #5da6e6;
   text-decoration: none;
 }
 
@@ -252,9 +252,10 @@ async function copyUserText(text) {
   flex: 1;
   display: grid;
   grid-template-columns: 260px 1fr 260px;
-  gap: 10px;
+  gap: 8px;
   padding: 10px;
   overflow: hidden;
+  background: #07090d;
 }
 
 .sidebar,
@@ -276,9 +277,8 @@ async function copyUserText(text) {
 }
 
 .panel {
-  border: 1px solid rgba(59, 130, 246, 0.45);
-  background: rgba(12, 17, 27, 0.95);
-  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(24, 27, 33, 0.96);
   border-radius: 6px;
   padding: 10px;
 }
@@ -286,7 +286,7 @@ async function copyUserText(text) {
 .panel h3 {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #84c8ff;
+  color: #9db2d6;
 }
 
 .content {
@@ -294,7 +294,7 @@ async function copyUserText(text) {
 }
 
 .fake-input {
-  border: 1px solid rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 6px 8px;
   color: #7d8da8;
@@ -309,7 +309,7 @@ async function copyUserText(text) {
 }
 
 .tag-cloud span {
-  border: 1px solid rgba(56, 189, 248, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 11px;
@@ -342,14 +342,16 @@ async function copyUserText(text) {
 
 .file-grid span {
   font-size: 12px;
-  border: 1px dashed rgba(59, 130, 246, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.02);
   padding: 8px 6px;
   text-align: center;
 }
 
 .stage-map .flow-mock {
   min-height: 70px;
-  border: 1px dashed rgba(59, 130, 246, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(11, 13, 17, 0.9);
   padding: 8px;
   display: flex;
   gap: 8px;
@@ -372,7 +374,7 @@ async function copyUserText(text) {
 }
 
 .tool-list li {
-  border: 1px solid rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 6px;
   padding: 8px;
   font-size: 12px;
@@ -380,7 +382,7 @@ async function copyUserText(text) {
 
 .graph-mock {
   height: 220px;
-  border: 1px dashed rgba(59, 130, 246, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background:
     radial-gradient(circle at 20% 40%, rgba(34, 197, 94, 0.5) 2px, transparent 3px),
     radial-gradient(circle at 58% 62%, rgba(59, 130, 246, 0.55) 2px, transparent 3px),
@@ -440,7 +442,7 @@ async function copyUserText(text) {
   align-self: flex-end;
   max-width: 82%;
   background: rgba(96, 165, 250, 0.15);
-  border: 1px solid rgba(96, 165, 250, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.25);
   border-radius: 12px;
   padding: 10px 12px;
 }
@@ -476,8 +478,8 @@ async function copyUserText(text) {
 
 .bubble-assistant {
   align-self: stretch;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: rgba(11, 15, 22, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 8px;
 }
@@ -520,8 +522,8 @@ async function copyUserText(text) {
 .composer-inner {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  background: rgba(15, 18, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(19, 21, 26, 0.95);
   display: flex;
   align-items: center;
   padding: 6px;
@@ -541,7 +543,7 @@ async function copyUserText(text) {
   min-width: 34px;
   border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 10px;
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(255, 255, 255, 0.08);
   color: #f9fafb;
   cursor: pointer;
 }
