@@ -38,6 +38,7 @@ export const defaultTheme = {
     MultipleChoice: { container: {}, label: {}, element: {} },
     Row: { 'layout-g-4': true },
     Slider: { container: {}, label: {}, element: {} },
+    Table: {},
     Tabs: { container: {}, controls: { all: {}, selected: {} }, element: {} },
     Text: {
       all: { 'layout-w-100': true, 'layout-g-2': true },
