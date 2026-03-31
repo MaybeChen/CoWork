@@ -37,6 +37,9 @@ const rows = computed(() => (Array.isArray(spec.value?.rows) ? spec.value.rows :
 const striped = computed(() => Boolean(spec.value?.striped))
 const bordered = computed(() => Boolean(spec.value?.bordered))
 const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) : undefined))
+const headerCellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#aeb8ca', fontWeight: 600, letterSpacing: '0.02em' }
+const rowStyle = { background: 'rgba(12, 15, 21, 0.96)' }
+const cellStyle = { background: 'rgba(12, 15, 21, 0.96)', color: '#d8dfec', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.5' }
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
@@ -47,7 +50,16 @@ function normalizeWidth(width) {
 <template>
   <div v-if="!hidden" class="a2-table-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-table-title">{{ title }}</div>
-    <el-table :data="rows" :stripe="striped" :border="bordered" :row-key="rowKey" style="width: 100%">
+    <el-table
+      :data="rows"
+      :stripe="striped"
+      :border="bordered"
+      :row-key="rowKey"
+      :header-cell-style="headerCellStyle"
+      :row-style="rowStyle"
+      :cell-style="cellStyle"
+      style="width: 100%; --el-table-border-color: rgba(89, 97, 112, 0.45); --el-table-row-hover-bg-color: rgba(18, 23, 32, 0.96);"
+    >
       <el-table-column
         v-for="col in columns"
         :key="col.key"
@@ -63,26 +75,4 @@ function normalizeWidth(width) {
 <style scoped>
 .a2-table-wrap { width: 100%; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
-
-.a2-table-wrap :deep(.el-table) {
-  --el-table-bg-color: rgba(20, 24, 31, 0.92);
-  --el-table-tr-bg-color: rgba(20, 24, 31, 0.92);
-  --el-table-header-bg-color: rgba(46, 104, 195, 0.26);
-  --el-table-border-color: rgba(255, 255, 255, 0.12);
-  --el-table-text-color: #dbe6ff;
-  --el-table-header-text-color: #eef5ff;
-  background: rgba(20, 24, 31, 0.92);
-  border-radius: 8px;
-}
-
-.a2-table-wrap :deep(.el-table th.el-table__cell) {
-  background: rgba(46, 104, 195, 0.26);
-  font-weight: 700;
-}
-
-.a2-table-wrap :deep(.el-table .cell) {
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.5;
-}
 </style>
