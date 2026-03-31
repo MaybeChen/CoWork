@@ -1,5 +1,5 @@
 <script setup>
-import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../component-lib'
+import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
 
 defineProps({
   surface: {
