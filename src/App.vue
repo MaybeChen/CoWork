@@ -12,6 +12,7 @@ const message = ref('')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
+const expandedUserTurns = ref(new Set())
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
@@ -57,6 +58,30 @@ async function handleAction(turn, action) {
 function fillPreset(text) {
   message.value = text
 }
+
+function isUserTextExpanded(turnId) {
+  return expandedUserTurns.value.has(turnId)
+}
+
+function canExpandUserText(text) {
+  return typeof text === 'string' && text.length > 80
+}
+
+function toggleUserTextExpand(turnId) {
+  const next = new Set(expandedUserTurns.value)
+  if (next.has(turnId)) next.delete(turnId)
+  else next.add(turnId)
+  expandedUserTurns.value = next
+}
+
+async function copyUserText(text) {
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    error.value = '复制失败，请检查浏览器权限'
+  }
+}
 </script>
 
 <template>
@@ -81,7 +106,20 @@ function fillPreset(text) {
 
       <div v-else class="conversation">
         <div v-for="turn in turns" :key="turn.id" class="turn">
-          <div class="bubble bubble-user">{{ turn.userText }}</div>
+          <div class="bubble bubble-user">
+            <div class="bubble-user-text" :class="{ 'is-collapsed': !isUserTextExpanded(turn.id) }">{{ turn.userText }}</div>
+            <div class="bubble-user-actions">
+              <button
+                v-if="canExpandUserText(turn.userText)"
+                type="button"
+                class="bubble-action-btn"
+                @click="toggleUserTextExpand(turn.id)"
+              >
+                {{ isUserTextExpanded(turn.id) ? '收起' : '展开' }}
+              </button>
+              <button type="button" class="bubble-action-btn" @click="copyUserText(turn.userText)">复制</button>
+            </div>
+          </div>
           <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
           <div class="bubble bubble-assistant">
@@ -189,7 +227,39 @@ function fillPreset(text) {
   align-self: flex-end;
   max-width: 82%;
   background: rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.4);
   border-color: rgba(96, 165, 250, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.bubble-user-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.bubble-user-text.is-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.bubble-user-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.bubble-action-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .bubble-assistant {
