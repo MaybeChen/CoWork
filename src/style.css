@@ -19,6 +19,10 @@ body,
   color: #f3f4f6;
 }
 
+html {
+  font-size: 15px;
+}
+
 button,
 input,
 textarea {
