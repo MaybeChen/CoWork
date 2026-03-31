@@ -154,22 +154,21 @@ async function copyUserText(text) {
             <span>推理</span>
           </div>
           <div class="stage-canvas">
-            <div class="stage-left">
-              <span class="stage-node blue">开始</span>
-              <span class="stage-node blue strong">本体定义子图</span>
-            </div>
-            <div class="stage-mid">
-              <span class="stage-node purple">本体实例图</span>
-              <span class="stage-node green">状态图</span>
-              <span class="stage-node cyan">知识图</span>
-            </div>
-            <div class="stage-right">
-              <span class="stage-step">第1轮 ▾</span>
-              <span class="stage-node dark-green">推理图</span>
-            </div>
-            <i class="line l1"></i>
-            <i class="line l2"></i>
-            <i class="line l3"></i>
+            <span class="stage-step">第1轮 ▾</span>
+            <span class="stage-node blue n-start">开始</span>
+            <span class="stage-node blue strong n-search">本体定义子图</span>
+            <span class="stage-node purple n-instance">本体实例图</span>
+            <span class="stage-node green n-state">状态图</span>
+            <span class="stage-node cyan n-knowledge">知识图</span>
+            <span class="stage-node dark-green n-reason">推理图</span>
+
+            <svg class="stage-lines" viewBox="0 0 960 300" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M120,165 C170,165 180,165 225,165" />
+              <path d="M335,165 C390,140 430,108 470,100" />
+              <path d="M335,165 C390,180 430,206 470,215" />
+              <path d="M590,100 C670,100 730,122 790,150" />
+              <path d="M590,215 C670,215 730,188 790,160" />
+            </svg>
           </div>
         </div>
 
@@ -533,35 +532,22 @@ async function copyUserText(text) {
 
 .stage-canvas {
   position: relative;
-  min-height: 150px;
+  min-height: 188px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background: rgba(11, 13, 17, 0.92);
-  padding: 14px;
-  display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
-  column-gap: 12px;
-  align-items: center;
+  padding: 18px 16px 16px;
+  overflow: hidden;
 }
-
-.stage-left,
-.stage-mid,
-.stage-right {
-  display: grid;
-  gap: 14px;
-  z-index: 1;
-}
-
-.stage-left { justify-items: start; }
-.stage-mid { justify-items: center; }
-.stage-right { justify-items: end; }
 
 .stage-node {
+  position: absolute;
   border-radius: 10px;
   font-size: 13px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   color: #e8efff;
   border: 1px solid transparent;
+  z-index: 2;
 }
 
 .stage-node.blue { background: #2997e3; }
@@ -572,20 +558,37 @@ async function copyUserText(text) {
 .stage-node.dark-green { background: #2f6a4a; }
 
 .stage-step {
+  position: absolute;
+  right: 14px;
+  top: 10px;
   font-size: 12px;
   color: #c6d0e4;
+  z-index: 3;
 }
 
-.line {
+.n-start { left: 18px; top: 106px; }
+.n-search { left: 122px; top: 106px; }
+.n-instance { left: 352px; top: 64px; }
+.n-state { left: 502px; top: 64px; }
+.n-knowledge { left: 502px; top: 144px; }
+.n-reason { right: 18px; top: 106px; }
+
+.stage-lines {
   position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-  z-index: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.line.l1 { left: 160px; top: 76px; width: 180px; }
-.line.l2 { left: 330px; top: 66px; width: 190px; }
-.line.l3 { left: 330px; top: 108px; width: 190px; }
+.stage-lines path {
+  fill: none;
+  stroke: rgba(216, 225, 241, 0.55);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
 
 .tool-head {
   display: flex;
