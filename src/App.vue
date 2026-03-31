@@ -148,8 +148,28 @@ async function copyUserText(text) {
       <section class="center">
         <div class="panel stage-map">
           <h3>工作台</h3>
-          <div class="flow-mock">
-            <span>开始</span><span>本体定义子图</span><span>状态感知</span><span>推理图</span>
+          <div class="stage-tabs">
+            <span class="active">信息丰富与本体子图检索</span>
+            <span>规划与执行</span>
+            <span>推理</span>
+          </div>
+          <div class="stage-canvas">
+            <div class="stage-left">
+              <span class="stage-node blue">开始</span>
+              <span class="stage-node blue strong">本体定义子图</span>
+            </div>
+            <div class="stage-mid">
+              <span class="stage-node purple">本体实例图</span>
+              <span class="stage-node green">状态图</span>
+              <span class="stage-node cyan">知识图</span>
+            </div>
+            <div class="stage-right">
+              <span class="stage-step">第1轮 ▾</span>
+              <span class="stage-node dark-green">推理图</span>
+            </div>
+            <i class="line l1"></i>
+            <i class="line l2"></i>
+            <i class="line l3"></i>
           </div>
         </div>
 
@@ -490,23 +510,82 @@ async function copyUserText(text) {
   text-align: center;
 }
 
-.stage-map .flow-mock {
-  min-height: 70px;
+.stage-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.stage-tabs span {
+  text-align: center;
+  font-size: 12px;
+  color: #8d98ae;
+  padding: 7px 10px;
+}
+
+.stage-tabs .active {
+  color: #4ea0ff;
+  background: rgba(78, 160, 255, 0.08);
+}
+
+.stage-canvas {
+  position: relative;
+  min-height: 150px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(11, 13, 17, 0.9);
-  padding: 8px;
-  display: flex;
-  gap: 8px;
+  border-radius: 8px;
+  background: rgba(11, 13, 17, 0.92);
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  column-gap: 12px;
   align-items: center;
 }
 
-.flow-mock span {
-  font-size: 12px;
-  border-radius: 999px;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+.stage-left,
+.stage-mid,
+.stage-right {
+  display: grid;
+  gap: 14px;
+  z-index: 1;
 }
+
+.stage-left { justify-items: start; }
+.stage-mid { justify-items: center; }
+.stage-right { justify-items: end; }
+
+.stage-node {
+  border-radius: 10px;
+  font-size: 13px;
+  padding: 8px 16px;
+  color: #e8efff;
+  border: 1px solid transparent;
+}
+
+.stage-node.blue { background: #2997e3; }
+.stage-node.blue.strong { background: #3166ee; box-shadow: 0 0 0 2px rgba(49, 102, 238, 0.35); }
+.stage-node.purple { background: #6d55e6; }
+.stage-node.green { background: #1b6f61; }
+.stage-node.cyan { background: #10a8b8; }
+.stage-node.dark-green { background: #2f6a4a; }
+
+.stage-step {
+  font-size: 12px;
+  color: #c6d0e4;
+}
+
+.line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  z-index: 0;
+}
+
+.line.l1 { left: 160px; top: 76px; width: 180px; }
+.line.l2 { left: 330px; top: 66px; width: 190px; }
+.line.l3 { left: 330px; top: 108px; width: 190px; }
 
 .tool-head {
   display: flex;
