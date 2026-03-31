@@ -108,10 +108,26 @@ async function copyUserText(text) {
       <aside class="sidebar left">
         <section class="panel">
           <h3>待办工单清单</h3>
-          <div class="fake-input">输入工单名称阶段名称</div>
-          <div class="tag-cloud">
-            <span>工单名称A</span><span>工单名称B</span><span>工单名称C</span><span>工单名称D</span>
-            <span>工单名称E</span><span>工单名称F</span>
+          <div class="todo-toolbar">
+            <button type="button" class="todo-icon-btn">☰</button>
+            <button type="button" class="todo-icon-btn">📋</button>
+          </div>
+          <div class="todo-search">
+            <span>输入工单名称/阶段名称</span>
+            <span class="search-icon">⌕</span>
+          </div>
+          <div class="todo-board">
+            <div class="todo-node n1 red"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n2 yellow"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n3 red"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n4 red"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n5 blue"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n6 blue"><b>工单名称</b><small>阶段</small></div>
+            <div class="todo-node n7 blue"><b>工单名称</b><small>阶段</small></div>
+          </div>
+          <div class="todo-footer">
+            目前共有 <strong>19</strong> 个故障单
+            <div class="todo-dots"><span class="active"></span><span></span><span></span><span></span></div>
           </div>
         </section>
         <section class="panel">
@@ -293,26 +309,122 @@ async function copyUserText(text) {
   overflow: auto;
 }
 
-.fake-input {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 6px 8px;
-  color: #7d8da8;
+.todo-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.todo-icon-btn {
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #dbe6ff;
+  width: 32px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.todo-search {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #7f8ba2;
+  padding: 0 10px;
   margin-bottom: 10px;
   font-size: 12px;
 }
 
-.tag-cloud {
+.search-icon {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.todo-board {
+  position: relative;
+  height: 238px;
+  margin-bottom: 8px;
+}
+
+.todo-node {
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.todo-node b {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.todo-node small {
+  font-size: 10px;
+  color: #93a0bb;
+}
+
+.todo-node.red {
+  border: 1px solid rgba(248, 113, 113, 0.75);
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2), 0 0 18px rgba(248, 113, 113, 0.4);
+}
+
+.todo-node.yellow {
+  border: 1px solid rgba(250, 204, 21, 0.8);
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2), 0 0 16px rgba(250, 204, 21, 0.3);
+}
+
+.todo-node.blue {
+  border: 1px solid rgba(96, 165, 250, 0.75);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18), 0 0 14px rgba(96, 165, 250, 0.28);
+}
+
+.todo-node.n1 { left: 10px; top: 72px; }
+.todo-node.n2 { left: 92px; top: 28px; }
+.todo-node.n3 { left: 172px; top: 78px; }
+.todo-node.n4 { left: 110px; top: 152px; }
+.todo-node.n5 { left: 0; top: 170px; width: 64px; height: 64px; }
+.todo-node.n6 { left: 188px; top: 150px; width: 64px; height: 64px; }
+.todo-node.n7 { left: 248px; top: 122px; width: 62px; height: 62px; }
+
+.todo-footer {
+  text-align: center;
+  color: #a3afc5;
+  font-size: 13px;
+}
+
+.todo-footer strong {
+  color: #6ea8ff;
+}
+
+.todo-dots {
+  margin-top: 6px;
+  display: flex;
+  justify-content: center;
   gap: 8px;
 }
 
-.tag-cloud span {
-  border: 1px solid rgba(255, 255, 255, 0.22);
+.todo-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.todo-dots .active {
+  width: 14px;
   border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 11px;
+  background: #6ea8ff;
 }
 
 .list {
