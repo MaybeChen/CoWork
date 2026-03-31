@@ -25,8 +25,18 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 .a2-timeline { width: 100%; }
 
 .a2-timeline :deep(.el-timeline-item__tail) {
-  border-left-color: #22c55e;
-  border-left-width: 2px;
+  border-left: none;
+  position: relative;
+}
+
+.a2-timeline :deep(.el-timeline-item__tail::after) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.9) 0%, rgba(34, 197, 94, 0) 100%);
 }
 
 /*
