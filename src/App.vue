@@ -162,12 +162,12 @@ async function copyUserText(text) {
             <span class="stage-node cyan n-knowledge">知识图</span>
             <span class="stage-node dark-green n-reason">推理图</span>
 
-            <svg class="stage-lines" viewBox="0 0 960 300" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M120,165 C170,165 180,165 225,165" />
-              <path d="M335,165 C390,140 430,108 470,100" />
-              <path d="M335,165 C390,180 430,206 470,215" />
-              <path d="M590,100 C670,100 730,122 790,150" />
-              <path d="M590,215 C670,215 730,188 790,160" />
+            <svg class="stage-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M12,58 C16,58 18,58 24,58" />
+              <path d="M34,58 C39,47 44,38 49,34" />
+              <path d="M34,58 C39,66 44,73 49,75" />
+              <path d="M66,34 C74,34 81,43 87,53" />
+              <path d="M66,75 C74,75 81,65 87,55" />
             </svg>
           </div>
         </div>
@@ -548,6 +548,7 @@ async function copyUserText(text) {
   color: #e8efff;
   border: 1px solid transparent;
   z-index: 2;
+  transform: translateY(-50%);
 }
 
 .stage-node.blue { background: #2997e3; }
@@ -566,12 +567,12 @@ async function copyUserText(text) {
   z-index: 3;
 }
 
-.n-start { left: 18px; top: 106px; }
-.n-search { left: 122px; top: 106px; }
-.n-instance { left: 352px; top: 64px; }
-.n-state { left: 502px; top: 64px; }
-.n-knowledge { left: 502px; top: 144px; }
-.n-reason { right: 18px; top: 106px; }
+.n-start { left: 3%; top: 52%; }
+.n-search { left: 16%; top: 52%; }
+.n-instance { left: 40%; top: 30%; }
+.n-state { left: 58%; top: 30%; }
+.n-knowledge { left: 58%; top: 70%; }
+.n-reason { left: 84%; top: 52%; }
 
 .stage-lines {
   position: absolute;
