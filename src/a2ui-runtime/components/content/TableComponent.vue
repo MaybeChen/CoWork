@@ -57,7 +57,7 @@ function normalizeWidth(width) {
       :header-cell-style="headerCellStyle"
       :row-style="rowStyle"
       :cell-style="cellStyle"
-      style="width: 100%; --el-table-border-color: rgba(120, 130, 148, 0.45);"
+      style="width: 100%; --el-table-border-color: rgba(120, 130, 148, 0.22);"
     >
       <el-table-column
         v-for="col in columns"
@@ -74,4 +74,13 @@ function normalizeWidth(width) {
 <style scoped>
 .a2-table-wrap { width: 100%; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
+
+.a2-table-wrap :deep(.el-table--border::before),
+.a2-table-wrap :deep(.el-table--border::after) {
+  background-color: rgba(120, 130, 148, 0.22);
+}
+
+.a2-table-wrap :deep(.el-table--border .el-table__cell) {
+  border-right-color: rgba(120, 130, 148, 0.22);
+}
 </style>
