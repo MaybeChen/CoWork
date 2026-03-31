@@ -495,7 +495,6 @@ async function copyUserText(text) {
 
 .file-grid span {
   font-size: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.02);
   padding: 8px 6px;
   text-align: center;
@@ -714,7 +713,6 @@ async function copyUserText(text) {
 .bubble-user {
   align-self: flex-end;
   max-width: 82%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 12px;
   padding: 10px 12px;
 }
@@ -750,7 +748,6 @@ async function copyUserText(text) {
 
 .bubble-assistant {
   align-self: stretch;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
 }
 
