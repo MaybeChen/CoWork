@@ -161,14 +161,6 @@ async function copyUserText(text) {
             <span class="stage-node green n-state">状态图</span>
             <span class="stage-node cyan n-knowledge">知识图</span>
             <span class="stage-node dark-green n-reason">推理图</span>
-
-            <svg class="stage-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M12,56 C16,56 19,56 24,56" />
-              <path d="M35,56 C40,46 45,37 50,34" />
-              <path d="M35,56 C40,64 45,72 50,75" />
-              <path d="M67,34 C74,34 80,42 86,52" />
-              <path d="M67,75 C74,75 80,66 86,56" />
-            </svg>
           </div>
         </div>
 
@@ -573,24 +565,6 @@ async function copyUserText(text) {
 .n-state { left: 58%; top: 34%; }
 .n-knowledge { left: 58%; top: 74%; }
 .n-reason { left: 84%; top: 56%; }
-
-.stage-lines {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.stage-lines path {
-  fill: none;
-  stroke: rgba(216, 225, 241, 0.5);
-  stroke-width: 1;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
 
 .tool-head {
   display: flex;
