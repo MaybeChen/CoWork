@@ -95,8 +95,6 @@ const childIds = computed(() => {
 
 <style scoped>
 .a2ui-node {
-  width: fit-content;
-  max-width: 100%;
   transform-origin: top center;
   animation: atom-grow-in 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
