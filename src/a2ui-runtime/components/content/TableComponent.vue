@@ -72,7 +72,7 @@ function normalizeWidth(width) {
 </template>
 
 <style scoped>
-.a2-table-wrap { width: 100%; }
+.a2-table-wrap { width: fit-content; max-width: 100%; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
 
 .a2-table-wrap :deep(.el-table--border::before),
