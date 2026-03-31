@@ -2,10 +2,6 @@
  * Component-level host/element defaults. Host selectors keep specificity predictable.
  */
 export const componentSpecificStyles = `
-.a2ui-surface .a2ui-node {
-  width: 100%;
-}
-
 .a2ui-surface .a2-card,
 .a2ui-surface .a2-modal,
 .a2ui-surface .a2-list,
