@@ -211,12 +211,34 @@ async function copyUserText(text) {
 
       <aside class="sidebar right">
         <section class="panel">
-          <h3>我的工具</h3>
+          <div class="tool-head">
+            <div class="tool-tabs">
+              <span class="active">热门工具</span>
+              <span>我收藏的</span>
+            </div>
+            <div class="tool-lib">⛓ 工具库</div>
+          </div>
+          <div class="tool-search">
+            <span>工具名称</span>
+            <span class="search-icon">⌕</span>
+          </div>
           <ul class="tool-list">
-            <li>工单填写</li>
-            <li>预案生成</li>
-            <li>智能调优</li>
-            <li>报告生成</li>
+            <li>
+              <div class="tool-item-top"><span class="tool-icon">🧰</span><b>工单速写</b><em>★</em></div>
+              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
+            </li>
+            <li>
+              <div class="tool-item-top"><span class="tool-icon">🧪</span><b>预案生成</b><em>☆</em></div>
+              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
+            </li>
+            <li>
+              <div class="tool-item-top"><span class="tool-icon">🧠</span><b>智能调优</b><em>☆</em></div>
+              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
+            </li>
+            <li>
+              <div class="tool-item-top"><span class="tool-icon">🟣</span><b>报告生成</b><em>☆</em></div>
+              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
+            </li>
           </ul>
         </section>
         <section class="panel">
@@ -486,19 +508,91 @@ async function copyUserText(text) {
   border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
+.tool-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tool-tabs {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  color: #a7b2c8;
+}
+
+.tool-tabs .active {
+  color: #4ea0ff;
+  border-bottom: 2px solid #4ea0ff;
+  padding-bottom: 3px;
+}
+
+.tool-lib {
+  color: #c7d3e8;
+  font-size: 12px;
+}
+
+.tool-search {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  min-height: 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  color: #7f8ba2;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
 .tool-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tool-list li {
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px;
+}
+
+.tool-item-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.tool-item-top b {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.tool-item-top em {
+  font-style: normal;
+  color: #f5d14f;
+}
+
+.tool-icon {
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
-  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(78, 160, 255, 0.25);
+}
+
+.tool-list li p {
+  margin: 8px 0 0;
+  color: #b5bfd3;
   font-size: 12px;
+  line-height: 1.55;
 }
 
 .graph-mock {
