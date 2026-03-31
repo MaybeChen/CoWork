@@ -22,7 +22,14 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 </template>
 
 <style scoped>
-.a2-timeline { width: 100%; }
+.a2-timeline {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.a2-timeline :deep(ul) {
+  padding-left: 5px;
+}
 
 .a2-timeline :deep(.el-timeline-item__tail) {
   border-left: none;

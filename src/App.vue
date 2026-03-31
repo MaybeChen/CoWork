@@ -761,7 +761,8 @@ async function copyUserText(text) {
 }
 
 .surface {
-  margin-top: 8px;
+  margin-top: 0;
+  max-width: 80%;
   padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
