@@ -308,7 +308,7 @@ async function copyUserText(text) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: 320px 1fr 320px;
   gap: 8px;
   padding: 10px;
   overflow: hidden;
