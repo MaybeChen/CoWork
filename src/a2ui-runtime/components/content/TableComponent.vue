@@ -36,6 +36,9 @@ const columns = computed(() => {
 const rows = computed(() => (Array.isArray(spec.value?.rows) ? spec.value.rows : []))
 const striped = computed(() => Boolean(spec.value?.striped))
 const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) : undefined))
+const headerCellStyle = { background: '#12151d', color: '#b4bfd3' }
+const rowStyle = { background: '#12151d', color: '#dce4f2' }
+const cellStyle = { background: '#12151d', color: '#dce4f2' }
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
@@ -51,7 +54,10 @@ function normalizeWidth(width) {
       :stripe="striped"
       :border="true"
       :row-key="rowKey"
-      style="width: 100%;"
+      :header-cell-style="headerCellStyle"
+      :row-style="rowStyle"
+      :cell-style="cellStyle"
+      style="width: 100%; --el-table-border-color: rgba(120, 130, 148, 0.45);"
     >
       <el-table-column
         v-for="col in columns"
