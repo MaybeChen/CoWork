@@ -55,7 +55,6 @@ function normalizeWidth(width) {
         :label="col.label"
         :align="col.align || 'left'"
         :width="normalizeWidth(col.width)"
-        :show-overflow-tooltip="Boolean(col.ellipsis)"
       />
     </el-table>
   </div>
@@ -64,4 +63,26 @@ function normalizeWidth(width) {
 <style scoped>
 .a2-table-wrap { width: 100%; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
+
+.a2-table-wrap :deep(.el-table) {
+  --el-table-bg-color: rgba(20, 24, 31, 0.92);
+  --el-table-tr-bg-color: rgba(20, 24, 31, 0.92);
+  --el-table-header-bg-color: rgba(46, 104, 195, 0.26);
+  --el-table-border-color: rgba(255, 255, 255, 0.12);
+  --el-table-text-color: #dbe6ff;
+  --el-table-header-text-color: #eef5ff;
+  background: rgba(20, 24, 31, 0.92);
+  border-radius: 8px;
+}
+
+.a2-table-wrap :deep(.el-table th.el-table__cell) {
+  background: rgba(46, 104, 195, 0.26);
+  font-weight: 700;
+}
+
+.a2-table-wrap :deep(.el-table .cell) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}
 </style>
