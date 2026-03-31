@@ -23,4 +23,27 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 
 <style scoped>
 .a2-timeline { width: 100%; }
+
+.a2-timeline :deep(.el-timeline-item__tail) {
+  border-left: none;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.9) 0%, rgba(34, 197, 94, 0) 20%, rgba(34, 197, 94, 0) 80%, rgba(34, 197, 94, 0.9) 100%);
+}
+
+/*
+ * A2UIComponentRenderer wraps each node with .a2ui-node, so Element Plus'
+ * `.el-timeline-item:last-child .el-timeline-item__tail { display: none; }`
+ * treats every item as "last-child" and hides all tails.
+ * Re-map that behavior to wrapper level: only hide the real last wrapper.
+ */
+.a2-timeline :deep(.a2ui-node .el-timeline-item__tail) {
+  display: block;
+}
+
+.a2-timeline :deep(.a2ui-node:last-child .el-timeline-item__tail) {
+  display: none;
+}
 </style>
