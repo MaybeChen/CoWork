@@ -26,13 +26,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 
 .a2-timeline :deep(.el-timeline-item__tail) {
   border-left: none;
-  position: relative;
-}
-
-.a2-timeline :deep(.el-timeline-item__tail::after) {
-  content: '';
-  position: absolute;
-  left: 0;
+  left: 4px;
   top: 0;
   bottom: 0;
   width: 2px;
