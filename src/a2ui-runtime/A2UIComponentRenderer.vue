@@ -96,7 +96,7 @@ const childIds = computed(() => {
 <style scoped>
 .a2ui-node {
   transform-origin: top center;
-  animation: atom-grow-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: atom-grow-in 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fallback {
@@ -109,8 +109,8 @@ const childIds = computed(() => {
 @keyframes atom-grow-in {
   0% {
     opacity: 0;
-    transform: translateY(6px) scale(0.97);
-    filter: blur(1.5px);
+    transform: translateY(14px) scale(0.94);
+    filter: blur(3px);
   }
   100% {
     opacity: 1;
