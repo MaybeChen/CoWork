@@ -279,7 +279,6 @@ async function copyUserText(text) {
 
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(24, 27, 33, 0.96);
   border-radius: 6px;
   padding: 10px;
 }
@@ -443,7 +442,6 @@ async function copyUserText(text) {
 .bubble-user {
   align-self: flex-end;
   max-width: 82%;
-  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 12px;
   padding: 10px 12px;
@@ -480,7 +478,6 @@ async function copyUserText(text) {
 
 .bubble-assistant {
   align-self: stretch;
-  background: rgba(11, 15, 22, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 8px;
