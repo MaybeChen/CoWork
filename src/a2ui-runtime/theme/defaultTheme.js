@@ -14,9 +14,7 @@ export const defaultTheme = {
       h3: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
       h4: {}, h5: {}, body: {}, caption: {}, warning: { color: '#facc15' },
     },
-    Card: {
-      background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))',
-    },
+    Card: {},
     TextField: {
       '--p-0': '#1e293b',
     },
@@ -36,10 +34,12 @@ export const defaultTheme = {
     Image: { all: { 'border-br-5': true, 'layout-el-cv': true, 'layout-w-100': true, 'layout-h-100': true }, avatar: { 'is-avatar': true }, header: {}, icon: {}, largeFeature: {}, mediumFeature: {}, smallFeature: {} },
     Icon: {},
     List: { 'layout-g-4': true, 'layout-p-2': true },
+    LineChart: {},
     Modal: { backdrop: { 'color-bbgc-p60_20': true }, element: { 'border-br-2': true, 'layout-p-4': true, 'border-bw-1': true } },
     MultipleChoice: { container: {}, label: {}, element: {} },
     Row: { 'layout-g-4': true },
     Slider: { container: {}, label: {}, element: {} },
+    Table: {},
     Tabs: { container: {}, controls: { all: {}, selected: {} }, element: {} },
     Text: {
       all: { 'layout-w-100': true, 'layout-g-2': true },
