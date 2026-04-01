@@ -4,6 +4,7 @@ export function useAutoScroll() {
   const contentRef = ref(null)
   let mutationObserver
   let scrollScheduled = false
+  let lastScrollHeight = 0
 
   async function scrollToBottom() {
     await nextTick()
@@ -32,7 +33,12 @@ export function useAutoScroll() {
 
   onMounted(() => {
     if (typeof MutationObserver !== 'function' || !contentRef.value) return
+    lastScrollHeight = contentRef.value.scrollHeight
     mutationObserver = new MutationObserver(() => {
+      if (!contentRef.value) return
+      const nextScrollHeight = contentRef.value.scrollHeight
+      if (nextScrollHeight <= lastScrollHeight) return
+      lastScrollHeight = nextScrollHeight
       scheduleAutoScroll()
     })
     mutationObserver.observe(contentRef.value, {
