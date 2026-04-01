@@ -6,6 +6,10 @@ import './style.css'
 import './a2ui-runtime/style/global.css'
 import { vSafeHtml } from './a2ui-runtime/directives/v-safe-html'
 
+if (typeof window !== 'undefined' && window.sweetBase?.setTheme) {
+  window.sweetBase.setTheme('dark')
+}
+
 const app = createApp(App)
 app.use(ElementPlus)
 app.directive('safe-html', vSafeHtml)
