@@ -9,6 +9,7 @@ import AudioPlayerComponent from './components/content/AudioPlayerComponent.vue'
 import FlowDiagramComponent from './components/content/FlowDiagramComponent.vue'
 import TableComponent from './components/content/TableComponent.vue'
 import LineChartComponent from './components/content/LineChartComponent.vue'
+import PieChartComponent from './components/content/PieChartComponent.vue'
 
 import RowComponent from './components/layout/RowComponent.vue'
 import ColumnComponent from './components/layout/ColumnComponent.vue'
@@ -36,6 +37,7 @@ export const defaultRegistry = createComponentRegistry({
   FlowDiagram: FlowDiagramComponent,
   Table: TableComponent,
   LineChart: LineChartComponent,
+  PieChart: PieChartComponent,
 
   Row: RowComponent,
   Column: ColumnComponent,
