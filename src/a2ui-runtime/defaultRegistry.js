@@ -7,6 +7,8 @@ import DividerComponent from './components/content/DividerComponent.vue'
 import VideoComponent from './components/content/VideoComponent.vue'
 import AudioPlayerComponent from './components/content/AudioPlayerComponent.vue'
 import FlowDiagramComponent from './components/content/FlowDiagramComponent.vue'
+import TableComponent from './components/content/TableComponent.vue'
+import LineChartComponent from './components/content/LineChartComponent.vue'
 
 import RowComponent from './components/layout/RowComponent.vue'
 import ColumnComponent from './components/layout/ColumnComponent.vue'
@@ -32,6 +34,8 @@ export const defaultRegistry = createComponentRegistry({
   Video: VideoComponent,
   AudioPlayer: AudioPlayerComponent,
   FlowDiagram: FlowDiagramComponent,
+  Table: TableComponent,
+  LineChart: LineChartComponent,
 
   Row: RowComponent,
   Column: ColumnComponent,
