@@ -31,7 +31,15 @@ const spec = computed(() => {
 })
 
 const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || ''))
-const width = computed(() => String(spec.value?.width || props.payload?.width || '100%'))
+function normalizeWidth(value) {
+  if (value == null || value === '') return '1000px'
+  if (typeof value === 'number') return `${value}px`
+  const widthValue = String(value).trim()
+  if (/^\d+(\.\d+)?$/.test(widthValue)) return `${widthValue}px`
+  return widthValue
+}
+
+const width = computed(() => normalizeWidth(spec.value?.width ?? props.payload?.width))
 const settings = computed(() => {
   const raw = spec.value?.settings ?? spec.value?.chartSettings ?? props.payload?.settings
   return parseJsonLike(raw, {})
