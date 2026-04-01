@@ -38,11 +38,15 @@ const settings = computed(() => {
 })
 const chartData = computed(() => {
   const raw = spec.value?.chartData ?? spec.value?.chart_data ?? props.payload?.chartData
+  let datas = []
   if (typeof raw === 'string') {
     const parsed = parseJsonLike(raw, [])
-    return Array.isArray(parsed) ? parsed : []
+    datas = Array.isArray(parsed) ? parsed : []
+  } else {
+    datas = Array.isArray(raw) ? raw : []
   }
-  return Array.isArray(raw) ? raw : []
+  datas.forEach(item => (item.radius = '50%'))
+  return datas
 })
 </script>
 
