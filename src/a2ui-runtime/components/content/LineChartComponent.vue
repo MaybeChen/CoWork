@@ -13,27 +13,35 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 
 const specRaw = computed(() => resolveValue(props.dataModel, props.payload?.spec ?? props.payload?.lineChartSpec))
-const spec = computed(() => {
-  const raw = specRaw.value
-  if (!raw) return {}
-  if (typeof raw === 'string') {
+
+function parseJsonLike(value, fallback) {
+  if (value == null || value === '') return fallback
+  if (typeof value === 'string') {
     try {
-      return JSON.parse(raw)
+      return JSON.parse(value)
     } catch {
-      return {}
+      return fallback
     }
   }
-  return typeof raw === 'object' ? raw : {}
+  return typeof value === 'object' ? value : fallback
+}
+
+const spec = computed(() => {
+  return parseJsonLike(specRaw.value, {})
 })
 
 const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || ''))
 const width = computed(() => String(spec.value?.width || props.payload?.width || '100%'))
 const settings = computed(() => {
-  const raw = spec.value?.settings ?? props.payload?.settings
-  return raw && typeof raw === 'object' ? raw : {}
+  const raw = spec.value?.settings ?? spec.value?.chartSettings ?? props.payload?.settings
+  return parseJsonLike(raw, {})
 })
 const chartData = computed(() => {
-  const raw = spec.value?.chartData ?? props.payload?.chartData
+  const raw = spec.value?.chartData ?? spec.value?.chart_data ?? props.payload?.chartData
+  if (typeof raw === 'string') {
+    const parsed = parseJsonLike(raw, [])
+    return Array.isArray(parsed) ? parsed : []
+  }
   return Array.isArray(raw) ? raw : []
 })
 </script>
@@ -43,7 +51,7 @@ const chartData = computed(() => {
     <div v-if="title" class="a2-line-chart-title">{{ title }}</div>
     <sweet-line-chart
       :settings="settings"
-      :chartData="chartData"
+      :chart-data="chartData"
       :width="width"
     />
   </div>
