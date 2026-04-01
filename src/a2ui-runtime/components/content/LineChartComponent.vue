@@ -32,7 +32,7 @@ const spec = computed(() => {
 
 const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || ''))
 function normalizeWidth(value) {
-  if (value == null || value === '') return '1000px'
+  if (value == null || value === '') return '100%'
   if (typeof value === 'number') return `${value}px`
   const widthValue = String(value).trim()
   if (/^\d+(\.\d+)?$/.test(widthValue)) return `${widthValue}px`
