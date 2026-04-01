@@ -34,6 +34,7 @@ export const defaultTheme = {
     Image: { all: { 'border-br-5': true, 'layout-el-cv': true, 'layout-w-100': true, 'layout-h-100': true }, avatar: { 'is-avatar': true }, header: {}, icon: {}, largeFeature: {}, mediumFeature: {}, smallFeature: {} },
     Icon: {},
     List: { 'layout-g-4': true, 'layout-p-2': true },
+    LineChart: {},
     Modal: { backdrop: { 'color-bbgc-p60_20': true }, element: { 'border-br-2': true, 'layout-p-4': true, 'border-bw-1': true } },
     MultipleChoice: { container: {}, label: {}, element: {} },
     Row: { 'layout-g-4': true },
