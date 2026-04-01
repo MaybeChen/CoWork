@@ -48,6 +48,13 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
   display: block;
 }
 
+.a2-timeline-item :deep(.el-timeline-item__node) {
+  background: transparent !important;
+  border: none !important;
+  width: 14px;
+  height: 14px;
+}
+
 .a2-timeline-item :deep(.el-timeline-item__content) {
   color: inherit;
 }
