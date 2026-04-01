@@ -32,6 +32,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 }
 
 .a2-timeline :deep(.el-timeline-item__tail) {
+  display: block !important;
   border-left: none;
   left: 4px;
   top: 0;
@@ -47,10 +48,10 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
  * Re-map that behavior to wrapper level: only hide the real last wrapper.
  */
 .a2-timeline :deep(.a2ui-node .el-timeline-item__tail) {
-  display: block;
+  display: block !important;
 }
 
 .a2-timeline :deep(.a2ui-node:last-child .el-timeline-item__tail) {
-  display: none;
+  display: none !important;
 }
 </style>
