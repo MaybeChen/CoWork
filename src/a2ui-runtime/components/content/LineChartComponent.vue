@@ -50,8 +50,9 @@ const chartData = computed(() => {
   <div v-if="!hidden" class="a2-line-chart-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-line-chart-title">{{ title }}</div>
     <sweet-line-chart
+      v-if="chartData && chartData.length > 0"
       :settings="settings"
-      :chart-data="chartData"
+      :chartData="chartData"
       :width="width"
     />
   </div>
