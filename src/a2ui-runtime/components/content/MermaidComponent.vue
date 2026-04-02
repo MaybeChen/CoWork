@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import mermaid from 'mermaid'
 import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText, resolveValue } from '../utils'
 
@@ -31,15 +31,22 @@ const definition = computed(() => resolveText(props.dataModel, spec.value?.defin
 
 const svg = ref('')
 const error = ref('')
+const diagramEl = ref(null)
 
-mermaid.initialize({ startOnLoad: false })
+mermaid.initialize({
+  startOnLoad: false,
+  flowchart: { htmlLabels: false },
+})
 
 let renderSeq = 0
 async function renderMermaid() {
   const source = definition.value.trim()
   svg.value = ''
   error.value = ''
-  if (!source) return
+  if (!source) {
+    if (diagramEl.value) diagramEl.value.innerHTML = ''
+    return
+  }
 
   const seq = ++renderSeq
   try {
@@ -47,9 +54,12 @@ async function renderMermaid() {
     const result = await mermaid.render(id, source)
     if (seq !== renderSeq) return
     svg.value = result?.svg || ''
+    await nextTick()
+    if (diagramEl.value) diagramEl.value.innerHTML = svg.value
   } catch (err) {
     if (seq !== renderSeq) return
     error.value = err instanceof Error ? err.message : String(err)
+    if (diagramEl.value) diagramEl.value.innerHTML = ''
   }
 }
 
@@ -60,7 +70,7 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   <div v-if="!hidden" class="a2-mermaid-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-mermaid-title">{{ title }}</div>
     <div v-if="error" class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
-    <div v-else-if="svg" class="a2-mermaid" v-html="svg" />
+    <div v-else-if="svg" ref="diagramEl" class="a2-mermaid" />
   </div>
 </template>
 
