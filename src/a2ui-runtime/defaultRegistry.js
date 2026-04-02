@@ -7,6 +7,7 @@ import DividerComponent from './components/content/DividerComponent.vue'
 import VideoComponent from './components/content/VideoComponent.vue'
 import AudioPlayerComponent from './components/content/AudioPlayerComponent.vue'
 import FlowDiagramComponent from './components/content/FlowDiagramComponent.vue'
+import MermaidComponent from './components/content/MermaidComponent.vue'
 import TableComponent from './components/content/TableComponent.vue'
 import LineChartComponent from './components/content/LineChartComponent.vue'
 import PieChartComponent from './components/content/PieChartComponent.vue'
@@ -35,6 +36,7 @@ export const defaultRegistry = createComponentRegistry({
   Video: VideoComponent,
   AudioPlayer: AudioPlayerComponent,
   FlowDiagram: FlowDiagramComponent,
+  Mermaid: MermaidComponent,
   Table: TableComponent,
   LineChart: LineChartComponent,
   PieChart: PieChartComponent,
