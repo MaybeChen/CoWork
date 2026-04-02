@@ -51,6 +51,32 @@ mermaid.initialize({
 })
 
 let renderSeq = 0
+
+function fitSvgToContent() {
+  if (!diagramEl.value) return
+  const svgEl = diagramEl.value.querySelector('svg')
+  const rootGroup = svgEl?.querySelector('g.root') || svgEl?.querySelector('g')
+  if (!svgEl || !rootGroup) return
+
+  try {
+    const box = rootGroup.getBBox()
+    if (!Number.isFinite(box.width) || !Number.isFinite(box.height) || box.width <= 0 || box.height <= 0) return
+    const padding = 24
+    const x = box.x - padding
+    const y = box.y - padding
+    const width = box.width + padding * 2
+    const height = box.height + padding * 2
+    svgEl.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
+    svgEl.setAttribute('width', String(width))
+    svgEl.setAttribute('height', String(height))
+    svgEl.style.width = `${width}px`
+    svgEl.style.maxWidth = 'none'
+    svgEl.style.height = 'auto'
+  } catch {
+    // noop: keep Mermaid default sizing when getBBox is unavailable
+  }
+}
+
 async function renderMermaid() {
   const source = definition.value.trim()
   svg.value = ''
@@ -67,7 +93,10 @@ async function renderMermaid() {
     if (seq !== renderSeq) return
     svg.value = result?.svg || ''
     await nextTick()
-    if (diagramEl.value) diagramEl.value.innerHTML = svg.value
+    if (diagramEl.value) {
+      diagramEl.value.innerHTML = svg.value
+      fitSvgToContent()
+    }
   } catch (err) {
     if (seq !== renderSeq) return
     error.value = err instanceof Error ? err.message : String(err)
