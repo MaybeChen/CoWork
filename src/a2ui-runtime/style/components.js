@@ -42,4 +42,10 @@ export const componentSpecificStyles = `
 :where(.a2ui-surface .a2-text) p {
   margin: 0;
 }
+
+.a2ui-surface .hero_fact {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 5px;
+}
 `

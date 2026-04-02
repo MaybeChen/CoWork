@@ -36,17 +36,6 @@ const columns = computed(() => {
 const rows = computed(() => (Array.isArray(spec.value?.rows) ? spec.value.rows : []))
 const striped = computed(() => Boolean(spec.value?.striped))
 const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) : undefined))
-
-function normalizeWidth(width) {
-  if (!width || width === 'auto') return undefined
-  if (typeof width === 'number') return String(width)
-  const raw = String(width).trim()
-  if (!raw) return undefined
-  const pxMatch = raw.match(/^(\d+(?:\.\d+)?)px$/i)
-  if (pxMatch) return pxMatch[1]
-  if (/^\d+(?:\.\d+)?$/.test(raw)) return raw
-  return raw
-}
 </script>
 
 <template>
@@ -65,7 +54,6 @@ function normalizeWidth(width) {
         :prop="col.key"
         :label="col.label"
         :align="col.align || 'left'"
-        :width="normalizeWidth(col.width)"
       />
     </sweet-table>
   </div>
