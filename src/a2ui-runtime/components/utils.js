@@ -176,21 +176,27 @@ export function resolveComponentClasses(payload = {}, usageHint = 'default') {
   const className = payload?.className
   const classMap = payload?.classMap
   const themeMap = payload?.__themeClassMap
+  const appearance = payload?.appearance
 
   const classNameText = classMapToString(className)
+  const appearanceText = classMapToString(appearance)
 
-  const resolveMap = (map) => {
+  const hintedMapToClassString = (map) => {
     if (!map || typeof map !== 'object' || Array.isArray(map)) return classMapToString(map)
     if (!isHintedStyleMap(map)) return classMapToString(map)
-    return classMapToString(mergeClassMaps(map.all, map.default, map[usageHint]))
+    return classMapToString(mergeClassMaps(map.all, map.default, map[usageHint], map[appearance]))
+  }
+
+  const resolveMap = (map) => {
+    return hintedMapToClassString(map)
   }
 
   const mergedClassMap = mergeClassMaps(
-    isHintedStyleMap(themeMap) ? mergeClassMaps(themeMap.all, themeMap.default, themeMap[usageHint]) : themeMap,
-    isHintedStyleMap(classMap) ? mergeClassMaps(classMap.all, classMap.default, classMap[usageHint]) : classMap,
+    isHintedStyleMap(themeMap) ? mergeClassMaps(themeMap.all, themeMap.default, themeMap[usageHint], themeMap[appearance]) : themeMap,
+    isHintedStyleMap(classMap) ? mergeClassMaps(classMap.all, classMap.default, classMap[usageHint], classMap[appearance]) : classMap,
   )
 
-  return [resolveMap(mergedClassMap), classNameText].filter(Boolean).join(' ').trim()
+  return [resolveMap(mergedClassMap), classNameText, appearanceText].filter(Boolean).join(' ').trim()
 }
 
 export function resolveComponentStyles(payload = {}, usageHint = 'default') {
