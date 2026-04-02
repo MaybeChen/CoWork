@@ -39,12 +39,12 @@ const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) 
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
-  if (typeof width === 'number') return width
+  if (typeof width === 'number') return String(width)
   const raw = String(width).trim()
   if (!raw) return undefined
   const pxMatch = raw.match(/^(\d+(?:\.\d+)?)px$/i)
-  if (pxMatch) return Number(pxMatch[1])
-  if (/^\d+(?:\.\d+)?$/.test(raw)) return Number(raw)
+  if (pxMatch) return pxMatch[1]
+  if (/^\d+(?:\.\d+)?$/.test(raw)) return raw
   return raw
 }
 </script>
