@@ -36,30 +36,30 @@ const columns = computed(() => {
 const rows = computed(() => (Array.isArray(spec.value?.rows) ? spec.value.rows : []))
 const striped = computed(() => Boolean(spec.value?.striped))
 const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) : undefined))
-const headerCellStyle = { background: '#12151d', color: '#b4bfd3' }
-const rowStyle = { background: '#12151d', color: '#dce4f2' }
-const cellStyle = { background: '#12151d', color: '#dce4f2' }
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
-  return String(width)
+  if (typeof width === 'number') return String(width)
+  const raw = String(width).trim()
+  if (!raw) return undefined
+  const pxMatch = raw.match(/^(\d+(?:\.\d+)?)px$/i)
+  if (pxMatch) return pxMatch[1]
+  if (/^\d+(?:\.\d+)?$/.test(raw)) return raw
+  return raw
 }
 </script>
 
 <template>
   <div v-if="!hidden" class="a2-table-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-table-title">{{ title }}</div>
-    <el-table
+    <sweet-table
       :data="rows"
       :stripe="striped"
       :border="true"
       :row-key="rowKey"
-      :header-cell-style="headerCellStyle"
-      :row-style="rowStyle"
-      :cell-style="cellStyle"
-      style="width: 100%; --el-table-border-color: rgba(120, 130, 148, 0.22);"
+      style="width: 100%;"
     >
-      <el-table-column
+      <sweet-table-column
         v-for="col in columns"
         :key="col.key"
         :prop="col.key"
@@ -67,20 +67,11 @@ function normalizeWidth(width) {
         :align="col.align || 'left'"
         :width="normalizeWidth(col.width)"
       />
-    </el-table>
+    </sweet-table>
   </div>
 </template>
 
 <style scoped>
-.a2-table-wrap { width: fit-content; max-width: 100%; }
+.a2-table-wrap { width: fit-content; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
-
-.a2-table-wrap :deep(.el-table--border::before),
-.a2-table-wrap :deep(.el-table--border::after) {
-  background-color: rgba(120, 130, 148, 0.22);
-}
-
-.a2-table-wrap :deep(.el-table--border .el-table__cell) {
-  border-right-color: rgba(120, 130, 148, 0.22);
-}
 </style>
