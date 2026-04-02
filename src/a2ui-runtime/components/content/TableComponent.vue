@@ -39,7 +39,13 @@ const rowKey = computed(() => (spec.value?.row_key ? String(spec.value.row_key) 
 
 function normalizeWidth(width) {
   if (!width || width === 'auto') return undefined
-  return String(width)
+  if (typeof width === 'number') return width
+  const raw = String(width).trim()
+  if (!raw) return undefined
+  const pxMatch = raw.match(/^(\d+(?:\.\d+)?)px$/i)
+  if (pxMatch) return Number(pxMatch[1])
+  if (/^\d+(?:\.\d+)?$/.test(raw)) return Number(raw)
+  return raw
 }
 </script>
 
@@ -66,5 +72,6 @@ function normalizeWidth(width) {
 </template>
 
 <style scoped>
+.a2-table-wrap { width: fit-content; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
 </style>
