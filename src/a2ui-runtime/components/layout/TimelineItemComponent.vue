@@ -21,7 +21,7 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
 </script>
 
 <template>
-  <el-timeline-item
+  <sweet-timeline-item
     v-if="!hidden"
     class="a2-timeline-item"
     :class="customClasses"
@@ -36,7 +36,7 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
       <img class="timeline-dot" :src="dotIcon" alt="" />
     </template>
     <slot />
-  </el-timeline-item>
+  </sweet-timeline-item>
 </template>
 
 <style scoped>
@@ -46,20 +46,5 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
   width: 14px;
   height: 14px;
   display: block;
-}
-
-.a2-timeline-item :deep(.el-timeline-item__node) {
-  background: transparent !important;
-  border: none !important;
-  width: 14px;
-  height: 14px;
-}
-
-.a2-timeline-item :deep(.el-timeline-item__content) {
-  color: inherit;
-}
-
-.a2-timeline-item :deep(.el-timeline-item__content p) {
-  color: inherit;
 }
 </style>
