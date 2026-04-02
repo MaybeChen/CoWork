@@ -10,8 +10,8 @@ export const defaultTheme = {
     },
     Text: {
       h1: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
-      h2: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
-      h3: { color: 'transparent', background: 'linear-gradient(135deg, #818cf8 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' },
+      h2: {},
+      h3: {},
       h4: {}, h5: {}, body: {}, caption: {}, warning: { color: '#facc15' },
     },
     Card: {},
