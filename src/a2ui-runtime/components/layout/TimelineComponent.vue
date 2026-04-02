@@ -42,10 +42,9 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 }
 
 /*
- * A2UIComponentRenderer wraps each node with .a2ui-node, so Element Plus'
- * `.el-timeline-item:last-child .el-timeline-item__tail { display: none; }`
- * treats every item as "last-child" and hides all tails.
- * Re-map that behavior to wrapper level: only hide the real last wrapper.
+ * A2UIComponentRenderer adds the .a2ui-node class at node root, so we
+ * normalize Element Plus tail visibility by class-level targeting and only
+ * hide the real last node's tail.
  */
 .a2-timeline :deep(.a2ui-node .el-timeline-item__tail) {
   display: block !important;
