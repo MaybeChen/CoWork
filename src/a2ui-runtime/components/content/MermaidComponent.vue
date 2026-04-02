@@ -36,6 +36,18 @@ const diagramEl = ref(null)
 mermaid.initialize({
   startOnLoad: false,
   flowchart: { htmlLabels: false },
+  theme: 'base',
+  themeVariables: {
+    background: 'transparent',
+    primaryColor: '#1e293b',
+    primaryTextColor: '#e2e8f0',
+    primaryBorderColor: '#334155',
+    lineColor: '#64748b',
+    secondaryColor: '#0f172a',
+    secondaryTextColor: '#cbd5e1',
+    tertiaryColor: '#111827',
+    tertiaryTextColor: '#cbd5e1',
+  },
 })
 
 let renderSeq = 0
@@ -79,6 +91,10 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.45) 100%);
 }
 
 .a2-mermaid-title {
@@ -88,7 +104,9 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 
 .a2-mermaid :deep(svg) {
   display: block;
-  max-width: 100%;
+  width: max-content;
+  min-width: 100%;
+  height: auto;
 }
 
 .a2-mermaid-error {
