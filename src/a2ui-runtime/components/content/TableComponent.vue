@@ -72,6 +72,5 @@ function normalizeWidth(width) {
 </template>
 
 <style scoped>
-.a2-table-wrap { width: fit-content; }
 .a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
 </style>
