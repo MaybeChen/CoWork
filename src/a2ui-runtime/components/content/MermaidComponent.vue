@@ -72,10 +72,15 @@ async function renderMermaid() {
       diagramEl.value.innerHTML = svg.value
       const svgEl = diagramEl.value.querySelector('svg')
       if (svgEl) {
-        svgEl.removeAttribute('width')
-        svgEl.removeAttribute('height')
-        svgEl.style.width = '100%'
-        svgEl.style.maxWidth = '100%'
+        const viewBox = svgEl.getAttribute('viewBox') || ''
+        const parts = viewBox.split(/\s+/).map(Number).filter((n) => Number.isFinite(n))
+        if (parts.length === 4 && parts[2] > 0) {
+          svgEl.style.width = `${parts[2]}px`
+          svgEl.style.maxWidth = 'none'
+        } else {
+          svgEl.style.width = 'max-content'
+          svgEl.style.maxWidth = 'none'
+        }
         svgEl.style.height = 'auto'
       }
     }
@@ -115,8 +120,8 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 
 .a2-mermaid :deep(svg) {
   display: block;
-  width: 100%;
-  max-width: 100%;
+  width: max-content;
+  max-width: none;
   height: auto;
 }
 
