@@ -1,0 +1,19 @@
+{
+  "name": "coworkui-example-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "coworkUI": "workspace:*",
+    "@hw-seq/sweet-ui-base": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^5.4.12"
+  }
+}
