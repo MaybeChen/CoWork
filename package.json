@@ -1,21 +1,17 @@
 {
-  "name": "a2ui-vue-client",
-  "version": "0.1.0",
+  "name": "cowork-monorepo",
   "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*",
+    "playground"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "dompurify": "^3.3.3",
-    "markdown-it": "^14.1.1",
-    "mermaid": "^11.12.0",
-    "vue": "^3.5.13"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^5.4.12"
+    "dev:example": "npm run dev -w examples/demo",
+    "build:example": "npm run build -w examples/demo",
+    "dev:playground": "npm run dev -w playground",
+    "build:playground": "npm run build -w playground"
   }
 }
