@@ -3,7 +3,7 @@
  */
 export const resetStyles = `
 @layer a2ui-reset {
-  :where(.a2ui-surface) :where(*) {
+  :where(.a2ui-surface) :where(*):not(svg):not(svg *):not(foreignObject):not(foreignObject *) {
     all: revert;
     box-sizing: border-box;
   }
