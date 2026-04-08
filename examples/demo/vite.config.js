@@ -4,9 +4,10 @@ import { fileURLToPath, URL } from 'node:url'
 const serverAdds = {
   dev: 'http://10.136.125.119:8010',
   prod: 'https://astr-lab.gts.huawei.com/',
-};
+}
 
-const devServer = serverAdds.dev;
+const devServer = serverAdds.dev
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -17,8 +18,8 @@ export default defineConfig({
   server: {
     https: false,
     host: '10.136.122.46',
-    port: 5173,
-    cros: true,
+    port: 3000,
+    cors: true,
     open: true,
     proxy: {
       '/api/chat/stream': {
@@ -29,7 +30,6 @@ export default defineConfig({
           Referer: devServer,
         },
       },
-    }
+    },
   },
-  
 })
