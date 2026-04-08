@@ -28,6 +28,7 @@ const spec = computed(() => {
 
 const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || ''))
 const definition = computed(() => resolveText(props.dataModel, spec.value?.definition || ''))
+const mermaidSource = computed(() => definition.value.trim())
 
 const svg = ref('')
 const error = ref('')
@@ -53,7 +54,7 @@ mermaid.initialize({
 let renderSeq = 0
 
 async function renderMermaid() {
-  const source = definition.value.trim()
+  const source = mermaidSource.value
   svg.value = ''
   error.value = ''
   if (!source) {
@@ -97,7 +98,10 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 <template>
   <div v-if="!hidden" class="a2-mermaid-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-mermaid-title">{{ title }}</div>
-    <div v-if="error" class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
+    <template v-if="error">
+      <pre v-if="mermaidSource" class="a2-mermaid-source"><code>{{ mermaidSource }}</code></pre>
+      <div class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
+    </template>
     <div v-else-if="svg" ref="diagramEl" class="a2-mermaid" />
   </div>
 </template>
@@ -127,5 +131,17 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 
 .a2-mermaid-error {
   color: #fca5a5;
+}
+
+.a2-mermaid-source {
+  margin: 0 0 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
 }
 </style>
