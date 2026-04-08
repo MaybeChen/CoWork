@@ -1,0 +1,34 @@
+:root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #f3f4f6;
+  background: #030407;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background: radial-gradient(circle at 20% -10%, #182437 0%, #06080f 34%, #020308 80%);
+  color: #f3f4f6;
+}
+
+html {
+  font-size: 15px;
+}
+
+body {
+  font-size: 15px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
