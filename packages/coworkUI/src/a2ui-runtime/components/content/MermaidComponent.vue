@@ -55,6 +55,10 @@ let renderSeq = 0
 
 function fixMermaidCommonIssues(source) {
   let fixed = source
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '  ')
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
     .replace(/\r\n?/g, '\n')
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
     .replace(/[“”]/g, '"')
