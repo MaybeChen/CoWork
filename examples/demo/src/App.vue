@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
-import A2UIRenderer from './components/A2UIRenderer.vue'
+import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
