@@ -65,57 +65,38 @@ const childIds = computed(() => {
 </script>
 
 <template>
-  <div v-if="node" class="a2ui-node">
-    <component
-      v-if="resolvedComponent"
-      :is="resolvedComponent"
-      :node="node"
-      :kind="kind"
-      :payload="payload"
+  <component
+    v-if="node && resolvedComponent"
+    :is="resolvedComponent"
+    class="a2ui-node"
+    :node="node"
+    :kind="kind"
+    :payload="payload"
+    :data-model="dataModel"
+    :surface-id="surfaceId"
+    :on-action="onAction"
+  >
+    <A2UIComponentRenderer
+      v-for="cid in childIds"
+      :key="cid"
+      :node-id="cid"
+      :components-by-id="componentsById"
       :data-model="dataModel"
       :surface-id="surfaceId"
+      :registry="registry"
+      :theme="theme"
       :on-action="onAction"
-    >
-      <A2UIComponentRenderer
-        v-for="cid in childIds"
-        :key="cid"
-        :node-id="cid"
-        :components-by-id="componentsById"
-        :data-model="dataModel"
-        :surface-id="surfaceId"
-        :registry="registry"
-        :theme="theme"
-        :on-action="onAction"
-      />
-    </component>
+    />
+  </component>
 
-    <div v-else class="fallback">Unregistered component type: {{ kind || 'Unknown' }}</div>
-  </div>
+  <div v-else-if="node" class="fallback a2ui-node">Unregistered component type: {{ kind || 'Unknown' }}</div>
 </template>
 
 <style scoped>
-.a2ui-node {
-  transform-origin: top center;
-  animation: atom-grow-in 360ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .fallback {
   border: 1px dashed rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   padding: 10px;
   color: rgba(255, 255, 255, 0.7);
-}
-
-@keyframes atom-grow-in {
-  0% {
-    opacity: 0;
-    transform: translateY(14px) scale(0.94);
-    filter: blur(3px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
 }
 </style>

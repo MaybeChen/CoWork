@@ -17,7 +17,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 .a2-card {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.015);
   padding: 14px;
   transform-origin: top center;
 }
