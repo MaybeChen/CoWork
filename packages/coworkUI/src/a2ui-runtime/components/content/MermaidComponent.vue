@@ -135,11 +135,11 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 
 .a2-mermaid-source {
   margin: 0 0 8px;
-  padding: 8px;
+  padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: #0b1220;
+  color: #dbeafe;
   font-size: 12px;
   line-height: 1.4;
   white-space: pre-wrap;
