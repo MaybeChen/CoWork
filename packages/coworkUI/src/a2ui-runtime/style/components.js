@@ -43,9 +43,24 @@ export const componentSpecificStyles = `
   margin: 0;
 }
 
-.a2ui-surface .hero_fact {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  padding: 5px;
+.a2ui-surface .hero_fact .a2-column{
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  width: fit-content;
+  min-width:120px;
+  border-radius: 22px;
+  padding: 22px 22px 18px;
+  background: radial-gradient(circle at 10% 0%, rgba(113, 124, 255, 0.12), transparent 40%), linear-gradient(180deg, rgba(11, 20, 38, 0.88), rgba(8, 15, 29, 0.86));
+}
+
+.a2ui-surface .hero_fact .a2-column .a2ui-text:first-child{
+  color:rgba(255, 255, 255, 0.4);
+}
+
+.a2ui-surface .hero_fact .a2-column .a2ui-text:last-child{
+  font-weight: bold;
+  font-size: 120%;
 }
 `
