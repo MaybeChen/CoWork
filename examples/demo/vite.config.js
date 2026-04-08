@@ -13,6 +13,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      coworkUI: fileURLToPath(new URL('../../packages/coworkUI/src/index.js', import.meta.url)),
+      'coworkUI/a2ui-runtime': fileURLToPath(
+        new URL('../../packages/coworkUI/src/a2ui-runtime/index.js', import.meta.url),
+      ),
     },
   },
   server: {
