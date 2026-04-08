@@ -93,5 +93,8 @@ function weightClass(cell) {
   margin: 0;
   border-radius: 6px;
   padding: 4px 8px;
+  white-space: normal;
+  width: fit-content;
+  max-width: 100%;
 }
 </style>
