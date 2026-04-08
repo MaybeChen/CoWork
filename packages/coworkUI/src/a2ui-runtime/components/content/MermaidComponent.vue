@@ -53,6 +53,31 @@ mermaid.initialize({
 
 let renderSeq = 0
 
+function fixMermaidCommonIssues(source) {
+  let fixed = source
+    .replace(/\r\n?/g, '\n')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[\uFF1A]/g, ':')
+    .replace(/[\uFF1B]/g, ';')
+    .replace(/[\uFF0C]/g, ',')
+    .replace(/[\uFF08]/g, '(')
+    .replace(/[\uFF09]/g, ')')
+    .replace(/→/g, '-->')
+    .replace(/\t/g, '  ')
+
+  fixed = fixed.replace(/^\s*```(?:mermaid)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '')
+  return fixed.trim()
+}
+
+async function renderSvg(source, seq) {
+  const id = `a2-mermaid-${seq}-${Math.random().toString(36).slice(2, 8)}`
+  const result = await mermaid.render(id, source)
+  if (seq !== renderSeq) return
+  svg.value = result?.svg || ''
+}
+
 async function renderMermaid() {
   const source = mermaidSource.value
   svg.value = ''
@@ -64,10 +89,25 @@ async function renderMermaid() {
 
   const seq = ++renderSeq
   try {
-    const id = `a2-mermaid-${seq}-${Math.random().toString(36).slice(2, 8)}`
-    const result = await mermaid.render(id, source)
-    if (seq !== renderSeq) return
-    svg.value = result?.svg || ''
+    await renderSvg(source, seq)
+  } catch (firstErr) {
+    const repairedSource = fixMermaidCommonIssues(source)
+    if (repairedSource && repairedSource !== source) {
+      try {
+        await renderSvg(repairedSource, seq)
+      } catch (repairErr) {
+        if (seq !== renderSeq) return
+        const originalMessage = firstErr instanceof Error ? firstErr.message : String(firstErr)
+        const repairedMessage = repairErr instanceof Error ? repairErr.message : String(repairErr)
+        error.value = `${originalMessage}（自动修复后仍失败：${repairedMessage}）`
+      }
+    } else {
+      if (seq !== renderSeq) return
+      error.value = firstErr instanceof Error ? firstErr.message : String(firstErr)
+    }
+  }
+
+  if (!error.value) {
     await nextTick()
     if (diagramEl.value) {
       diagramEl.value.innerHTML = svg.value
@@ -85,10 +125,8 @@ async function renderMermaid() {
         svgEl.style.height = 'auto'
       }
     }
-  } catch (err) {
-    if (seq !== renderSeq) return
-    error.value = err instanceof Error ? err.message : String(err)
-    if (diagramEl.value) diagramEl.value.innerHTML = ''
+  } else if (diagramEl.value) {
+    diagramEl.value.innerHTML = ''
   }
 }
 
