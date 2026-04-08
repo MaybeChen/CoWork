@@ -94,10 +94,4 @@ function weightClass(cell) {
   border-radius: 6px;
   padding: 4px 8px;
 }
-.a2-vw-1 { background: rgba(34, 197, 94, 0.12); }
-.a2-vw-2 { background: rgba(132, 204, 22, 0.14); }
-.a2-vw-3 { background: rgba(250, 204, 21, 0.16); }
-.a2-vw-4 { background: rgba(251, 146, 60, 0.18); }
-.a2-vw-5 { background: rgba(248, 113, 113, 0.2); }
-.a2-vw-6 { background: rgba(239, 68, 68, 0.26); }
 </style>
