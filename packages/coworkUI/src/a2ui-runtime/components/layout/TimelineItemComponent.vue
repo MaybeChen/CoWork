@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText, resolveValue } from '../utils'
-import dotIcon from '@/assets/dot.svg'
+import dotIcon from '../../assets/dot.svg'
 
 const props = defineProps({
   payload: { type: Object, default: () => ({}) },

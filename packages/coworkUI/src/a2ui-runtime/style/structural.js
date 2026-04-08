@@ -35,4 +35,29 @@ export const structuralStyles = `
 .a2ui-surface .border-br-8 { border-radius: 8px; }
 .a2ui-surface .border-br-12 { border-radius: 12px; }
 .a2ui-surface .border-bw-1 { border-width: 1px; border-style: solid; }
+
+.a2ui-surface .a2-vw-6 {
+  background: #B91C1C;
+  color: #FFFFFF;
+}
+.a2ui-surface .a2-vw-5 {
+  background: #F87171;
+  color: #450A0A;
+}
+.a2ui-surface .a2-vw-4 {
+  background: #D97706;
+  color: #FFFFFF;
+}
+.a2ui-surface .a2-vw-3 {
+  background: #FBBF24;
+  color: #451A03;
+}
+.a2ui-surface .a2-vw-2 {
+  background: #15803D;
+  color: #FFFFFF;
+}
+.a2ui-surface .a2-vw-1 {
+  background: #4ADE80;
+  color: #064E3B;
+}
 `
