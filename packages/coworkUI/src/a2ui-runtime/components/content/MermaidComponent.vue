@@ -33,7 +33,13 @@ const mermaidSource = computed(() => definition.value.trim())
 const svg = ref('')
 const error = ref('')
 const diagramEl = ref(null)
+const diagramViewport = ref(null)
 const zoomLevel = ref(1)
+const panX = ref(0)
+const panY = ref(0)
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
 
 mermaid.initialize({
   startOnLoad: false,
@@ -140,30 +146,51 @@ function applySvgZoom() {
   if (!diagramEl.value) return
   const svgEl = diagramEl.value.querySelector('svg')
   if (!svgEl) return
-  svgEl.style.transform = `scale(${zoomLevel.value})`
-  svgEl.style.transformOrigin = 'center top'
+  svgEl.style.transform = `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`
+  svgEl.style.transformOrigin = 'center center'
 }
 
-function zoomIn() {
-  zoomLevel.value = Math.min(zoomLevel.value + 0.1, 2)
+function setZoom(nextZoom) {
+  zoomLevel.value = Math.min(Math.max(nextZoom, 0.5), 3)
   applySvgZoom()
 }
 
-function zoomOut() {
-  zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5)
-  applySvgZoom()
+function handleWheel(event) {
+  const step = event.deltaY < 0 ? 0.1 : -0.1
+  setZoom(zoomLevel.value + step)
 }
 
 function resetZoom() {
   zoomLevel.value = 1
+  panX.value = 0
+  panY.value = 0
+  isDragging.value = false
   applySvgZoom()
+}
+
+function startDrag(event) {
+  if (!diagramEl.value || !svg.value) return
+  isDragging.value = true
+  dragStartX.value = event.clientX - panX.value
+  dragStartY.value = event.clientY - panY.value
+}
+
+function onDrag(event) {
+  if (!isDragging.value) return
+  panX.value = event.clientX - dragStartX.value
+  panY.value = event.clientY - dragStartY.value
+  applySvgZoom()
+}
+
+function stopDrag() {
+  isDragging.value = false
 }
 
 async function renderMermaid() {
   const source = mermaidSource.value
   svg.value = ''
   error.value = ''
-  zoomLevel.value = 1
+  resetZoom()
   if (!source) {
     if (diagramEl.value) diagramEl.value.innerHTML = ''
     return
@@ -230,15 +257,24 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   <div v-if="!hidden" class="a2-mermaid-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-mermaid-title">{{ title }}</div>
     <div v-if="svg && !error" class="a2-mermaid-toolbar">
-      <button type="button" class="a2-mermaid-btn" @click="zoomOut">－</button>
       <button type="button" class="a2-mermaid-btn" @click="resetZoom">{{ Math.round(zoomLevel * 100) }}%</button>
-      <button type="button" class="a2-mermaid-btn" @click="zoomIn">＋</button>
     </div>
     <template v-if="error">
       <pre v-if="mermaidSource" class="a2-mermaid-source"><code>{{ mermaidSource }}</code></pre>
       <div class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
     </template>
-    <div v-else-if="svg" ref="diagramEl" class="a2-mermaid" />
+    <div
+      v-else-if="svg"
+      ref="diagramViewport"
+      class="a2-mermaid-viewport"
+      @wheel.prevent="handleWheel"
+      @mousedown="startDrag"
+      @mousemove="onDrag"
+      @mouseup="stopDrag"
+      @mouseleave="stopDrag"
+    >
+      <div ref="diagramEl" class="a2-mermaid" :class="{ 'is-dragging': isDragging }" />
+    </div>
   </div>
 </template>
 
@@ -246,7 +282,7 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 .a2-mermaid-wrap {
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   padding: 10px;
@@ -266,22 +302,34 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 }
 
 .a2-mermaid-btn {
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(59, 130, 246, 0.9);
   border-radius: 6px;
-  background: rgba(15, 23, 42, 0.55);
-  color: #e2e8f0;
+  background: rgba(59, 130, 246, 0.2);
+  color: #eff6ff;
+  font-weight: 600;
   font-size: 12px;
-  padding: 2px 8px;
+  padding: 4px 10px;
   cursor: pointer;
 }
 
 .a2-mermaid-btn:hover {
-  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(59, 130, 246, 0.35);
+}
+
+.a2-mermaid-viewport {
+  width: 100%;
+  overflow: hidden;
 }
 
 .a2-mermaid {
   display: flex;
   justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.a2-mermaid.is-dragging {
+  cursor: grabbing;
 }
 
 .a2-mermaid :deep(svg) {
