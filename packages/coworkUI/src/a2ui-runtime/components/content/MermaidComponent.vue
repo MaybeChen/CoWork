@@ -95,6 +95,10 @@ function fixSubgraphEndBalance(source) {
   return `${source}\n${'end\n'.repeat(subgraphCount - endCount).trimEnd()}`
 }
 
+function fixParenthesesInSquareBracketLabels(source) {
+  return source.replace(/\[([^\]\n]*)\]/g, (_, label) => `[${label.replace(/\(/g, '（').replace(/\)/g, '）')}]`)
+}
+
 function applyRepairPipeline(source, levels = ['A']) {
   let fixed = source
   const appliedRules = []
@@ -105,6 +109,7 @@ function applyRepairPipeline(source, levels = ['A']) {
   const levelB = [
     { id: 'fix-arrow-label-syntax', apply: fixArrowLabelSyntax },
     { id: 'fix-subgraph-end-balance', apply: fixSubgraphEndBalance },
+    { id: 'fix-parentheses-in-square-bracket-labels', apply: fixParenthesesInSquareBracketLabels },
     { id: 'add-flowchart-declaration', apply: addFlowchartDeclarationIfMissing },
   ]
 
