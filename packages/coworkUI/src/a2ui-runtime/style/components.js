@@ -53,6 +53,12 @@ export const componentSpecificStyles = `
   border-radius: 22px;
   padding: 22px 22px 18px;
   background: radial-gradient(circle at 10% 0%, rgba(113, 124, 255, 0.12), transparent 40%), linear-gradient(180deg, rgba(11, 20, 38, 0.88), rgba(8, 15, 29, 0.86));
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.a2ui-surface .hero_fact .a2-column:hover{
+  transform: translateY(-5px);
 }
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:first-child{
