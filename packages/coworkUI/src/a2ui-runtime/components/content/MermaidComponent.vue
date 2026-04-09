@@ -346,6 +346,44 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   cursor: grabbing;
 }
 
+.a2-mermaid-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.a2-mermaid-btn {
+  border: 1px solid rgba(59, 130, 246, 0.9);
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #eff6ff;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.a2-mermaid-btn:hover {
+  background: rgba(59, 130, 246, 0.35);
+}
+
+.a2-mermaid-viewport {
+  width: 100%;
+  overflow: hidden;
+}
+
+.a2-mermaid {
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.a2-mermaid.is-dragging {
+  cursor: grabbing;
+}
+
 .a2-mermaid :deep(svg) {
   display: block;
   max-width: 100%;
