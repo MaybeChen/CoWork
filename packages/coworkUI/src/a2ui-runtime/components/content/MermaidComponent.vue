@@ -33,6 +33,7 @@ const mermaidSource = computed(() => definition.value.trim())
 const svg = ref('')
 const error = ref('')
 const diagramEl = ref(null)
+const zoomLevel = ref(1)
 
 mermaid.initialize({
   startOnLoad: false,
@@ -135,10 +136,34 @@ async function renderSvg(source, seq) {
   svg.value = result?.svg || ''
 }
 
+function applySvgZoom() {
+  if (!diagramEl.value) return
+  const svgEl = diagramEl.value.querySelector('svg')
+  if (!svgEl) return
+  svgEl.style.transform = `scale(${zoomLevel.value})`
+  svgEl.style.transformOrigin = 'center top'
+}
+
+function zoomIn() {
+  zoomLevel.value = Math.min(zoomLevel.value + 0.1, 2)
+  applySvgZoom()
+}
+
+function zoomOut() {
+  zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5)
+  applySvgZoom()
+}
+
+function resetZoom() {
+  zoomLevel.value = 1
+  applySvgZoom()
+}
+
 async function renderMermaid() {
   const source = mermaidSource.value
   svg.value = ''
   error.value = ''
+  zoomLevel.value = 1
   if (!source) {
     if (diagramEl.value) diagramEl.value.innerHTML = ''
     return
@@ -184,12 +209,13 @@ async function renderMermaid() {
         const parts = viewBox.split(/\s+/).map(Number).filter((n) => Number.isFinite(n))
         if (parts.length === 4 && parts[2] > 0) {
           svgEl.style.width = `${parts[2]}px`
-          svgEl.style.maxWidth = 'none'
+          svgEl.style.maxWidth = '100%'
         } else {
-          svgEl.style.width = 'max-content'
-          svgEl.style.maxWidth = 'none'
+          svgEl.style.width = 'auto'
+          svgEl.style.maxWidth = '100%'
         }
         svgEl.style.height = 'auto'
+        applySvgZoom()
       }
     }
   } else if (diagramEl.value) {
@@ -203,6 +229,11 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 <template>
   <div v-if="!hidden" class="a2-mermaid-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-mermaid-title">{{ title }}</div>
+    <div v-if="svg && !error" class="a2-mermaid-toolbar">
+      <button type="button" class="a2-mermaid-btn" @click="zoomOut">－</button>
+      <button type="button" class="a2-mermaid-btn" @click="resetZoom">{{ Math.round(zoomLevel * 100) }}%</button>
+      <button type="button" class="a2-mermaid-btn" @click="zoomIn">＋</button>
+    </div>
     <template v-if="error">
       <pre v-if="mermaidSource" class="a2-mermaid-source"><code>{{ mermaidSource }}</code></pre>
       <div class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
@@ -227,10 +258,35 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   font-weight: 600;
 }
 
+.a2-mermaid-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.a2-mermaid-btn {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.a2-mermaid-btn:hover {
+  border-color: rgba(96, 165, 250, 0.6);
+}
+
+.a2-mermaid {
+  display: flex;
+  justify-content: center;
+}
+
 .a2-mermaid :deep(svg) {
   display: block;
-  width: max-content;
-  max-width: none;
+  max-width: 100%;
   height: auto;
 }
 
