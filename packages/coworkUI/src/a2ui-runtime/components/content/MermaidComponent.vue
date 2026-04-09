@@ -53,8 +53,8 @@ mermaid.initialize({
 
 let renderSeq = 0
 
-function fixMermaidCommonIssues(source) {
-  let fixed = source
+function normalizeMermaidText(source) {
+  return source
     .replace(/\\n/g, '\n')
     .replace(/\\t/g, '  ')
     .replace(/\\"/g, '"')
@@ -70,9 +70,57 @@ function fixMermaidCommonIssues(source) {
     .replace(/[\uFF09]/g, ')')
     .replace(/→/g, '-->')
     .replace(/\t/g, '  ')
+    .replace(/^\s*```(?:mermaid)?\s*\n?/i, '')
+    .replace(/\n?\s*```\s*$/i, '')
+    .trim()
+}
 
-  fixed = fixed.replace(/^\s*```(?:mermaid)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '')
-  return fixed.trim()
+function fixArrowLabelSyntax(source) {
+  return source.replace(/--\s*([^|\n][^>\n]*?)\s*-->/g, (_, label) => `-->|${label.trim()}|`)
+}
+
+function addFlowchartDeclarationIfMissing(source) {
+  const trimmed = source.trim()
+  if (!trimmed) return trimmed
+  const hasDeclaration = /^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|gitGraph)\b/i.test(trimmed)
+  if (hasDeclaration) return source
+  if (!/-->|<--|---/.test(trimmed)) return source
+  return `flowchart TD\n${trimmed}`
+}
+
+function fixSubgraphEndBalance(source) {
+  const subgraphCount = (source.match(/^\s*subgraph\b/gim) || []).length
+  const endCount = (source.match(/^\s*end\b/gim) || []).length
+  if (subgraphCount <= endCount) return source
+  return `${source}\n${'end\n'.repeat(subgraphCount - endCount).trimEnd()}`
+}
+
+function applyRepairPipeline(source, levels = ['A']) {
+  let fixed = source
+  const appliedRules = []
+
+  const levelA = [
+    { id: 'normalize-text', apply: normalizeMermaidText },
+  ]
+  const levelB = [
+    { id: 'fix-arrow-label-syntax', apply: fixArrowLabelSyntax },
+    { id: 'fix-subgraph-end-balance', apply: fixSubgraphEndBalance },
+    { id: 'add-flowchart-declaration', apply: addFlowchartDeclarationIfMissing },
+  ]
+
+  const rules = []
+  if (levels.includes('A')) rules.push(...levelA)
+  if (levels.includes('B')) rules.push(...levelB)
+
+  for (const rule of rules) {
+    const next = rule.apply(fixed)
+    if (next !== fixed) {
+      fixed = next
+      appliedRules.push(rule.id)
+    }
+  }
+
+  return { fixed: fixed.trim(), appliedRules }
 }
 
 async function renderSvg(source, seq) {
@@ -92,23 +140,33 @@ async function renderMermaid() {
   }
 
   const seq = ++renderSeq
-  try {
-    await renderSvg(source, seq)
-  } catch (firstErr) {
-    const repairedSource = fixMermaidCommonIssues(source)
-    if (repairedSource && repairedSource !== source) {
-      try {
-        await renderSvg(repairedSource, seq)
-      } catch (repairErr) {
-        if (seq !== renderSeq) return
-        const originalMessage = firstErr instanceof Error ? firstErr.message : String(firstErr)
-        const repairedMessage = repairErr instanceof Error ? repairErr.message : String(repairErr)
-        error.value = `${originalMessage}（自动修复后仍失败：${repairedMessage}）`
-      }
-    } else {
+  const attempts = [
+    { name: '原始输入', levels: [] },
+    { name: '安全修复(Level A)', levels: ['A'] },
+    { name: '增强修复(Level A+B)', levels: ['A', 'B'] },
+  ]
+  const errors = []
+  const triedSources = new Set()
+
+  for (const attempt of attempts) {
+    const { fixed, appliedRules } = attempt.levels.length ? applyRepairPipeline(source, attempt.levels) : { fixed: source, appliedRules: [] }
+    if (!fixed || triedSources.has(fixed)) continue
+    triedSources.add(fixed)
+
+    try {
+      await renderSvg(fixed, seq)
+      error.value = ''
+      break
+    } catch (attemptError) {
       if (seq !== renderSeq) return
-      error.value = firstErr instanceof Error ? firstErr.message : String(firstErr)
+      const msg = attemptError instanceof Error ? attemptError.message : String(attemptError)
+      const ruleSuffix = appliedRules.length ? `；应用规则: ${appliedRules.join(', ')}` : ''
+      errors.push(`${attempt.name}失败: ${msg}${ruleSuffix}`)
     }
+  }
+
+  if (errors.length && !svg.value) {
+    error.value = errors.join(' | ')
   }
 
   if (!error.value) {
