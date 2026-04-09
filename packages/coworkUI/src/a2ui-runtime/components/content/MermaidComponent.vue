@@ -257,7 +257,8 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   <div v-if="!hidden" class="a2-mermaid-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-mermaid-title">{{ title }}</div>
     <div v-if="svg && !error" class="a2-mermaid-toolbar">
-      <button type="button" class="a2-mermaid-btn" @click="resetZoom">{{ Math.round(zoomLevel * 100) }}%</button>
+      <span class="a2-mermaid-zoom">{{ Math.round(zoomLevel * 100) }}%</span>
+      <button type="button" class="a2-mermaid-btn" @click="resetZoom">重置</button>
     </div>
     <template v-if="error">
       <pre v-if="mermaidSource" class="a2-mermaid-source"><code>{{ mermaidSource }}</code></pre>
@@ -292,6 +293,57 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 .a2-mermaid-title {
   margin-bottom: 8px;
   font-weight: 600;
+  position: relative;
+  z-index: 3;
+}
+
+.a2-mermaid-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 3;
+}
+
+.a2-mermaid-zoom {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.a2-mermaid-btn {
+  border: 1px solid rgba(59, 130, 246, 0.9);
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #eff6ff;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.a2-mermaid-btn:hover {
+  background: rgba(59, 130, 246, 0.35);
+}
+
+.a2-mermaid-viewport {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+.a2-mermaid {
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.a2-mermaid.is-dragging {
+  cursor: grabbing;
 }
 
 .a2-mermaid-toolbar {
