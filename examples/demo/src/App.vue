@@ -131,7 +131,13 @@ async function handleAction(turn, action) {
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
               :disabled="loading"
             />
-            <button type="submit" :disabled="loading || !message.trim()">{{ loading ? '…' : '➜' }}</button>
+            <button type="submit" :disabled="loading || !message.trim()">
+              <span v-if="loading" class="sending">
+                <span class="sending-dot" />
+                发送中
+              </span>
+              <span v-else>发送</span>
+            </button>
           </form>
         </footer>
       </aside>
@@ -490,11 +496,37 @@ async function handleAction(turn, action) {
 
 .composer-inner button {
   height: 34px;
-  min-width: 34px;
+  min-width: 72px;
   border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   color: #f9fafb;
   cursor: pointer;
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #60a5fa;
+  animation: sending-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sending-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
