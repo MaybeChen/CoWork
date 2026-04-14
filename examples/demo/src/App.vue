@@ -8,7 +8,7 @@ import { applyObjectsProgressively } from './modules/message/progressiveSchedule
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
-const wsEndpoint = '/api/chat/ws_stream'
+const wsEndpoint = '/ws/debug'
 
 const message = ref('')
 const streamMode = ref('default')
@@ -354,7 +354,11 @@ async function handleAction(turn, action) {
 }
 
 .bubble-assistant {
-  align-self: stretch;
+  width: 80%;
+  min-width: 640px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 12px;
 }
 
@@ -382,16 +386,16 @@ async function handleAction(turn, action) {
 .streaming-tip {
   color: rgba(125, 211, 252, 0.95);
   font-size: 12px;
-  padding-left: 8px;
-}
-
-.surface {
-  margin-top: 0;
   width: 80%;
   min-width: 640px;
   max-width: 1080px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.surface {
+  margin-top: 0;
+  width: 100%;
   padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);

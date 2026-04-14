@@ -1,8 +1,9 @@
 import { extractJsonObjects } from './streamObjectExtractor'
 
 function buildWsUrl(pathname) {
-  const { host } = window.location
-  return `wss://${host}${pathname}`
+  const { host, protocol } = window.location
+  const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${wsProtocol}//${host}${pathname}`
 }
 
 function safeSend(ws, payload) {
