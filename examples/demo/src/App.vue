@@ -2,13 +2,16 @@
 import { computed, reactive, ref } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
+import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
+const wsEndpoint = '/api/chat/ws_stream'
 
 const message = ref('')
+const streamMode = ref('default')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
@@ -38,15 +41,44 @@ async function send(turn, payload) {
   loading.value = false
 }
 
+async function sendByWsStream(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+  turn.streamPreviewText = ''
+
+  await streamChatByWs({
+    endpoint: wsEndpoint,
+    payload,
+    onPreview: (text) => {
+      turn.streamPreviewText = text
+      scheduleAutoScroll()
+    },
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+  })
+
+  turn.streaming = false
+  loading.value = false
+}
+
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
 
-  const turn = reactive(createTurn(text))
+  const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
   scheduleAutoScroll()
 
-  await send(turn, { message: text })
+  if (streamMode.value === 'ws_stream') {
+    await sendByWsStream(turn, { message: text })
+  } else {
+    await send(turn, { message: text })
+  }
   message.value = ''
 }
 
@@ -70,7 +102,15 @@ async function handleAction(turn, action) {
         <section class="panel question-panel">
           <h3>输入历史</h3>
           <ul v-if="hasTurns" class="question-list">
-            <li v-for="turn in turns" :key="`q-${turn.id}`">{{ turn.userText }}</li>
+            <li v-for="turn in turns" :key="`q-${turn.id}`">
+              <template v-if="turn.mode === 'ws_stream'">
+                <p class="question-full">{{ turn.userText }}</p>
+                <p class="question-progress">{{ turn.streamPreviewText || '正在渐进输出...' }}</p>
+              </template>
+              <template v-else>
+                {{ turn.userText }}
+              </template>
+            </li>
           </ul>
           <div v-else class="question-empty">
             <p>问题输入后会展示在这里。</p>
@@ -79,6 +119,10 @@ async function handleAction(turn, action) {
 
         <footer class="composer composer-sidebar">
           <form class="composer-inner" @submit.prevent="submit">
+            <select v-model="streamMode" :disabled="loading" class="mode-select">
+              <option value="default">非流式</option>
+              <option value="ws_stream">流式</option>
+            </select>
             <input
               v-model="message"
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
@@ -222,6 +266,18 @@ async function handleAction(turn, action) {
   white-space: pre-wrap;
 }
 
+.question-full,
+.question-progress {
+  margin: 0;
+}
+
+.question-progress {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  color: rgba(226, 232, 240, 0.9);
+}
+
 .question-empty p {
   margin: 0 0 10px;
   color: rgba(203, 213, 225, 0.8);
@@ -344,6 +400,15 @@ async function handleAction(turn, action) {
   background: transparent;
   color: #f9fafb;
   padding: 10px 12px;
+}
+
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #121720;
+  color: #ffffff;
+  margin-right: 6px;
 }
 
 .composer-inner button {
