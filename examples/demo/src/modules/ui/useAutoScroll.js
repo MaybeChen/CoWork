@@ -27,7 +27,7 @@ export function useAutoScroll() {
       isProgrammaticScroll = true
       contentRef.value.scrollTo({
         top: contentRef.value.scrollHeight,
-        behavior: 'smooth',
+        behavior: force ? 'auto' : 'smooth',
       })
       if (autoScrollTimer) clearTimeout(autoScrollTimer)
       autoScrollTimer = setTimeout(() => {
