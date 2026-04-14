@@ -92,10 +92,6 @@ async function handleAction(turn, action) {
   <main class="page">
     <header class="global-header">
       <div class="brand">CoWorker</div>
-      <nav class="top-nav">
-        <a href="#">故障诊断</a>
-        <a href="#">健康预测</a>
-      </nav>
     </header>
 
     <section class="workspace">
@@ -198,25 +194,20 @@ async function handleAction(turn, action) {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0 16px;
   background: #0a0d12;
 }
 
 .brand {
-  color: #e6f0ff;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.top-nav {
-  display: flex;
-  gap: 24px;
-}
-
-.top-nav a {
-  color: #5da6e6;
-  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(100deg, #93c5fd 0%, #22d3ee 45%, #34d399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.26);
 }
 
 .workspace {
