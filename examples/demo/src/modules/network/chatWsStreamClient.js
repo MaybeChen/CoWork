@@ -40,7 +40,6 @@ export async function streamChatByWs({
       previewDone = true
       cleanup()
       safeSend(ws, { type: 'sendMessage', message: previewText, final: true })
-      if (ws.readyState === WebSocket.OPEN) ws.close()
     }
 
     ws.onopen = () => {
