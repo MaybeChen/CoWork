@@ -145,7 +145,7 @@ async function handleAction(turn, action) {
       <section class="center">
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
-            <h1 class="hero-brand">co-work</h1>
+            <h1 class="hero-brand">co-worker</h1>
           </div>
 
           <div v-if="centerTurns.length" class="conversation">
