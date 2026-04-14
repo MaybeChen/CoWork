@@ -20,7 +20,7 @@ const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
 
-const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: scheduleAutoScroll })
+const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
 
 async function send(turn, payload) {
   loading.value = true
@@ -53,7 +53,7 @@ async function sendByWsStream(turn, payload) {
     payload,
     onPreview: (text) => {
       turn.streamPreviewText = text
-      scheduleAutoScroll()
+      scheduleAutoScroll({ force: true })
     },
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
@@ -73,7 +73,7 @@ async function submit() {
 
   const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
-  scheduleAutoScroll()
+  scheduleAutoScroll({ force: true })
 
   if (streamMode.value === 'ws_stream') {
     await sendByWsStream(turn, { message: text })

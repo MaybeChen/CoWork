@@ -71,7 +71,7 @@ export function useAutoScroll() {
     if (typeof MutationObserver === 'function') {
       mutationObserver = new MutationObserver((mutations) => {
         if (hasNewSurface(mutations)) {
-          scheduleAutoScroll()
+          scheduleAutoScroll({ force: true })
         }
       })
       mutationObserver.observe(contentRef.value, {
@@ -82,7 +82,7 @@ export function useAutoScroll() {
 
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(() => {
-        scheduleAutoScroll()
+        scheduleAutoScroll({ force: true })
       })
       resizeObserver.observe(contentRef.value)
     }
