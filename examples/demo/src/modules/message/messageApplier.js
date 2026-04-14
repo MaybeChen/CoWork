@@ -1,10 +1,12 @@
 import { decodeEntryValue, decodeValueMap, ensureObjectPath } from './modelCodec'
 import { normalizeProtocolMessage } from './protocolNormalizer'
 
-export function createTurn(userText) {
+export function createTurn(userText, mode = 'default') {
   return {
     id: `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     userText,
+    mode,
+    streamPreviewText: '',
     surfaces: {},
     dataModels: {},
     streaming: false,
