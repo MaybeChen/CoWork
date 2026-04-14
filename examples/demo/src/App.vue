@@ -12,7 +12,6 @@ const message = ref('')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
-const expandedUserTurns = ref(new Set())
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
@@ -58,40 +57,6 @@ async function handleAction(turn, action) {
 function fillPreset(text) {
   message.value = text
 }
-
-function isUserTextExpanded(turnId) {
-  return expandedUserTurns.value.has(turnId)
-}
-
-function canExpandUserText(text) {
-  return typeof text === 'string' && text.length > 80
-}
-
-function toggleUserTextExpand(turnId) {
-  const next = new Set(expandedUserTurns.value)
-  if (next.has(turnId)) next.delete(turnId)
-  else next.add(turnId)
-  expandedUserTurns.value = next
-}
-
-async function copyUserText(text) {
-  if (!text) return
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {
-    try {
-      const el = document.createElement('textarea')
-      el.setAttribute('readonly', '')
-      el.value = text
-      document.body.appendChild(el)
-      el.select()
-      document.execCommand('copy')
-      document.body.removeChild(el)
-    } catch {
-      error.value = '复制失败，请检查浏览器权限'
-    }
-  }
-}
 </script>
 
 <template>
@@ -106,73 +71,42 @@ async function copyUserText(text) {
 
     <section class="workspace">
       <aside class="sidebar left">
-        <section class="panel">
-          <h3>待办工单清单</h3>
-          <div class="todo-toolbar">
-            <button type="button" class="todo-icon-btn">☰</button>
-            <button type="button" class="todo-icon-btn">📋</button>
-          </div>
-          <div class="todo-search">
-            <span>输入工单名称/阶段名称</span>
-            <span class="search-icon">⌕</span>
-          </div>
-          <div class="todo-board">
-            <div class="todo-node n1 red"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n2 yellow"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n3 red"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n4 red"><b>工单名称</b><small>阶段</small></div>
-            <div class="todo-node n5 blue"><b>工单名称</b><small>阶段</small></div>
-          </div>
-          <div class="todo-footer">
-            目前共有 <strong>19</strong> 个故障单
-            <div class="todo-dots"><span class="active"></span><span></span><span></span><span></span></div>
-          </div>
-        </section>
-        <section class="panel">
-          <h3>最近</h3>
-          <ul class="list">
-            <li><span class="list-title">推理模型应时延过长</span> <em>2026-03-31</em></li>
-            <li><span class="list-title">转发引擎整体功能失效告警转工单</span> <em>2026-03-30</em></li>
-            <li><span class="list-title">License试用</span> <em>2026-03-29</em></li>
-            <li><span class="list-title">内存使用率过高</span> <em>2026-03-28</em></li>
+        <section class="panel question-panel">
+          <h3>输入历史</h3>
+          <ul v-if="hasTurns" class="question-list">
+            <li v-for="turn in turns" :key="`q-${turn.id}`">{{ turn.userText }}</li>
           </ul>
-        </section>
-        <section class="panel">
-          <h3>外部信息导入</h3>
-          <div class="file-grid">
-            <span>文件夹</span><span>文档</span><span>表格</span><span>图片</span>
-          </div>
-        </section>
-      </aside>
-
-      <section class="center">
-        <section ref="contentRef" class="content panel">
-          <div v-if="!hasTurns" class="hero">
-            <h1>智能体对话区</h1>
-            <p>输入问题后，系统将逐步生成结构化界面。</p>
+          <div v-else class="question-empty">
+            <p>问题输入后会展示在这里。</p>
             <div class="suggestions">
               <button @click="fillPreset('Compare weather in NYC, London, and Tokyo')">⚡ Weather comparison</button>
               <button @click="fillPreset('Show stats for github.com/vercel/ai')">⚡ GitHub repo stats</button>
               <button @click="fillPreset('Build a crypto dashboard for BTC and ETH')">⚡ Crypto dashboard</button>
             </div>
           </div>
+        </section>
+
+        <footer class="composer composer-sidebar">
+          <form class="composer-inner" @submit.prevent="submit">
+            <input
+              v-model="message"
+              placeholder="请输入问题，例如：查询故障工单并给出分析..."
+              :disabled="loading"
+            />
+            <button type="submit" :disabled="loading || !message.trim()">{{ loading ? '…' : '➜' }}</button>
+          </form>
+        </footer>
+      </aside>
+
+      <section class="center">
+        <section ref="contentRef" class="content panel">
+          <div v-if="!hasTurns" class="hero">
+            <h1>卡片结果展示区</h1>
+            <p>中间区域仅展示智能体返回的结果卡片。</p>
+          </div>
 
           <div v-else class="conversation">
             <div v-for="turn in turns" :key="turn.id" class="turn">
-              <div class="bubble bubble-user">
-                <div class="bubble-user-text" :class="{ 'is-collapsed': !isUserTextExpanded(turn.id) }">{{ turn.userText }}</div>
-                <div class="bubble-user-actions">
-                  <button
-                    v-if="canExpandUserText(turn.userText)"
-                    type="button"
-                    class="bubble-action-btn"
-                    @click="toggleUserTextExpand(turn.id)"
-                  >
-                    {{ isUserTextExpanded(turn.id) ? '收起' : '展开' }}
-                  </button>
-                  <button type="button" class="bubble-action-btn" @click="copyUserText(turn.userText)">复制</button>
-                </div>
-              </div>
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
               <div class="bubble bubble-assistant">
@@ -189,17 +123,6 @@ async function copyUserText(text) {
           </div>
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
-
-        <footer class="composer">
-          <form class="composer-inner" @submit.prevent="submit">
-            <input
-              v-model="message"
-              placeholder="请输入问题，例如：查询故障工单并给出分析..."
-              :disabled="loading"
-            />
-            <button type="submit" :disabled="loading || !message.trim()">{{ loading ? '…' : '➜' }}</button>
-          </form>
-        </footer>
       </section>
 
     </section>
@@ -260,15 +183,8 @@ async function copyUserText(text) {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
-}
-
-.center {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 10px;
-  min-width: 0;
 }
 
 .panel {
@@ -287,162 +203,38 @@ async function copyUserText(text) {
   overflow: auto;
 }
 
-.todo-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
+.center {
+  min-width: 0;
 }
 
-.todo-icon-btn {
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #dbe6ff;
-  width: 32px;
-  height: 22px;
-  cursor: pointer;
+.question-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
-.todo-search {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #7f8ba2;
-  padding: 0 10px;
-  margin-bottom: 10px;
-  font-size: 12px;
-}
-
-.search-icon {
-  color: #ffffff;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.todo-board {
-  position: relative;
-  height: 220px;
-  margin-bottom: 8px;
-  overflow: hidden;
-}
-
-.todo-node {
-  position: absolute;
-  width: 78px;
-  height: 78px;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  text-align: center;
-}
-
-.todo-node b {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.todo-node small {
-  font-size: 10px;
-  color: #93a0bb;
-}
-
-.todo-node.red {
-  border: 1px solid rgba(248, 113, 113, 0.75);
-  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2), 0 0 18px rgba(248, 113, 113, 0.4);
-}
-
-.todo-node.yellow {
-  border: 1px solid rgba(250, 204, 21, 0.8);
-  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2), 0 0 16px rgba(250, 204, 21, 0.3);
-}
-
-.todo-node.blue {
-  border: 1px solid rgba(96, 165, 250, 0.75);
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.18), 0 0 14px rgba(96, 165, 250, 0.28);
-}
-
-.todo-node.n1 { left: 12px; top: 72px; }
-.todo-node.n2 { left: 96px; top: 18px; }
-.todo-node.n3 { left: 176px; top: 72px; }
-.todo-node.n4 { left: 96px; top: 142px; }
-.todo-node.n5 { left: 12px; top: 148px; width: 64px; height: 64px; }
-
-.todo-footer {
-  text-align: center;
-  color: #a3afc5;
-  font-size: 13px;
-}
-
-.todo-footer strong {
-  color: #6ea8ff;
-}
-
-.todo-dots {
-  margin-top: 6px;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.todo-dots span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.todo-dots .active {
-  width: 14px;
-  border-radius: 999px;
-  background: #6ea8ff;
-}
-
-.list {
+.question-list {
   list-style: none;
   margin: 0;
-  padding: 0 0 10px;
+  padding: 0;
   display: grid;
   gap: 8px;
 }
 
-.list li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  column-gap: 8px;
+.question-list li {
   font-size: 12px;
+  line-height: 1.5;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: pre-wrap;
 }
 
-.list-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.list em {
-  color: #6b7e9b;
-  font-style: normal;
-}
-
-.file-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.file-grid span {
-  font-size: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 8px 6px;
-  text-align: center;
+.question-empty p {
+  margin: 0 0 10px;
+  color: rgba(203, 213, 225, 0.8);
+  font-size: 13px;
 }
 
 .hero {
@@ -493,42 +285,6 @@ async function copyUserText(text) {
   gap: 10px;
 }
 
-.bubble-user {
-  align-self: flex-end;
-  max-width: 82%;
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-
-.bubble-user-text {
-  white-space: pre-wrap;
-  line-height: 1.5;
-}
-
-.bubble-user-text.is-collapsed {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
-
-.bubble-user-actions {
-  margin-top: 8px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.bubble-action-btn {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
 .bubble-assistant {
   align-self: stretch;
   border-radius: 12px;
@@ -569,6 +325,10 @@ async function copyUserText(text) {
 
 .composer {
   padding: 8px 0 0;
+}
+
+.composer-sidebar {
+  margin-top: auto;
 }
 
 .composer-inner {
