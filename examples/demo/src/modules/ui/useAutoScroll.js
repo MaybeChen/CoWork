@@ -69,7 +69,6 @@ export function useAutoScroll() {
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
       shouldAutoScroll = true
-      scheduleAutoScroll()
     }, 150)
   }
 
