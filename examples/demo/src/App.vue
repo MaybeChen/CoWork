@@ -102,7 +102,15 @@ async function handleAction(turn, action) {
         <section class="panel question-panel">
           <h3>输入历史</h3>
           <ul v-if="hasTurns" class="question-list">
-            <li v-for="turn in turns" :key="`q-${turn.id}`">{{ turn.userText }}</li>
+            <li v-for="turn in turns" :key="`q-${turn.id}`">
+              <template v-if="turn.mode === 'ws_stream'">
+                <p class="question-full">{{ turn.userText }}</p>
+                <p class="question-progress">{{ turn.streamPreviewText || '正在渐进输出...' }}</p>
+              </template>
+              <template v-else>
+                {{ turn.userText }}
+              </template>
+            </li>
           </ul>
           <div v-else class="question-empty">
             <p>问题输入后会展示在这里。</p>
@@ -266,6 +274,18 @@ async function handleAction(turn, action) {
   white-space: pre-wrap;
 }
 
+.question-full,
+.question-progress {
+  margin: 0;
+}
+
+.question-progress {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  color: rgba(226, 232, 240, 0.9);
+}
+
 .question-empty p {
   margin: 0 0 10px;
   color: rgba(203, 213, 225, 0.8);
@@ -414,9 +434,9 @@ async function handleAction(turn, action) {
 .mode-select {
   height: 34px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
-  color: #f9fafb;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #121720;
+  color: #ffffff;
   margin-right: 6px;
 }
 

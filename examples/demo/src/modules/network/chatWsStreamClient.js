@@ -50,9 +50,9 @@ export async function streamChatByWs({
           finishPreview()
           return
         }
-        previewText += question.slice(previewText.length, previewText.length + 1)
+        previewText += question.slice(previewText.length, previewText.length + 6)
         onPreview?.(previewText)
-      }, 80)
+      }, 100)
 
       syncTimer = window.setInterval(() => {
         if (previewText !== lastSentText) {
