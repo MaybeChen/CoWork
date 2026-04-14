@@ -26,6 +26,7 @@ export function useAutoScroll() {
     await nextTick()
     if (contentRef.value) {
       if (force) {
+        stickToBottom = true
         autoScrolling = true
         if (autoScrollTimer) clearTimeout(autoScrollTimer)
         autoScrollTimer = setTimeout(() => {
@@ -46,7 +47,7 @@ export function useAutoScroll() {
   function scheduleAutoScroll({ force = false } = {}) {
     if (!force) {
       if (userScrolling) return
-      if (!stickToBottom) return
+      if (!stickToBottom && !isNearBottom()) return
     }
     if (scrollScheduled) return
     scrollScheduled = true
