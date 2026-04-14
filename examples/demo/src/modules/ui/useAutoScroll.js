@@ -6,6 +6,7 @@ export function useAutoScroll() {
   let resizeObserver
   let scrollStopTimer
   let autoScrollTimer
+  let postScrollTimer
   let shouldAutoScroll = true
   let isProgrammaticScroll = false
   let scrollScheduled = false
@@ -13,15 +14,26 @@ export function useAutoScroll() {
   async function smoothScrollToBottom() {
     await nextTick()
     if (contentRef.value) {
+      const el = contentRef.value
       isProgrammaticScroll = true
-      contentRef.value.scrollTo({
-        top: contentRef.value.scrollHeight,
-        behavior: force ? 'auto' : 'smooth',
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: 'auto',
       })
+      el.scrollTop = el.scrollHeight
+      requestAnimationFrame(() => {
+        if (!contentRef.value) return
+        contentRef.value.scrollTop = contentRef.value.scrollHeight
+      })
+      if (postScrollTimer) clearTimeout(postScrollTimer)
+      postScrollTimer = setTimeout(() => {
+        if (!contentRef.value) return
+        contentRef.value.scrollTop = contentRef.value.scrollHeight
+      }, 120)
       if (autoScrollTimer) clearTimeout(autoScrollTimer)
       autoScrollTimer = setTimeout(() => {
         isProgrammaticScroll = false
-      }, 300)
+      }, 400)
       return
     }
     if (typeof window !== 'undefined') {
@@ -94,6 +106,7 @@ export function useAutoScroll() {
     if (contentRef.value) contentRef.value.removeEventListener('scroll', onUserScroll)
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     if (autoScrollTimer) clearTimeout(autoScrollTimer)
+    if (postScrollTimer) clearTimeout(postScrollTimer)
   })
 
   return {
