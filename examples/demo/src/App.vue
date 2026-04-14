@@ -146,24 +146,6 @@ async function copyUserText(text) {
       </aside>
 
       <section class="center">
-        <div class="panel stage-map">
-          <h3>工作台</h3>
-          <div class="stage-tabs">
-            <span class="active">信息丰富与本体子图检索</span>
-            <span>规划与执行</span>
-            <span>推理</span>
-          </div>
-          <div class="stage-canvas">
-            <span class="stage-step">第1轮 ▾</span>
-            <span class="stage-node blue n-start">开始</span>
-            <span class="stage-node blue strong n-search">本体定义子图</span>
-            <span class="stage-node purple n-instance">本体实例图</span>
-            <span class="stage-node green n-state">状态图</span>
-            <span class="stage-node cyan n-knowledge">知识图</span>
-            <span class="stage-node dark-green n-reason">推理图</span>
-          </div>
-        </div>
-
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
             <h1>智能体对话区</h1>
@@ -221,37 +203,6 @@ async function copyUserText(text) {
       </section>
 
       <aside class="sidebar right">
-        <section class="panel">
-          <div class="tool-head">
-            <div class="tool-tabs">
-              <span class="active">热门工具</span>
-              <span>我收藏的</span>
-            </div>
-            <div class="tool-lib">⛓ 工具库</div>
-          </div>
-          <div class="tool-search">
-            <span>工具名称</span>
-            <span class="search-icon">⌕</span>
-          </div>
-          <ul class="tool-list">
-            <li>
-              <div class="tool-item-top"><span class="tool-icon">🧰</span><b>工单速写</b><em>★</em></div>
-              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
-            </li>
-            <li>
-              <div class="tool-item-top"><span class="tool-icon">🧪</span><b>预案生成</b><em>☆</em></div>
-              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
-            </li>
-            <li>
-              <div class="tool-item-top"><span class="tool-icon">🧠</span><b>智能调优</b><em>☆</em></div>
-              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
-            </li>
-            <li>
-              <div class="tool-item-top"><span class="tool-icon">🟣</span><b>报告生成</b><em>☆</em></div>
-              <p>这里是工具的简要用途说明，这里是工具的简要用途说明</p>
-            </li>
-          </ul>
-        </section>
         <section class="panel">
           <h3>状态可视化</h3>
           <div class="graph-mock"></div>
@@ -321,7 +272,7 @@ async function copyUserText(text) {
 
 .center {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   gap: 10px;
   min-width: 0;
 }
@@ -498,158 +449,6 @@ async function copyUserText(text) {
   background: rgba(255, 255, 255, 0.02);
   padding: 8px 6px;
   text-align: center;
-}
-
-.stage-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.stage-tabs span {
-  text-align: center;
-  font-size: 12px;
-  color: #8d98ae;
-  padding: 7px 10px;
-}
-
-.stage-tabs .active {
-  color: #4ea0ff;
-  background: rgba(78, 160, 255, 0.08);
-}
-
-.stage-canvas {
-  position: relative;
-  min-height: 156px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  background: rgba(11, 13, 17, 0.92);
-  padding: 12px 12px 10px;
-  overflow: hidden;
-}
-
-.stage-node {
-  position: absolute;
-  border-radius: 10px;
-  font-size: 12px;
-  padding: 6px 14px;
-  color: #e8efff;
-  border: 1px solid transparent;
-  z-index: 2;
-  transform: translateY(-50%);
-}
-
-.stage-node.blue { background: #2997e3; }
-.stage-node.blue.strong { background: #3166ee; box-shadow: 0 0 0 2px rgba(49, 102, 238, 0.35); }
-.stage-node.purple { background: #6d55e6; }
-.stage-node.green { background: #1b6f61; }
-.stage-node.cyan { background: #10a8b8; }
-.stage-node.dark-green { background: #2f6a4a; }
-
-.stage-step {
-  position: absolute;
-  right: 14px;
-  top: 8px;
-  font-size: 12px;
-  color: #c6d0e4;
-  z-index: 3;
-}
-
-.n-start { left: 3%; top: 56%; }
-.n-search { left: 17%; top: 56%; }
-.n-instance { left: 41%; top: 34%; }
-.n-state { left: 58%; top: 34%; }
-.n-knowledge { left: 58%; top: 74%; }
-.n-reason { left: 84%; top: 56%; }
-
-.tool-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.tool-tabs {
-  display: flex;
-  gap: 14px;
-  font-size: 13px;
-  color: #a7b2c8;
-}
-
-.tool-tabs .active {
-  color: #4ea0ff;
-  border-bottom: 2px solid #4ea0ff;
-  padding-bottom: 3px;
-}
-
-.tool-lib {
-  color: #c7d3e8;
-  font-size: 12px;
-}
-
-.tool-search {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  min-height: 34px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 10px;
-  color: #7f8ba2;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.tool-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.tool-list li {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 10px;
-}
-
-.tool-item-top {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 10px;
-}
-
-.tool-item-top b {
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.tool-item-top em {
-  font-style: normal;
-  color: #f5d14f;
-}
-
-.tool-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(78, 160, 255, 0.25);
-}
-
-.tool-list li p {
-  margin: 8px 0 0;
-  color: #b5bfd3;
-  font-size: 12px;
-  line-height: 1.55;
 }
 
 .graph-mock {
