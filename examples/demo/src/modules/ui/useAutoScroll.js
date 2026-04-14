@@ -6,9 +6,8 @@ export function useAutoScroll() {
   let resizeObserver
   let scrollStopTimer
   let autoScrollTimer
-  let userScrolling = false
-  let autoScrolling = false
-  let stickToBottom = true
+  let shouldAutoScroll = true
+  let isProgrammaticScroll = false
   let scrollScheduled = false
   const BOTTOM_THRESHOLD = 20
 
@@ -22,21 +21,18 @@ export function useAutoScroll() {
     return distanceToBottom() <= BOTTOM_THRESHOLD
   }
 
-  async function scrollToBottom({ force = false } = {}) {
+  async function smoothScrollToBottom() {
     await nextTick()
     if (contentRef.value) {
-      if (force) {
-        stickToBottom = true
-        autoScrolling = true
-        if (autoScrollTimer) clearTimeout(autoScrollTimer)
-        autoScrollTimer = setTimeout(() => {
-          autoScrolling = false
-        }, 160)
-      }
+      isProgrammaticScroll = true
       contentRef.value.scrollTo({
         top: contentRef.value.scrollHeight,
         behavior: force ? 'auto' : 'smooth',
       })
+      if (autoScrollTimer) clearTimeout(autoScrollTimer)
+      autoScrollTimer = setTimeout(() => {
+        isProgrammaticScroll = false
+      }, 300)
       return
     }
     if (typeof window !== 'undefined') {
@@ -45,15 +41,12 @@ export function useAutoScroll() {
   }
 
   function scheduleAutoScroll({ force = false } = {}) {
-    if (!force) {
-      if (userScrolling) return
-      if (!stickToBottom) return
-    }
+    if (!force && !shouldAutoScroll) return
     if (scrollScheduled) return
     scrollScheduled = true
     const run = async () => {
       scrollScheduled = false
-      await scrollToBottom({ force })
+      await smoothScrollToBottom()
     }
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run)
     else setTimeout(run, 0)
@@ -70,29 +63,31 @@ export function useAutoScroll() {
   }
 
   function onUserScroll() {
-    if (autoScrolling) return
-    userScrolling = true
+    if (isProgrammaticScroll) return
+    shouldAutoScroll = false
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
-      userScrolling = false
-      stickToBottom = isNearBottom()
-      if (stickToBottom) {
+      const distance = distanceToBottom()
+      if (distance <= BOTTOM_THRESHOLD) {
+        shouldAutoScroll = true
         scheduleAutoScroll()
+      } else {
+        shouldAutoScroll = false
       }
-    }, 120)
+    }, 150)
   }
 
   onMounted(() => {
     if (!contentRef.value) return
 
-    stickToBottom = isNearBottom()
+    shouldAutoScroll = isNearBottom()
     scheduleAutoScroll({ force: true })
     contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
 
     if (typeof MutationObserver === 'function') {
       mutationObserver = new MutationObserver((mutations) => {
         if (hasNewSurface(mutations)) {
-          scheduleAutoScroll({ force: true })
+          scheduleAutoScroll()
         }
       })
       mutationObserver.observe(contentRef.value, {
@@ -103,7 +98,7 @@ export function useAutoScroll() {
 
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(() => {
-        if (stickToBottom) scheduleAutoScroll({ force: true })
+        scheduleAutoScroll()
       })
       resizeObserver.observe(contentRef.value)
     }
