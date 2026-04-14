@@ -6,6 +6,7 @@ export function useAutoScroll() {
   let resizeObserver
   let scrollStopTimer
   let userScrolling = false
+  let stickToBottom = true
   let scrollScheduled = false
   const BOTTOM_THRESHOLD = 20
 
@@ -36,7 +37,7 @@ export function useAutoScroll() {
   function scheduleAutoScroll({ force = false } = {}) {
     if (!force) {
       if (userScrolling) return
-      if (!isNearBottom()) return
+      if (!stickToBottom) return
     }
     if (scrollScheduled) return
     scrollScheduled = true
@@ -63,7 +64,8 @@ export function useAutoScroll() {
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
       userScrolling = false
-      if (isNearBottom()) {
+      stickToBottom = isNearBottom()
+      if (stickToBottom) {
         scheduleAutoScroll()
       }
     }, 120)
@@ -72,6 +74,7 @@ export function useAutoScroll() {
   onMounted(() => {
     if (!contentRef.value) return
 
+    stickToBottom = isNearBottom()
     scheduleAutoScroll({ force: true })
     contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
 
@@ -89,7 +92,7 @@ export function useAutoScroll() {
 
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(() => {
-        scheduleAutoScroll()
+        if (stickToBottom) scheduleAutoScroll({ force: true })
       })
       resizeObserver.observe(contentRef.value)
     }

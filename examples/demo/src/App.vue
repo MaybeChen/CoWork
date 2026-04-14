@@ -387,7 +387,11 @@ async function handleAction(turn, action) {
 
 .surface {
   margin-top: 0;
-  max-width: 80%;
+  width: 80%;
+  min-width: 640px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
