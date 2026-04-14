@@ -2,13 +2,16 @@
 import { computed, reactive, ref } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
+import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
+const wsEndpoint = '/api/chat/ws_stream'
 
 const message = ref('')
+const streamMode = ref('default')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
@@ -38,15 +41,44 @@ async function send(turn, payload) {
   loading.value = false
 }
 
+async function sendByWsStream(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+  turn.streamPreviewText = ''
+
+  await streamChatByWs({
+    endpoint: wsEndpoint,
+    payload,
+    onPreview: (text) => {
+      turn.streamPreviewText = text
+      scheduleAutoScroll()
+    },
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+  })
+
+  turn.streaming = false
+  loading.value = false
+}
+
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
 
-  const turn = reactive(createTurn(text))
+  const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
   scheduleAutoScroll()
 
-  await send(turn, { message: text })
+  if (streamMode.value === 'ws_stream') {
+    await sendByWsStream(turn, { message: text })
+  } else {
+    await send(turn, { message: text })
+  }
   message.value = ''
 }
 
@@ -79,6 +111,10 @@ async function handleAction(turn, action) {
 
         <footer class="composer composer-sidebar">
           <form class="composer-inner" @submit.prevent="submit">
+            <select v-model="streamMode" :disabled="loading" class="mode-select">
+              <option value="default">非流式</option>
+              <option value="ws_stream">流式</option>
+            </select>
             <input
               v-model="message"
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
@@ -99,6 +135,14 @@ async function handleAction(turn, action) {
           <div v-else class="conversation">
             <div v-for="turn in turns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
+
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
+                {{ turn.userText }}
+              </div>
+
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-stream-preview">
+                {{ turn.streamPreviewText || '正在渐进输出...' }}
+              </div>
 
               <div class="bubble bubble-assistant">
                 <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
@@ -264,6 +308,27 @@ async function handleAction(turn, action) {
   border-radius: 12px;
 }
 
+.bubble-user,
+.bubble-stream-preview {
+  align-self: stretch;
+  max-width: 82%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.bubble-user {
+  background: rgba(59, 130, 246, 0.22);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+}
+
+.bubble-stream-preview {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
 .streaming-tip {
   color: rgba(125, 211, 252, 0.95);
   font-size: 12px;
@@ -344,6 +409,15 @@ async function handleAction(turn, action) {
   background: transparent;
   color: #f9fafb;
   padding: 10px 12px;
+}
+
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f9fafb;
+  margin-right: 6px;
 }
 
 .composer-inner button {
