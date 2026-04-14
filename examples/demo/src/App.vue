@@ -53,10 +53,6 @@ async function submit() {
 async function handleAction(turn, action) {
   await send(turn, { message: JSON.stringify({ userAction: action }) })
 }
-
-function fillPreset(text) {
-  message.value = text
-}
 </script>
 
 <template>
@@ -78,11 +74,6 @@ function fillPreset(text) {
           </ul>
           <div v-else class="question-empty">
             <p>问题输入后会展示在这里。</p>
-            <div class="suggestions">
-              <button @click="fillPreset('Compare weather in NYC, London, and Tokyo')">⚡ Weather comparison</button>
-              <button @click="fillPreset('Show stats for github.com/vercel/ai')">⚡ GitHub repo stats</button>
-              <button @click="fillPreset('Build a crypto dashboard for BTC and ETH')">⚡ Crypto dashboard</button>
-            </div>
           </div>
         </section>
 
@@ -167,7 +158,7 @@ function fillPreset(text) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 420px 1fr;
   gap: 8px;
   padding: 10px;
   overflow: hidden;
@@ -253,23 +244,6 @@ function fillPreset(text) {
 .hero p {
   margin: 0;
   color: rgba(203, 213, 225, 0.8);
-}
-
-.suggestions {
-  margin-top: 12px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.suggestions button {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-  padding: 7px 12px;
-  cursor: pointer;
 }
 
 .conversation {
