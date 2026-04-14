@@ -105,7 +105,9 @@ async function handleAction(turn, action) {
           <ul v-if="hasTurns" class="question-list">
             <li v-for="turn in turns" :key="`q-${turn.id}`">
               <template v-if="turn.mode === 'ws_stream'">
+                <p class="question-label question-label-full">原问题</p>
                 <p class="question-full">{{ turn.userText }}</p>
+                <p class="question-label question-label-progress">渐进流式</p>
                 <p class="question-progress">{{ turn.streamPreviewText || '正在渐进输出...' }}</p>
               </template>
               <template v-else>
@@ -284,11 +286,31 @@ async function handleAction(turn, action) {
   margin: 0;
 }
 
-.question-progress {
+.question-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.question-label-full {
+  color: #93c5fd;
+}
+
+.question-label-progress {
+  color: #86efac;
   margin-top: 6px;
+}
+
+.question-full {
+  color: #dbeafe;
+}
+
+.question-progress {
+  margin-top: 0;
   padding-top: 6px;
   border-top: 1px dashed rgba(255, 255, 255, 0.18);
-  color: rgba(226, 232, 240, 0.9);
+  color: #dcfce7;
 }
 
 .question-empty p {
