@@ -251,10 +251,13 @@ async function handleAction(turn, action) {
 
 .content {
   overflow: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .center {
   min-width: 0;
+  display: flex;
 }
 
 .question-panel {

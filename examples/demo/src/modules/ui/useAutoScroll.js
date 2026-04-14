@@ -3,8 +3,8 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 export function useAutoScroll() {
   const contentRef = ref(null)
   let mutationObserver
+  let resizeObserver
   let scrollScheduled = false
-  let lastScrollHeight = 0
 
   async function scrollToBottom() {
     await nextTick()
@@ -32,24 +32,32 @@ export function useAutoScroll() {
   }
 
   onMounted(() => {
-    if (typeof MutationObserver !== 'function' || !contentRef.value) return
-    lastScrollHeight = contentRef.value.scrollHeight
-    mutationObserver = new MutationObserver(() => {
-      if (!contentRef.value) return
-      const nextScrollHeight = contentRef.value.scrollHeight
-      if (nextScrollHeight <= lastScrollHeight) return
-      lastScrollHeight = nextScrollHeight
-      scheduleAutoScroll()
-    })
-    mutationObserver.observe(contentRef.value, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    })
+    if (!contentRef.value) return
+
+    scheduleAutoScroll()
+
+    if (typeof MutationObserver === 'function') {
+      mutationObserver = new MutationObserver(() => {
+        scheduleAutoScroll()
+      })
+      mutationObserver.observe(contentRef.value, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      })
+    }
+
+    if (typeof ResizeObserver === 'function') {
+      resizeObserver = new ResizeObserver(() => {
+        scheduleAutoScroll()
+      })
+      resizeObserver.observe(contentRef.value)
+    }
   })
 
   onBeforeUnmount(() => {
     if (mutationObserver) mutationObserver.disconnect()
+    if (resizeObserver) resizeObserver.disconnect()
   })
 
   return {
