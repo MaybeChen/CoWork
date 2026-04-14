@@ -134,7 +134,7 @@ async function handleAction(turn, action) {
             <button type="submit" :disabled="loading || !message.trim()">
               <span v-if="loading" class="sending">
                 <span class="sending-dot" />
-                发送中
+                生成中
               </span>
               <span v-else>发送</span>
             </button>
