@@ -47,7 +47,7 @@ export function useAutoScroll() {
   function scheduleAutoScroll({ force = false } = {}) {
     if (!force) {
       if (userScrolling) return
-      if (!stickToBottom && !isNearBottom()) return
+      if (!stickToBottom) return
     }
     if (scrollScheduled) return
     scrollScheduled = true
