@@ -139,8 +139,7 @@ async function handleAction(turn, action) {
       <section class="center">
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
-            <h1>卡片结果展示区</h1>
-            <p>中间区域仅展示智能体返回的结果卡片。</p>
+            <h1 class="hero-brand">co-work</h1>
           </div>
 
           <div v-if="centerTurns.length" class="conversation">
@@ -333,6 +332,17 @@ async function handleAction(turn, action) {
 .hero h1 {
   margin: 0;
   font-size: clamp(22px, 2vw, 30px);
+}
+
+.hero-brand {
+  font-size: clamp(44px, 7vw, 88px) !important;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  background: linear-gradient(120deg, #60a5fa 0%, #34d399 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero p {
