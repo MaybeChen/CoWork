@@ -2,21 +2,25 @@
 import { computed, reactive, ref } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
+import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
+const wsEndpoint = '/ws/debug'
 
 const message = ref('')
+const streamMode = ref('default')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
+const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
 
-const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: scheduleAutoScroll })
+const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
 
 async function send(turn, payload) {
   loading.value = true
@@ -38,15 +42,44 @@ async function send(turn, payload) {
   loading.value = false
 }
 
+async function sendByWsStream(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+  turn.streamPreviewText = ''
+
+  await streamChatByWs({
+    endpoint: wsEndpoint,
+    payload,
+    onPreview: (text) => {
+      turn.streamPreviewText = text
+      scheduleAutoScroll({ force: true })
+    },
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+  })
+
+  turn.streaming = false
+  loading.value = false
+}
+
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
 
-  const turn = reactive(createTurn(text))
+  const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
-  scheduleAutoScroll()
+  scheduleAutoScroll({ force: true })
 
-  await send(turn, { message: text })
+  if (streamMode.value === 'ws_stream') {
+    await sendByWsStream(turn, { message: text })
+  } else {
+    await send(turn, { message: text })
+  }
   message.value = ''
 }
 
@@ -70,7 +103,17 @@ async function handleAction(turn, action) {
         <section class="panel question-panel">
           <h3>输入历史</h3>
           <ul v-if="hasTurns" class="question-list">
-            <li v-for="turn in turns" :key="`q-${turn.id}`">{{ turn.userText }}</li>
+            <li v-for="turn in turns" :key="`q-${turn.id}`">
+              <template v-if="turn.mode === 'ws_stream'">
+                <p class="question-label question-label-full">原问题</p>
+                <p class="question-full">{{ turn.userText }}</p>
+                <p class="question-label question-label-progress">渐进流式</p>
+                <p class="question-progress">{{ turn.streamPreviewText || '正在渐进输出...' }}</p>
+              </template>
+              <template v-else>
+                {{ turn.userText }}
+              </template>
+            </li>
           </ul>
           <div v-else class="question-empty">
             <p>问题输入后会展示在这里。</p>
@@ -79,12 +122,22 @@ async function handleAction(turn, action) {
 
         <footer class="composer composer-sidebar">
           <form class="composer-inner" @submit.prevent="submit">
+            <select v-model="streamMode" :disabled="loading" class="mode-select">
+              <option value="default">非流式</option>
+              <option value="ws_stream">流式</option>
+            </select>
             <input
               v-model="message"
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
               :disabled="loading"
             />
-            <button type="submit" :disabled="loading || !message.trim()">{{ loading ? '…' : '➜' }}</button>
+            <button type="submit" :disabled="loading || !message.trim()">
+              <span v-if="loading" class="sending">
+                <span class="sending-dot" />
+                发送中
+              </span>
+              <span v-else>发送</span>
+            </button>
           </form>
         </footer>
       </aside>
@@ -92,12 +145,11 @@ async function handleAction(turn, action) {
       <section class="center">
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
-            <h1>卡片结果展示区</h1>
-            <p>中间区域仅展示智能体返回的结果卡片。</p>
+            <h1 class="hero-brand">co-work</h1>
           </div>
 
-          <div v-else class="conversation">
-            <div v-for="turn in turns" :key="turn.id" class="turn">
+          <div v-if="centerTurns.length" class="conversation">
+            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
               <div class="bubble bubble-assistant">
@@ -111,6 +163,10 @@ async function handleAction(turn, action) {
                 </template>
               </div>
             </div>
+          </div>
+          <div v-else-if="hasTurns" class="hero">
+            <h1>卡片结果展示区</h1>
+            <p>流式问题与渐进输出仅在左侧展示。</p>
           </div>
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
@@ -192,10 +248,13 @@ async function handleAction(turn, action) {
 
 .content {
   overflow: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .center {
   min-width: 0;
+  display: flex;
 }
 
 .question-panel {
@@ -222,6 +281,38 @@ async function handleAction(turn, action) {
   white-space: pre-wrap;
 }
 
+.question-full,
+.question-progress {
+  margin: 0;
+}
+
+.question-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.question-label-full {
+  color: #93c5fd;
+}
+
+.question-label-progress {
+  color: #86efac;
+  margin-top: 6px;
+}
+
+.question-full {
+  color: #dbeafe;
+}
+
+.question-progress {
+  margin-top: 0;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  color: #dcfce7;
+}
+
 .question-empty p {
   margin: 0 0 10px;
   color: rgba(203, 213, 225, 0.8);
@@ -239,6 +330,17 @@ async function handleAction(turn, action) {
 .hero h1 {
   margin: 0;
   font-size: clamp(22px, 2vw, 30px);
+}
+
+.hero-brand {
+  font-size: clamp(44px, 7vw, 88px) !important;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  background: linear-gradient(120deg, #60a5fa 0%, #34d399 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero p {
@@ -260,19 +362,27 @@ async function handleAction(turn, action) {
 }
 
 .bubble-assistant {
-  align-self: stretch;
+  width: 80%;
+  min-width: 640px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 12px;
 }
 
 .streaming-tip {
   color: rgba(125, 211, 252, 0.95);
   font-size: 12px;
-  padding-left: 8px;
+  width: 80%;
+  min-width: 640px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .surface {
   margin-top: 0;
-  max-width: 80%;
+  width: 100%;
   padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -346,13 +456,48 @@ async function handleAction(turn, action) {
   padding: 10px 12px;
 }
 
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #121720;
+  color: #ffffff;
+  margin-right: 6px;
+}
+
 .composer-inner button {
   height: 34px;
-  min-width: 34px;
+  min-width: 72px;
   border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   color: #f9fafb;
   cursor: pointer;
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #60a5fa;
+  animation: sending-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sending-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
