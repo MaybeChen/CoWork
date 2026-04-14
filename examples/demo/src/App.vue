@@ -341,7 +341,7 @@ async function handleAction(turn, action) {
 }
 
 .hero-brand {
-  font-size: clamp(44px, 7vw, 88px) !important;
+  font-size: clamp(32px, 5.2vw, 64px) !important;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: lowercase;
