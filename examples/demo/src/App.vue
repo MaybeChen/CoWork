@@ -18,6 +18,7 @@ const turns = ref([])
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
+const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
 
 const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: scheduleAutoScroll })
 
@@ -140,8 +141,8 @@ async function handleAction(turn, action) {
             <p>中间区域仅展示智能体返回的结果卡片。</p>
           </div>
 
-          <div v-else class="conversation">
-            <div v-for="turn in turns" :key="turn.id" class="turn">
+          <div v-if="centerTurns.length" class="conversation">
+            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
               <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
@@ -163,6 +164,10 @@ async function handleAction(turn, action) {
                 </template>
               </div>
             </div>
+          </div>
+          <div v-else-if="hasTurns" class="hero">
+            <h1>卡片结果展示区</h1>
+            <p>流式问题与渐进输出仅在左侧展示。</p>
           </div>
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
