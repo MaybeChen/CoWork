@@ -9,17 +9,6 @@ export function useAutoScroll() {
   let shouldAutoScroll = true
   let isProgrammaticScroll = false
   let scrollScheduled = false
-  const BOTTOM_THRESHOLD = 20
-
-  function distanceToBottom() {
-    if (!contentRef.value) return Number.POSITIVE_INFINITY
-    const el = contentRef.value
-    return el.scrollHeight - el.scrollTop - el.clientHeight
-  }
-
-  function isNearBottom() {
-    return distanceToBottom() <= BOTTOM_THRESHOLD
-  }
 
   async function smoothScrollToBottom() {
     await nextTick()
@@ -67,20 +56,15 @@ export function useAutoScroll() {
     shouldAutoScroll = false
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
-      const distance = distanceToBottom()
-      if (distance <= BOTTOM_THRESHOLD) {
-        shouldAutoScroll = true
-        scheduleAutoScroll()
-      } else {
-        shouldAutoScroll = false
-      }
+      shouldAutoScroll = true
+      scheduleAutoScroll()
     }, 150)
   }
 
   onMounted(() => {
     if (!contentRef.value) return
 
-    shouldAutoScroll = isNearBottom()
+    shouldAutoScroll = true
     scheduleAutoScroll({ force: true })
     contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
 
