@@ -202,12 +202,6 @@ async function copyUserText(text) {
         </footer>
       </section>
 
-      <aside class="sidebar right">
-        <section class="panel">
-          <h3>状态可视化</h3>
-          <div class="graph-mock"></div>
-        </section>
-      </aside>
     </section>
   </main>
 </template>
@@ -250,7 +244,7 @@ async function copyUserText(text) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
+  grid-template-columns: 320px 1fr;
   gap: 8px;
   padding: 10px;
   overflow: hidden;
@@ -449,16 +443,6 @@ async function copyUserText(text) {
   background: rgba(255, 255, 255, 0.02);
   padding: 8px 6px;
   text-align: center;
-}
-
-.graph-mock {
-  height: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background:
-    radial-gradient(circle at 20% 40%, rgba(34, 197, 94, 0.5) 2px, transparent 3px),
-    radial-gradient(circle at 58% 62%, rgba(59, 130, 246, 0.55) 2px, transparent 3px),
-    radial-gradient(circle at 78% 38%, rgba(168, 85, 247, 0.55) 2px, transparent 3px),
-    rgba(255, 255, 255, 0.02);
 }
 
 .hero {
