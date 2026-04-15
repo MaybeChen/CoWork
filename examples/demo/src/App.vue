@@ -187,15 +187,15 @@ async function handleAction(turn, action) {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.18) 0%, transparent 35%),
-    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.16) 0%, transparent 32%),
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 35%),
+    radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.1) 0%, transparent 32%),
     #020617;
   color: #d5def0;
 }
 
 .global-header {
   height: 52px;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -208,11 +208,11 @@ async function handleAction(turn, action) {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: linear-gradient(100deg, #bfdbfe 0%, #22d3ee 55%, #818cf8 100%);
+  background: linear-gradient(100deg, #e2e8f0 0%, #c4b5fd 55%, #f5d0fe 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 24px rgba(56, 189, 248, 0.42);
+  text-shadow: 0 0 20px rgba(196, 181, 253, 0.3);
 }
 
 .workspace {
@@ -223,7 +223,7 @@ async function handleAction(turn, action) {
   padding: 10px;
   overflow: hidden;
   background:
-    radial-gradient(circle, rgba(59, 130, 246, 0.18) 1px, transparent 1px) 0 0 / 12px 12px,
+    radial-gradient(circle, rgba(148, 163, 184, 0.2) 1px, transparent 1px) 0 0 / 12px 12px,
     linear-gradient(135deg, #020617 0%, #0b1220 45%, #0f172a 100%);
 }
 
@@ -241,7 +241,7 @@ async function handleAction(turn, action) {
 }
 
 .panel {
-  border: 1px solid rgba(96, 165, 250, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 10px;
   background: rgba(2, 6, 23, 0.82);
@@ -287,7 +287,7 @@ async function handleAction(turn, action) {
   padding: 8px;
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   white-space: pre-wrap;
 }
 
@@ -384,30 +384,9 @@ async function handleAction(turn, action) {
   margin-left: auto;
   margin-right: auto;
   border-radius: 12px;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(15, 23, 42, 0.6);
   padding: 10px;
-}
-
-.bubble-user,
-.bubble-stream-preview {
-  align-self: stretch;
-  max-width: 82%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.45;
-  white-space: pre-wrap;
-}
-
-.bubble-user {
-  background: rgba(59, 130, 246, 0.22);
-  border: 1px solid rgba(96, 165, 250, 0.45);
-}
-
-.bubble-stream-preview {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .streaming-tip {
@@ -458,7 +437,7 @@ async function handleAction(turn, action) {
 .composer-inner {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(96, 165, 250, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(2, 6, 23, 0.95);
   display: flex;
   align-items: center;
@@ -499,7 +478,7 @@ async function handleAction(turn, action) {
 .mode-select {
   height: 34px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   background: #121720;
   color: #ffffff;
   margin-right: 6px;
@@ -508,38 +487,12 @@ async function handleAction(turn, action) {
 .composer-inner button {
   height: 34px;
   min-width: 72px;
-  border: 1px solid rgba(56, 189, 248, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  background: linear-gradient(120deg, rgba(14, 116, 144, 0.65), rgba(37, 99, 235, 0.65));
+  background: linear-gradient(120deg, rgba(30, 41, 59, 0.92), rgba(51, 65, 85, 0.92));
   color: #f9fafb;
   cursor: pointer;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.22);
-}
-
-.sending {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sending-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #60a5fa;
-  animation: sending-pulse 1s ease-in-out infinite;
-}
-
-@keyframes sending-pulse {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  box-shadow: 0 0 14px rgba(148, 163, 184, 0.18);
 }
 
 .sending {
