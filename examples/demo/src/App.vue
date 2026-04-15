@@ -284,7 +284,7 @@ async function handleAction(turn, action) {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 14px;
 }
 
 .question-item {
@@ -312,6 +312,7 @@ async function handleAction(turn, action) {
 
 .terminal-wait {
   margin-top: 6px;
+  color: #4ade80;
 }
 
 .cursor {
