@@ -143,6 +143,14 @@ async function handleAction(turn, action) {
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
+                {{ turn.userText }}
+              </div>
+
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-stream-preview">
+                {{ turn.streamPreviewText || '正在渐进输出...' }}
+              </div>
+
               <div class="bubble bubble-assistant">
                 <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
@@ -455,6 +463,15 @@ async function handleAction(turn, action) {
 
 .composer-inner input::placeholder {
   color: rgba(134, 239, 172, 0.55);
+}
+
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #121720;
+  color: #ffffff;
+  margin-right: 6px;
 }
 
 .mode-select {
