@@ -190,7 +190,7 @@ async function handleAction(turn, action) {
     radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 35%),
     radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.1) 0%, transparent 32%),
     #020617;
-  color: #d5def0;
+  color: #e5e7eb;
 }
 
 .global-header {
@@ -307,7 +307,7 @@ async function handleAction(turn, action) {
 }
 
 .question-label-full {
-  color: #93c5fd;
+  color: #c4b5fd;
 }
 
 .question-label-progress {
@@ -316,7 +316,7 @@ async function handleAction(turn, action) {
 }
 
 .question-full {
-  color: #dbeafe;
+  color: #ede9fe;
 }
 
 .question-progress {
@@ -393,7 +393,7 @@ async function handleAction(turn, action) {
 }
 
 .streaming-tip {
-  color: rgba(125, 211, 252, 0.95);
+  color: rgba(244, 114, 182, 0.92);
   font-size: 12px;
   width: 80%;
   min-width: 640px;
@@ -508,7 +508,7 @@ async function handleAction(turn, action) {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #60a5fa;
+  background: #f472b6;
   animation: sending-pulse 1s ease-in-out infinite;
 }
 
