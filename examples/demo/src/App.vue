@@ -17,6 +17,9 @@ const error = ref('')
 const turns = ref([])
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
+const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoScroll } = useAutoScroll({
+  mutationFilter: (mutations) => mutations.some((mutation) => (mutation.addedNodes?.length || 0) > 0 || mutation.type === 'characterData'),
+})
 const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
 
@@ -54,6 +57,7 @@ async function sendByWsStream(turn, payload) {
     onPreview: (text) => {
       turn.streamPreviewText = text
       scheduleAutoScroll({ force: true })
+      scheduleQuestionAutoScroll({ force: true })
     },
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
@@ -74,6 +78,7 @@ async function submit() {
   const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
   scheduleAutoScroll({ force: true })
+  scheduleQuestionAutoScroll({ force: true })
 
   if (streamMode.value === 'ws_stream') {
     await sendByWsStream(turn, { message: text })
@@ -96,7 +101,7 @@ async function handleAction(turn, action) {
 
     <section class="workspace">
       <aside class="sidebar left">
-        <section class="panel question-panel">
+        <section ref="questionPanelRef" class="panel question-panel">
           <ul v-if="hasTurns" class="question-list">
             <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
               <p class="terminal-line">

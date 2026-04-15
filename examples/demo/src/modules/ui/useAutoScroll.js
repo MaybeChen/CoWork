@@ -1,6 +1,6 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
-export function useAutoScroll() {
+export function useAutoScroll(options = {}) {
   const contentRef = ref(null)
   let mutationObserver
   let resizeObserver
@@ -63,6 +63,13 @@ export function useAutoScroll() {
     )
   }
 
+  function shouldForceScrollOnMutation(mutations) {
+    if (typeof options.mutationFilter === 'function') {
+      return options.mutationFilter(mutations)
+    }
+    return hasNewSurface(mutations)
+  }
+
   function onUserScroll() {
     if (isProgrammaticScroll) return
     shouldAutoScroll = false
@@ -81,13 +88,14 @@ export function useAutoScroll() {
 
     if (typeof MutationObserver === 'function') {
       mutationObserver = new MutationObserver((mutations) => {
-        if (hasNewSurface(mutations)) {
+        if (shouldForceScrollOnMutation(mutations)) {
           scheduleAutoScroll({ force: true })
         }
       })
       mutationObserver.observe(contentRef.value, {
         childList: true,
         subtree: true,
+        characterData: true,
       })
     }
 
