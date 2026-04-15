@@ -149,6 +149,14 @@ async function handleAction(turn, action) {
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
+                {{ turn.userText }}
+              </div>
+
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-stream-preview">
+                {{ turn.streamPreviewText || '正在渐进输出...' }}
+              </div>
+
               <div class="bubble bubble-assistant">
                 <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
@@ -381,6 +389,27 @@ async function handleAction(turn, action) {
   padding: 10px;
 }
 
+.bubble-user,
+.bubble-stream-preview {
+  align-self: stretch;
+  max-width: 82%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.bubble-user {
+  background: rgba(59, 130, 246, 0.22);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+}
+
+.bubble-stream-preview {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
 .streaming-tip {
   color: rgba(125, 211, 252, 0.95);
   font-size: 12px;
@@ -485,6 +514,32 @@ async function handleAction(turn, action) {
   color: #f9fafb;
   cursor: pointer;
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.22);
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #60a5fa;
+  animation: sending-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sending-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .sending {
