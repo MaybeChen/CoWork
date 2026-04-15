@@ -236,6 +236,10 @@ async function handleAction(turn, action) {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.72);
   overflow: hidden;
   overflow-x: hidden;
 }
@@ -274,6 +278,10 @@ async function handleAction(turn, action) {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 6, 23, 0.88);
+  padding: 12px;
 }
 
 .question-list {
@@ -287,10 +295,10 @@ async function handleAction(turn, action) {
 .question-list li {
   font-size: 12px;
   line-height: 1.5;
-  padding: 8px;
+  padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   white-space: pre-wrap;
 }
 
@@ -435,16 +443,17 @@ async function handleAction(turn, action) {
 
 .composer-sidebar {
   margin-top: auto;
+  padding-top: 0;
 }
 
 .composer-inner {
   width: 100%;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(2, 6, 23, 0.95);
+  background: rgba(2, 6, 23, 0.92);
   display: flex;
   align-items: center;
-  padding: 6px;
+  padding: 8px;
 }
 
 .content,
