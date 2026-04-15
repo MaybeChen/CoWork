@@ -105,7 +105,7 @@ async function handleAction(turn, action) {
               </p>
             </li>
           </ul>
-          <p v-if="!loading" class="terminal-line terminal-wait">
+          <p v-if="!loading" class="terminal-line terminal-wait question-item">
             <span class="prompt">&gt;</span>
             <span class="cursor">|</span>
           </p>
