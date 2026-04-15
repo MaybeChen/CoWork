@@ -165,8 +165,8 @@ async function handleAction(turn, action) {
             </div>
           </div>
           <div v-else-if="hasTurns" class="hero">
-            <h1>卡片结果展示区</h1>
-            <p>流式问题与渐进输出仅在左侧展示。</p>
+            <h1 class="hero-brand">无形之界，无限之能</h1>
+            <p class="hero-subtitle">界面随需而生，协作自由生长</p>
           </div>
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
