@@ -127,7 +127,7 @@ async function handleAction(turn, action) {
                 <span class="sending-dot" />
                 生成中
               </span>
-              <span v-else class="send-arrow">&gt;</span>
+              <span v-else>发送</span>
             </button>
           </form>
         </footer>
@@ -515,13 +515,6 @@ async function handleAction(turn, action) {
   border-radius: 999px;
   background: #f472b6;
   animation: sending-pulse 1s ease-in-out infinite;
-}
-
-.send-arrow {
-  display: inline-block;
-  transform: translateY(-2px);
-  font-size: 18px;
-  line-height: 1;
 }
 
 @keyframes sending-pulse {
