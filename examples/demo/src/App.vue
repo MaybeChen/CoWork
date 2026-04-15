@@ -178,6 +178,7 @@ async function handleAction(turn, action) {
 
 <style scoped>
 .page {
+  position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -186,6 +187,37 @@ async function handleAction(turn, action) {
     radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.1) 0%, transparent 32%),
     #020617;
   color: #e5e7eb;
+  overflow: hidden;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+}
+
+.page::before {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.18) 0%, transparent 36%),
+    radial-gradient(circle at 78% 12%, rgba(168, 85, 247, 0.2) 0%, transparent 34%);
+  filter: blur(32px);
+  opacity: 0.7;
+}
+
+.page::after {
+  background:
+    radial-gradient(circle at 60% 85%, rgba(236, 72, 153, 0.12) 0%, transparent 38%),
+    radial-gradient(circle at 35% 45%, rgba(14, 165, 233, 0.08) 0%, transparent 42%);
+  filter: blur(26px);
+  opacity: 0.7;
+}
+
+.global-header,
+.workspace {
+  position: relative;
+  z-index: 1;
 }
 
 .global-header {
