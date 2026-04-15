@@ -103,11 +103,12 @@ async function handleAction(turn, action) {
                 <span class="prompt">&gt;</span>
                 <span class="question-text">{{ turn.mode === 'ws_stream' ? turn.streamPreviewText : turn.userText }}</span>
               </p>
-              <p v-if="!turn.streaming" class="terminal-line terminal-next">
-                <span class="prompt">&gt;</span>
-              </p>
             </li>
           </ul>
+          <p v-if="!loading" class="terminal-line terminal-wait">
+            <span class="prompt">&gt;</span>
+            <span class="cursor">|</span>
+          </p>
         </section>
 
         <footer class="composer composer-sidebar">
@@ -309,8 +310,24 @@ async function handleAction(turn, action) {
   flex: 1;
 }
 
-.terminal-next {
-  margin-top: 4px;
+.terminal-wait {
+  margin-top: 6px;
+}
+
+.cursor {
+  display: inline-block;
+  animation: cursor-blink 900ms steps(1, end) infinite;
+}
+
+@keyframes cursor-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  46%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .hero {
