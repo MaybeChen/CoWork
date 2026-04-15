@@ -34,6 +34,12 @@ export default defineConfig({
           Referer: devServer,
         },
       },
+      '/ws/debug': {
+        target: devServer,
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })
