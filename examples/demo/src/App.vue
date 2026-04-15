@@ -251,7 +251,7 @@ async function handleAction(turn, action) {
   overflow: hidden;
   background:
     radial-gradient(circle, rgba(148, 163, 184, 0.2) 1px, transparent 1px) 0 0 / 12px 12px,
-    linear-gradient(135deg, #020617 0%, #0b1220 45%, #0f172a 100%);
+    linear-gradient(135deg, rgba(2, 6, 23, 0.58) 0%, rgba(11, 18, 32, 0.46) 45%, rgba(15, 23, 42, 0.5) 100%);
 }
 
 .sidebar,
