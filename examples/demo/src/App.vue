@@ -279,8 +279,8 @@ async function handleAction(turn, action) {
   min-height: 0;
   overflow: auto;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(2, 6, 23, 0.88);
+  border: none;
+  background: transparent;
   padding: 12px;
 }
 
