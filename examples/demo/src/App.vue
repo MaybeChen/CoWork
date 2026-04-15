@@ -144,6 +144,14 @@ async function handleAction(turn, action) {
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
+                {{ turn.userText }}
+              </div>
+
+              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-stream-preview">
+                {{ turn.streamPreviewText || '正在渐进输出...' }}
+              </div>
+
               <div class="bubble bubble-assistant">
                 <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
@@ -498,7 +506,7 @@ async function handleAction(turn, action) {
   border: none;
   outline: none;
   background: transparent;
-  color: #f9fafb;
+  color: #4ade80;
   padding: 10px 12px;
   font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
