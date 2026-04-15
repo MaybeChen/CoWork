@@ -425,9 +425,8 @@ async function handleAction(turn, action) {
 .streaming-tip {
   color: rgba(244, 114, 182, 0.92);
   font-size: 12px;
-  width: 80%;
+  width: 90%;
   min-width: 640px;
-  max-width: 1080px;
   margin-left: auto;
   margin-right: auto;
 }
