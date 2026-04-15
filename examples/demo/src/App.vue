@@ -333,7 +333,7 @@ async function handleAction(turn, action) {
 }
 
 .hero-brand {
-  font-size: 28px !important;
+  font-size: 34px !important;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: lowercase;
@@ -349,9 +349,9 @@ async function handleAction(turn, action) {
 }
 
 .hero-subtitle {
-  font-size: clamp(14px, 1.6vw, 18px);
+  font-size: clamp(13px, 1.35vw, 16px);
   letter-spacing: 0.02em;
-  color: rgba(226, 232, 240, 0.92) !important;
+  color: rgba(148, 163, 184, 0.95) !important;
 }
 
 .conversation {
