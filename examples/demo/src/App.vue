@@ -141,7 +141,8 @@ async function handleAction(turn, action) {
       <section class="center">
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
-            <h1 class="hero-brand">所想即界面，所需即生成</h1>
+            <h1 class="hero-brand">无形之界，无限之能</h1>
+            <p class="hero-subtitle">界面随需而生，协作自由生长</p>
           </div>
 
           <div v-if="centerTurns.length" class="conversation">
@@ -332,7 +333,7 @@ async function handleAction(turn, action) {
 }
 
 .hero-brand {
-  font-size: 22px !important;
+  font-size: 28px !important;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: lowercase;
@@ -345,6 +346,12 @@ async function handleAction(turn, action) {
 .hero p {
   margin: 0;
   color: rgba(203, 213, 225, 0.8);
+}
+
+.hero-subtitle {
+  font-size: clamp(14px, 1.6vw, 18px);
+  letter-spacing: 0.02em;
+  color: rgba(226, 232, 240, 0.92) !important;
 }
 
 .conversation {
