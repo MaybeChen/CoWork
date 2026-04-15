@@ -412,9 +412,8 @@ async function handleAction(turn, action) {
 }
 
 .bubble-assistant {
-  width: 80%;
+  width: 90%;
   min-width: 640px;
-  max-width: 1080px;
   margin-left: auto;
   margin-right: auto;
   border-radius: 12px;
