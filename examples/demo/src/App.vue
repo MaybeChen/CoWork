@@ -462,16 +462,7 @@ async function handleAction(turn, action) {
 }
 
 .composer-inner input::placeholder {
-  color: rgba(134, 239, 172, 0.55);
-}
-
-.mode-select {
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #121720;
-  color: #ffffff;
-  margin-right: 6px;
+  color: rgba(203, 213, 225, 0.6);
 }
 
 .mode-select {
