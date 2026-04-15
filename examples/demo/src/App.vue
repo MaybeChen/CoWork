@@ -260,6 +260,9 @@ async function handleAction(turn, action) {
   overflow: auto;
   flex: 1;
   min-height: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .center {
@@ -384,9 +387,9 @@ async function handleAction(turn, action) {
   margin-left: auto;
   margin-right: auto;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.6);
-  padding: 10px;
+  border: none;
+  background: #060b18;
+  padding: 0;
 }
 
 .streaming-tip {
