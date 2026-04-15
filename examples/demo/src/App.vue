@@ -97,23 +97,17 @@ async function handleAction(turn, action) {
     <section class="workspace">
       <aside class="sidebar left">
         <section class="panel question-panel">
-          <h3>输入历史</h3>
           <ul v-if="hasTurns" class="question-list">
-            <li v-for="turn in turns" :key="`q-${turn.id}`">
-              <template v-if="turn.mode === 'ws_stream'">
-                <p class="question-label question-label-full">原问题</p>
-                <p class="question-full">{{ turn.userText }}</p>
-                <p class="question-label question-label-progress">渐进流式</p>
-                <p class="question-progress">{{ turn.streamPreviewText || '正在渐进输出...' }}</p>
-              </template>
-              <template v-else>
-                {{ turn.userText }}
-              </template>
+            <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
+              <p class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span class="question-text">{{ turn.mode === 'ws_stream' ? turn.streamPreviewText : turn.userText }}</span>
+              </p>
+              <p v-if="!turn.streaming" class="terminal-line terminal-next">
+                <span class="prompt">&gt;</span>
+              </p>
             </li>
           </ul>
-          <div v-else class="question-empty">
-            <p>问题输入后会展示在这里。</p>
-          </div>
         </section>
 
         <footer class="composer composer-sidebar">
@@ -132,7 +126,7 @@ async function handleAction(turn, action) {
                 <span class="sending-dot" />
                 生成中
               </span>
-              <span v-else>发送</span>
+              <span v-else class="send-arrow">&gt;</span>
             </button>
           </form>
         </footer>
@@ -292,52 +286,31 @@ async function handleAction(turn, action) {
   gap: 8px;
 }
 
-.question-list li {
-  font-size: 12px;
-  line-height: 1.5;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+.question-item {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  color: #4ade80;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.terminal-line {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
   white-space: pre-wrap;
 }
 
-.question-full,
-.question-progress {
-  margin: 0;
+.prompt {
+  margin-right: 8px;
+  flex: 0 0 auto;
 }
 
-.question-label {
-  margin: 0 0 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+.question-text {
+  flex: 1;
 }
 
-.question-label-full {
-  color: #c4b5fd;
-}
-
-.question-label-progress {
-  color: #86efac;
-  margin-top: 6px;
-}
-
-.question-full {
-  color: #ede9fe;
-}
-
-.question-progress {
-  margin-top: 0;
-  padding-top: 6px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.18);
-  color: #dcfce7;
-}
-
-.question-empty p {
-  margin: 0 0 10px;
-  color: rgba(203, 213, 225, 0.8);
-  font-size: 13px;
+.terminal-next {
+  margin-top: 4px;
 }
 
 .hero {
@@ -483,8 +456,22 @@ async function handleAction(turn, action) {
   border: none;
   outline: none;
   background: transparent;
-  color: #f9fafb;
+  color: #4ade80;
   padding: 10px 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.composer-inner input::placeholder {
+  color: rgba(134, 239, 172, 0.55);
+}
+
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #121720;
+  color: #ffffff;
+  margin-right: 6px;
 }
 
 .mode-select {
@@ -519,6 +506,13 @@ async function handleAction(turn, action) {
   border-radius: 999px;
   background: #f472b6;
   animation: sending-pulse 1s ease-in-out infinite;
+}
+
+.send-arrow {
+  display: inline-block;
+  transform: translateY(-2px);
+  font-size: 18px;
+  line-height: 1;
 }
 
 @keyframes sending-pulse {
