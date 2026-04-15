@@ -418,7 +418,7 @@ async function handleAction(turn, action) {
   margin-right: auto;
   border-radius: 12px;
   border: none;
-  background: rgba(15, 23, 42, 0.72);
+  background: linear-gradient(160deg, rgba(11, 19, 37, 0.96), rgba(15, 23, 42, 0.9));
   padding: 0;
 }
 
