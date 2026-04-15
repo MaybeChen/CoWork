@@ -2,21 +2,25 @@
 import { computed, reactive, ref } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
+import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
+const wsEndpoint = '/ws/debug'
 
 const message = ref('')
+const streamMode = ref('default')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
 
 const { contentRef, scheduleAutoScroll } = useAutoScroll()
 const hasTurns = computed(() => turns.value.length > 0)
+const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
 
-const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: scheduleAutoScroll })
+const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
 
 async function send(turn, payload) {
   loading.value = true
@@ -38,15 +42,44 @@ async function send(turn, payload) {
   loading.value = false
 }
 
+async function sendByWsStream(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+  turn.streamPreviewText = ''
+
+  await streamChatByWs({
+    endpoint: wsEndpoint,
+    payload,
+    onPreview: (text) => {
+      turn.streamPreviewText = text
+      scheduleAutoScroll({ force: true })
+    },
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+  })
+
+  turn.streaming = false
+  loading.value = false
+}
+
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
 
-  const turn = reactive(createTurn(text))
+  const turn = reactive(createTurn(text, streamMode.value))
   turns.value.push(turn)
-  scheduleAutoScroll()
+  scheduleAutoScroll({ force: true })
 
-  await send(turn, { message: text })
+  if (streamMode.value === 'ws_stream') {
+    await sendByWsStream(turn, { message: text })
+  } else {
+    await send(turn, { message: text })
+  }
   message.value = ''
 }
 
@@ -59,32 +92,43 @@ async function handleAction(turn, action) {
   <main class="page">
     <header class="global-header">
       <div class="brand">CoWorker</div>
-      <nav class="top-nav">
-        <a href="#">故障诊断</a>
-        <a href="#">健康预测</a>
-      </nav>
     </header>
 
     <section class="workspace">
       <aside class="sidebar left">
         <section class="panel question-panel">
-          <h3>输入历史</h3>
           <ul v-if="hasTurns" class="question-list">
-            <li v-for="turn in turns" :key="`q-${turn.id}`">{{ turn.userText }}</li>
+            <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
+              <p class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span class="question-text">{{ turn.mode === 'ws_stream' ? turn.streamPreviewText : turn.userText }}</span>
+              </p>
+            </li>
           </ul>
-          <div v-else class="question-empty">
-            <p>问题输入后会展示在这里。</p>
-          </div>
+          <p v-if="!loading" class="terminal-line terminal-wait question-item">
+            <span class="prompt">&gt;</span>
+            <span class="cursor">|</span>
+          </p>
         </section>
 
         <footer class="composer composer-sidebar">
           <form class="composer-inner" @submit.prevent="submit">
+            <select v-model="streamMode" :disabled="loading" class="mode-select">
+              <option value="default">非流式</option>
+              <option value="ws_stream">流式</option>
+            </select>
             <input
               v-model="message"
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
               :disabled="loading"
             />
-            <button type="submit" :disabled="loading || !message.trim()">{{ loading ? '…' : '➜' }}</button>
+            <button type="submit" :disabled="loading || !message.trim()">
+              <span v-if="loading" class="sending">
+                <span class="sending-dot" />
+                生成中
+              </span>
+              <span v-else>发送</span>
+            </button>
           </form>
         </footer>
       </aside>
@@ -92,12 +136,12 @@ async function handleAction(turn, action) {
       <section class="center">
         <section ref="contentRef" class="content panel">
           <div v-if="!hasTurns" class="hero">
-            <h1>卡片结果展示区</h1>
-            <p>中间区域仅展示智能体返回的结果卡片。</p>
+            <h1 class="hero-brand">无形之界，无限之能</h1>
+            <p class="hero-subtitle">界面随需而生，协作自由生长</p>
           </div>
 
-          <div v-else class="conversation">
-            <div v-for="turn in turns" :key="turn.id" class="turn">
+          <div v-if="centerTurns.length" class="conversation">
+            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
 
               <div class="bubble bubble-assistant">
@@ -112,6 +156,10 @@ async function handleAction(turn, action) {
               </div>
             </div>
           </div>
+          <div v-else-if="hasTurns" class="hero">
+            <h1>卡片结果展示区</h1>
+            <p>流式问题与渐进输出仅在左侧展示。</p>
+          </div>
           <p v-if="error" class="error">Error: {{ error }}</p>
         </section>
       </section>
@@ -122,37 +170,68 @@ async function handleAction(turn, action) {
 
 <style scoped>
 .page {
+  position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #d9d9d9;
-  color: #d5def0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 35%),
+    radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.1) 0%, transparent 32%),
+    #020617;
+  color: #e5e7eb;
+  overflow: hidden;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+}
+
+.page::before {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.18) 0%, transparent 36%),
+    radial-gradient(circle at 78% 12%, rgba(168, 85, 247, 0.2) 0%, transparent 34%);
+  filter: blur(32px);
+  opacity: 0.7;
+}
+
+.page::after {
+  background:
+    radial-gradient(circle at 60% 85%, rgba(236, 72, 153, 0.12) 0%, transparent 38%),
+    radial-gradient(circle at 35% 45%, rgba(14, 165, 233, 0.08) 0%, transparent 42%);
+  filter: blur(26px);
+  opacity: 0.7;
+}
+
+.global-header,
+.workspace {
+  position: relative;
+  z-index: 1;
 }
 
 .global-header {
   height: 52px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0 16px;
-  background: #0a0d12;
+  background: rgba(2, 6, 23, 0.82);
+  backdrop-filter: blur(8px);
 }
 
 .brand {
-  color: #e6f0ff;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.top-nav {
-  display: flex;
-  gap: 24px;
-}
-
-.top-nav a {
-  color: #5da6e6;
-  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(100deg, #e2e8f0 0%, #c4b5fd 55%, #f5d0fe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(196, 181, 253, 0.3);
 }
 
 .workspace {
@@ -162,7 +241,9 @@ async function handleAction(turn, action) {
   gap: 8px;
   padding: 10px;
   overflow: hidden;
-  background: #07090d;
+  background:
+    radial-gradient(circle, rgba(148, 163, 184, 0.2) 1px, transparent 1px) 0 0 / 12px 12px,
+    linear-gradient(135deg, rgba(2, 6, 23, 0.58) 0%, rgba(11, 18, 32, 0.46) 45%, rgba(15, 23, 42, 0.5) 100%);
 }
 
 .sidebar,
@@ -174,14 +255,22 @@ async function handleAction(turn, action) {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.72);
   overflow: hidden;
   overflow-x: hidden;
 }
 
 .panel {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   padding: 10px;
+  background: rgba(2, 6, 23, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.5),
+    0 10px 30px rgba(2, 6, 23, 0.5);
 }
 
 .panel h3 {
@@ -192,16 +281,26 @@ async function handleAction(turn, action) {
 
 .content {
   overflow: auto;
+  flex: 1;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .center {
   min-width: 0;
+  display: flex;
 }
 
 .question-panel {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  padding: 12px;
 }
 
 .question-list {
@@ -209,23 +308,51 @@ async function handleAction(turn, action) {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 14px;
 }
 
-.question-list li {
-  font-size: 12px;
-  line-height: 1.5;
-  padding: 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.question-item {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  color: #4ade80;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.terminal-line {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
   white-space: pre-wrap;
 }
 
-.question-empty p {
-  margin: 0 0 10px;
-  color: rgba(203, 213, 225, 0.8);
-  font-size: 13px;
+.prompt {
+  margin-right: 8px;
+  flex: 0 0 auto;
+}
+
+.question-text {
+  flex: 1;
+}
+
+.terminal-wait {
+  margin-top: 6px;
+  color: #4ade80;
+}
+
+.cursor {
+  display: inline-block;
+  animation: cursor-blink 900ms steps(1, end) infinite;
+}
+
+@keyframes cursor-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  46%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .hero {
@@ -241,9 +368,26 @@ async function handleAction(turn, action) {
   font-size: clamp(22px, 2vw, 30px);
 }
 
+.hero-brand {
+  font-size: 34px !important;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  background: linear-gradient(120deg, #60a5fa 0%, #34d399 45%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .hero p {
   margin: 0;
   color: rgba(203, 213, 225, 0.8);
+}
+
+.hero-subtitle {
+  font-size: clamp(13px, 1.35vw, 16px);
+  letter-spacing: 0.02em;
+  color: rgba(148, 163, 184, 0.95) !important;
 }
 
 .conversation {
@@ -260,19 +404,29 @@ async function handleAction(turn, action) {
 }
 
 .bubble-assistant {
-  align-self: stretch;
+  width: 90%;
+  min-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 12px;
+  border: none;
+  background: rgba(15, 23, 42, 0.72);
+  padding: 0;
 }
 
 .streaming-tip {
-  color: rgba(125, 211, 252, 0.95);
+  color: rgba(244, 114, 182, 0.92);
   font-size: 12px;
-  padding-left: 8px;
+  width: 80%;
+  min-width: 640px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .surface {
   margin-top: 0;
-  max-width: 80%;
+  width: 100%;
   padding: 0;
   transform-origin: top center;
   animation: surface-grow-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -303,16 +457,17 @@ async function handleAction(turn, action) {
 
 .composer-sidebar {
   margin-top: auto;
+  padding-top: 0;
 }
 
 .composer-inner {
   width: 100%;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(19, 21, 26, 0.95);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(2, 6, 23, 0.92);
   display: flex;
   align-items: center;
-  padding: 6px;
+  padding: 8px;
 }
 
 .content,
@@ -344,15 +499,56 @@ async function handleAction(turn, action) {
   background: transparent;
   color: #f9fafb;
   padding: 10px 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.composer-inner input::placeholder {
+  color: rgba(203, 213, 225, 0.6);
+}
+
+.mode-select {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #121720;
+  color: #ffffff;
+  margin-right: 6px;
 }
 
 .composer-inner button {
   height: 34px;
-  min-width: 34px;
-  border: 1px solid rgba(59, 130, 246, 0.45);
+  min-width: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(120deg, rgba(30, 41, 59, 0.92), rgba(51, 65, 85, 0.92));
   color: #f9fafb;
   cursor: pointer;
+  box-shadow: 0 0 14px rgba(148, 163, 184, 0.18);
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f472b6;
+  animation: sending-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sending-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
