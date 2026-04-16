@@ -1,5 +1,7 @@
 const PREVIEW_CHARS_PER_FRAME = 2
 
+const PREVIEW_CHARS_PER_FRAME = 2
+
 function buildWsUrl(pathname) {
   const { host, protocol } = window.location
   const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:'
