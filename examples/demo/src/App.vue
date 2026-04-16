@@ -8,7 +8,7 @@ import { applyObjectsProgressively } from './modules/message/progressiveSchedule
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
-const wsEndpoint = '/ws/debug'
+const wsEndpoint = '/api/chat/ws/stream'
 
 const message = ref('')
 const streamMode = ref('default')
