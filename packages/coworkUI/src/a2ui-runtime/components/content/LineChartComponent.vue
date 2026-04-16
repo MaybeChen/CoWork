@@ -71,9 +71,9 @@ const chartData = computed(() => {
   width: 100%;
   max-width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 26px 26px 18px;
-  background: radial-gradient(circle at 60% 0%, rgba(56, 97, 255, 0.09), transparent 30%), linear-gradient(180deg, rgba(9, 17, 33, 0.92), rgba(7, 13, 24, 0.95));
+  background: transparent;
 }
 
 .a2-line-chart-title {
