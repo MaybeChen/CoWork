@@ -1,7 +1,3 @@
-const PREVIEW_CHARS_PER_FRAME = 2
-
-const PREVIEW_CHARS_PER_FRAME = 2
-
 function buildWsUrl(pathname) {
   const { host, protocol } = window.location
   const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:'
@@ -21,6 +17,7 @@ export async function streamChatByWs({
   onError,
 }) {
   const question = payload?.message || ''
+  const previewCharsPerFrame = 2
   const url = buildWsUrl(endpoint)
 
   return new Promise((resolve) => {
@@ -56,7 +53,7 @@ export async function streamChatByWs({
         return
       }
 
-      previewText += question.slice(previewText.length, previewText.length + PREVIEW_CHARS_PER_FRAME)
+      previewText += question.slice(previewText.length, previewText.length + previewCharsPerFrame)
       onPreview?.(previewText)
 
       previewRafId = window.requestAnimationFrame(runPreviewByRaf)
