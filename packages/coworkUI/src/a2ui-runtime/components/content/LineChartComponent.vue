@@ -71,7 +71,7 @@ const chartData = computed(() => {
   width: 100%;
   max-width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0;
+  border-radius: 8px;
   padding: 26px 26px 18px;
   background: transparent;
 }
