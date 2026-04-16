@@ -1,4 +1,4 @@
-import { extractJsonObjects } from './streamObjectExtractor'
+const PREVIEW_CHARS_PER_FRAME = 2
 
 const PREVIEW_CHARS_PER_FRAME = 2
 
@@ -25,7 +25,6 @@ export async function streamChatByWs({
 
   return new Promise((resolve) => {
     const ws = new WebSocket(url)
-    let receiveBuffer = ''
     let previewText = ''
     let previewDone = false
     let lastSentText = ''
@@ -48,23 +47,6 @@ export async function streamChatByWs({
       previewDone = true
       cleanup()
       safeSend(ws, { type: 'sendMessage', message: previewText, final: true })
-    }
-
-    const collectFrameMessages = (rawObjects) => {
-      const frameMessages = []
-      for (const rawObject of rawObjects) {
-        try {
-          const parsed = JSON.parse(rawObject)
-          if (parsed?.type !== 'a2ui_frame' || !Array.isArray(parsed.frame)) continue
-          for (const frame of parsed.frame) {
-            if (!frame) continue
-            frameMessages.push(JSON.stringify(frame))
-          }
-        } catch {
-          // skip malformed object
-        }
-      }
-      return frameMessages
     }
 
     const runPreviewByRaf = () => {
@@ -93,12 +75,13 @@ export async function streamChatByWs({
     }
 
     ws.onmessage = async (event) => {
-      receiveBuffer += `${event.data || ''}`
-      const { objects, remainder } = extractJsonObjects(receiveBuffer)
-      receiveBuffer = remainder
-      if (objects.length) {
-        const frameMessages = collectFrameMessages(objects)
-        if (frameMessages.length) await onObjects?.(frameMessages)
+      try {
+        const parsed = JSON.parse(event.data)
+        if (parsed.type === 'a2ui_frame' && parsed.frame) {
+          await onObjects?.(Array.isArray(parsed.frame) ? parsed.frame : [parsed.frame])
+        }
+      } catch (error) {
+        // ignore malformed frame payload
       }
     }
 
@@ -115,13 +98,6 @@ export async function streamChatByWs({
         onPreview?.(question)
       }
 
-      if (receiveBuffer.trim()) {
-        const { objects } = extractJsonObjects(receiveBuffer)
-        if (objects.length) {
-          const frameMessages = collectFrameMessages(objects)
-          if (frameMessages.length) await onObjects?.(frameMessages)
-        }
-      }
       resolve()
     }
   })
