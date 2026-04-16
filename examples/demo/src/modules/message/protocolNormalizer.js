@@ -1,3 +1,10 @@
+export function unwrapProtocolMessages(raw) {
+  if (raw?.type === 'a2ui_frames' && Array.isArray(raw.frames)) {
+    return raw.frames.filter(Boolean)
+  }
+  return [raw]
+}
+
 export function normalizeProtocolMessage(raw) {
   if (raw.beginRendering) {
     return {
