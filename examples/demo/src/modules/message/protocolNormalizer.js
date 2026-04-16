@@ -1,4 +1,5 @@
 export function unwrapProtocolMessages(raw) {
+  if (raw?.type === 'a2ui_frame' && raw.frame) return [raw.frame]
   if (raw?.type === 'a2ui_frames' && Array.isArray(raw.frame)) return raw.frame.filter(Boolean)
   return [raw]
 }
