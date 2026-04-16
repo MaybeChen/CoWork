@@ -44,15 +44,17 @@ export const componentSpecificStyles = `
 }
 
 .a2ui-surface .hero_fact .a2-column{
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   width: fit-content;
   min-width:120px;
-  border-radius: 22px;
-  padding: 22px 22px 18px;
-  background: radial-gradient(circle at 10% 0%, rgba(113, 124, 255, 0.12), transparent 40%), linear-gradient(180deg, rgba(11, 20, 38, 0.88), rgba(8, 15, 29, 0.86));
+  border-radius: 12px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(13, 21, 38, 0.9));
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
@@ -62,7 +64,7 @@ export const componentSpecificStyles = `
 }
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:first-child{
-  color:rgba(255, 255, 255, 0.4);
+  color:rgba(184, 199, 230, 0.72);
 }
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:last-child{
