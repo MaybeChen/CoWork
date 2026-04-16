@@ -50,9 +50,9 @@ export const componentSpecificStyles = `
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
   width: fit-content;
   min-width:120px;
-  border-radius: 22px;
+  border-radius: 8px;
   padding: 22px 22px 18px;
-  background: radial-gradient(circle at 10% 0%, rgba(113, 124, 255, 0.12), transparent 40%), linear-gradient(180deg, rgba(11, 20, 38, 0.88), rgba(8, 15, 29, 0.86));
+  background: transparent;
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }

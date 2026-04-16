@@ -564,18 +564,4 @@ async function handleAction(turn, action) {
   }
 }
 
-:deep(.a2ui-surface .hero_fact .a2-column) {
-  background: transparent !important;
-  border-radius: 8px !important;
-}
-
-:deep(.a2-line-chart-wrap) {
-  background: transparent !important;
-  border-radius: 0 !important;
-}
-
-:deep(.a2-pie-chart-wrap) {
-  background: transparent !important;
-  border-radius: 0 !important;
-}
 </style>
