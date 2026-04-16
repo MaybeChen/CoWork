@@ -58,6 +58,9 @@ export async function applyMessageProgressively(turn, parsed, { applyMessageFn }
 
 export async function applyObjectsProgressively(turn, objectList, { applyMessageFn }) {
   for (const raw of objectList) {
+    if (typeof raw === 'object') {
+      await applyMessageProgressively(turn, raw, { applyMessageFn })
+    }
     try {
       const parsed = JSON.parse(raw)
       await applyMessageProgressively(turn, parsed, { applyMessageFn })
