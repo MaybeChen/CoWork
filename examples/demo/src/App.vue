@@ -8,7 +8,7 @@ import { applyObjectsProgressively } from './modules/message/progressiveSchedule
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 
 const endpoint = '/api/chat/stream'
-const wsEndpoint = '/ws/debug'
+const wsEndpoint = '/api/chat/ws/stream'
 
 const message = ref('')
 const streamMode = ref('default')
@@ -21,7 +21,7 @@ const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoSc
   mutationFilter: (mutations) => mutations.some((mutation) => (mutation.addedNodes?.length || 0) > 0 || mutation.type === 'characterData'),
 })
 const hasTurns = computed(() => turns.value.length > 0)
-const centerTurns = computed(() => turns.value.filter((turn) => turn.mode !== 'ws_stream'))
+const centerTurns = computed(() => turns.value)
 
 const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
 
@@ -148,24 +148,10 @@ async function handleAction(turn, action) {
           <div v-if="centerTurns.length" class="conversation">
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
-
-              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-user">
-                {{ turn.userText }}
-              </div>
-
-              <div v-if="turn.mode === 'ws_stream'" class="bubble bubble-stream-preview">
-                {{ turn.streamPreviewText || '正在渐进输出...' }}
-              </div>
-
-              <div class="bubble bubble-assistant">
-                <template v-if="Object.values(turn.surfaces).some((s) => s.ready)">
+              <div class="bubble bubble-assistant" v-if="Object.values(turn.surfaces).some((s) => s.ready)">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
                     <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
                   </article>
-                </template>
-                <template v-else>
-                  <span class="placeholder">正在等待 beginRendering（已缓冲更新）...</span>
-                </template>
               </div>
             </div>
           </div>
@@ -188,10 +174,10 @@ async function handleAction(turn, action) {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 35%),
-    radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.1) 0%, transparent 32%),
-    #020617;
-  color: #e5e7eb;
+    radial-gradient(circle at 18% 14%, rgba(124, 151, 255, 0.12) 0%, transparent 34%),
+    radial-gradient(circle at 84% 8%, rgba(99, 216, 255, 0.08) 0%, transparent 30%),
+    linear-gradient(180deg, #08111f 0%, #0b1220 52%, #0e1728 100%);
+  color: #b8c7e6;
   overflow: hidden;
 }
 
@@ -205,18 +191,18 @@ async function handleAction(turn, action) {
 
 .page::before {
   background:
-    radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.18) 0%, transparent 36%),
-    radial-gradient(circle at 78% 12%, rgba(168, 85, 247, 0.2) 0%, transparent 34%);
-  filter: blur(32px);
-  opacity: 0.7;
+    radial-gradient(circle at 14% 18%, rgba(124, 151, 255, 0.16) 0%, transparent 30%),
+    radial-gradient(circle at 82% 14%, rgba(99, 216, 255, 0.1) 0%, transparent 26%);
+  filter: blur(46px);
+  opacity: 0.35;
 }
 
 .page::after {
   background:
-    radial-gradient(circle at 60% 85%, rgba(236, 72, 153, 0.12) 0%, transparent 38%),
-    radial-gradient(circle at 35% 45%, rgba(14, 165, 233, 0.08) 0%, transparent 42%);
-  filter: blur(26px);
-  opacity: 0.7;
+    radial-gradient(circle at 66% 82%, rgba(124, 151, 255, 0.09) 0%, transparent 34%),
+    radial-gradient(circle at 30% 48%, rgba(99, 216, 255, 0.08) 0%, transparent 38%);
+  filter: blur(42px);
+  opacity: 0.3;
 }
 
 .global-header,
@@ -227,36 +213,36 @@ async function handleAction(turn, action) {
 
 .global-header {
   height: 52px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(138, 164, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   padding: 0 16px;
-  background: rgba(2, 6, 23, 0.82);
+  background: rgba(8, 17, 31, 0.82);
   backdrop-filter: blur(8px);
 }
 
 .brand {
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: linear-gradient(100deg, #e2e8f0 0%, #c4b5fd 55%, #f5d0fe 100%);
+  background: linear-gradient(102deg, #e8f0ff 0%, #b8c7e6 45%, #7c97ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(196, 181, 253, 0.3);
+  text-shadow: 0 0 12px rgba(124, 151, 255, 0.18);
 }
 
 .workspace {
   flex: 1;
   display: grid;
   grid-template-columns: 420px 1fr;
-  gap: 8px;
-  padding: 10px;
+  gap: 20px;
+  padding: 20px;
   overflow: hidden;
   background:
-    radial-gradient(circle, rgba(148, 163, 184, 0.2) 1px, transparent 1px) 0 0 / 12px 12px,
-    linear-gradient(135deg, rgba(2, 6, 23, 0.58) 0%, rgba(11, 18, 32, 0.46) 45%, rgba(15, 23, 42, 0.5) 100%);
+    radial-gradient(circle, rgba(138, 164, 255, 0.1) 1px, transparent 1px) 0 0 / 18px 18px,
+    linear-gradient(160deg, rgba(8, 17, 31, 0.7) 0%, rgba(11, 18, 32, 0.48) 55%, rgba(14, 23, 40, 0.62) 100%);
 }
 
 .sidebar,
@@ -267,23 +253,26 @@ async function handleAction(turn, action) {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(2, 6, 23, 0.72);
+  gap: 16px;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(130, 160, 255, 0.12);
+  background: linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(13, 21, 38, 0.9));
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   overflow: hidden;
   overflow-x: hidden;
 }
 
 .panel {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px;
-  background: rgba(2, 6, 23, 0.82);
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  border-radius: 16px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(13, 21, 38, 0.9));
   box-shadow:
-    inset 0 0 0 1px rgba(15, 23, 42, 0.5),
-    0 10px 30px rgba(2, 6, 23, 0.5);
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .panel h3 {
@@ -310,10 +299,10 @@ async function handleAction(turn, action) {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  border-radius: 12px;
+  border-radius: 16px;
   border: none;
   background: transparent;
-  padding: 12px;
+  padding: 16px;
 }
 
 .question-list {
@@ -326,9 +315,14 @@ async function handleAction(turn, action) {
 
 .question-item {
   font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  color: #4ade80;
+  color: #4ade80 !important;
   font-size: 13px;
   line-height: 1.55;
+}
+
+.question-item .prompt,
+.question-item .question-text {
+  color: #4ade80;
 }
 
 .terminal-line {
@@ -349,7 +343,7 @@ async function handleAction(turn, action) {
 
 .terminal-wait {
   margin-top: 6px;
-  color: #4ade80;
+  color: #7f90b4;
 }
 
 .cursor {
@@ -382,11 +376,10 @@ async function handleAction(turn, action) {
 }
 
 .hero-brand {
-  font-size: 34px !important;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: lowercase;
-  background: linear-gradient(120deg, #60a5fa 0%, #34d399 45%, #f59e0b 100%);
+  font-size: clamp(28px, 2.2vw, 32px) !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: linear-gradient(112deg, #e8f0ff 0%, #b8c7e6 60%, #7c97ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -394,26 +387,26 @@ async function handleAction(turn, action) {
 
 .hero p {
   margin: 0;
-  color: rgba(203, 213, 225, 0.8);
+  color: #b8c7e6;
 }
 
 .hero-subtitle {
-  font-size: clamp(13px, 1.35vw, 16px);
+  font-size: clamp(13px, 1.2vw, 15px);
   letter-spacing: 0.02em;
-  color: rgba(148, 163, 184, 0.95) !important;
+  color: #7f90b4 !important;
 }
 
 .conversation {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   padding-bottom: 12px;
 }
 
 .turn {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bubble-assistant {
@@ -421,14 +414,17 @@ async function handleAction(turn, action) {
   min-width: 640px;
   margin-left: auto;
   margin-right: auto;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(160deg, rgba(11, 19, 37, 0.96), rgba(15, 23, 42, 0.9));
+  border-radius: 22px;
+  border: 1px solid rgba(130, 160, 255, 0.12);
+  background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   padding: 0;
 }
 
 .streaming-tip {
-  color: rgba(244, 114, 182, 0.92);
+  color: rgba(127, 144, 180, 0.9);
   font-size: 12px;
   width: 90%;
   min-width: 640px;
@@ -474,12 +470,12 @@ async function handleAction(turn, action) {
 
 .composer-inner {
   width: 100%;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(2, 6, 23, 0.92);
+  border-radius: 14px;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
   display: flex;
   align-items: center;
-  padding: 8px;
+  padding: 10px;
 }
 
 .content,
@@ -509,33 +505,33 @@ async function handleAction(turn, action) {
   border: none;
   outline: none;
   background: transparent;
-  color: #4ade80;
+  color: #e8f0ff;
   padding: 10px 12px;
   font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .composer-inner input::placeholder {
-  color: rgba(203, 213, 225, 0.6);
+  color: rgba(127, 144, 180, 0.9);
 }
 
 .mode-select {
   height: 34px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #121720;
-  color: #ffffff;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(14, 23, 40, 0.9);
+  color: #e8f0ff;
   margin-right: 6px;
 }
 
 .composer-inner button {
   height: 34px;
   min-width: 72px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(138, 164, 255, 0.16);
   border-radius: 10px;
-  background: linear-gradient(120deg, rgba(30, 41, 59, 0.92), rgba(51, 65, 85, 0.92));
-  color: #f9fafb;
+  background: linear-gradient(120deg, rgba(17, 27, 46, 0.92), rgba(23, 38, 61, 0.92));
+  color: #e8f0ff;
   cursor: pointer;
-  box-shadow: 0 0 14px rgba(148, 163, 184, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
 }
 
 .sending {
@@ -548,7 +544,7 @@ async function handleAction(turn, action) {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #f472b6;
+  background: #63d8ff;
   animation: sending-pulse 1s ease-in-out infinite;
 }
 
@@ -564,18 +560,4 @@ async function handleAction(turn, action) {
   }
 }
 
-:deep(.a2ui-surface .hero_fact .a2-column) {
-  background: transparent !important;
-  border-radius: 8px !important;
-}
-
-:deep(.a2-line-chart-wrap) {
-  background: transparent !important;
-  border-radius: 0 !important;
-}
-
-:deep(.a2-pie-chart-wrap) {
-  background: transparent !important;
-  border-radius: 0 !important;
-}
 </style>

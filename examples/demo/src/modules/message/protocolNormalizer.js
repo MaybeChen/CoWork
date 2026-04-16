@@ -1,3 +1,7 @@
+export function unwrapProtocolMessages(raw) {
+  return [raw]
+}
+
 export function normalizeProtocolMessage(raw) {
   if (raw.beginRendering) {
     return {
