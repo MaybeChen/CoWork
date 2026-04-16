@@ -329,9 +329,14 @@ async function handleAction(turn, action) {
 
 .question-item {
   font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  color: #b8c7e6;
+  color: #4ade80 !important;
   font-size: 13px;
   line-height: 1.55;
+}
+
+.question-item .prompt,
+.question-item .question-text {
+  color: #4ade80;
 }
 
 .terminal-line {
