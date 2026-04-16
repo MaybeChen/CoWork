@@ -30,11 +30,16 @@ export async function streamChatByWs({
     let previewDone = false
     let lastSentText = ''
     let previewRafId = null
+    let syncTimerId = null
 
     const cleanup = () => {
       if (previewRafId != null) {
         window.cancelAnimationFrame(previewRafId)
         previewRafId = null
+      }
+      if (syncTimerId != null) {
+        clearInterval(syncTimerId)
+        syncTimerId = null
       }
     }
 
@@ -72,17 +77,19 @@ export async function streamChatByWs({
       previewText += question.slice(previewText.length, previewText.length + PREVIEW_CHARS_PER_FRAME)
       onPreview?.(previewText)
 
-      if (previewText !== lastSentText) {
-        lastSentText = previewText
-        safeSend(ws, { type: 'sendMessage', message: previewText, final: false })
-      }
-
       previewRafId = window.requestAnimationFrame(runPreviewByRaf)
     }
 
     ws.onopen = () => {
       safeSend(ws, { type: 'sendMessage', ...payload })
       previewRafId = window.requestAnimationFrame(runPreviewByRaf)
+      syncTimerId = window.setInterval(() => {
+        if (previewDone) return
+        if (previewText !== lastSentText) {
+          lastSentText = previewText
+          safeSend(ws, { type: 'sendMessage', message: previewText, final: false })
+        }
+      }, 1000)
     }
 
     ws.onmessage = async (event) => {
