@@ -1,5 +1,5 @@
 import { decodeEntryValue, decodeValueMap, ensureObjectPath } from './modelCodec'
-import { normalizeProtocolMessage } from './protocolNormalizer'
+import { normalizeProtocolMessage, unwrapProtocolMessages } from './protocolNormalizer'
 
 export function createTurn(userText, mode = 'default') {
   return {
@@ -33,6 +33,12 @@ function ensureSurfaceDataModel(turn, surfaceId) {
 }
 
 export function applyMessage(turn, rawPayload, { onChanged } = {}) {
+  const chunks = unwrapProtocolMessages(rawPayload)
+  if (chunks.length > 1 || (chunks.length === 1 && chunks[0] !== rawPayload)) {
+    for (const chunk of chunks) applyMessage(turn, chunk, { onChanged })
+    return
+  }
+
   const payload = normalizeProtocolMessage(rawPayload)
   const type = payload.type || payload.messageType
 
