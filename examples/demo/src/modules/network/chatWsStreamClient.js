@@ -1,5 +1,9 @@
 import { extractJsonObjects } from './streamObjectExtractor'
 
+const PREVIEW_CHARS_PER_SECOND = 140
+const PREVIEW_TICK_MS = 100
+const PREVIEW_CHARS_PER_TICK = Math.max(1, Math.round((PREVIEW_CHARS_PER_SECOND * PREVIEW_TICK_MS) / 1000))
+
 function buildWsUrl(pathname) {
   const { host, protocol } = window.location
   const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:'
@@ -50,9 +54,9 @@ export async function streamChatByWs({
           finishPreview()
           return
         }
-        previewText += question.slice(previewText.length, previewText.length + 6)
+        previewText += question.slice(previewText.length, previewText.length + PREVIEW_CHARS_PER_TICK)
         onPreview?.(previewText)
-      }, 100)
+      }, PREVIEW_TICK_MS)
 
       syncTimer = window.setInterval(() => {
         if (previewText !== lastSentText) {
