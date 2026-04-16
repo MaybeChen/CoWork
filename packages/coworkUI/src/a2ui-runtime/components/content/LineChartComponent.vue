@@ -70,9 +70,13 @@ const chartData = computed(() => {
 .a2-line-chart-wrap {
   width: 100%;
   max-width: 100%;
-  border-radius: 30px;
-  padding: 26px 26px 18px;
-  background: radial-gradient(circle at 60% 0%, rgba(56, 97, 255, 0.09), transparent 30%), linear-gradient(180deg, rgba(9, 17, 33, 0.92), rgba(7, 13, 24, 0.95));
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  border-radius: 8px;
+  padding: 22px 22px 18px;
+  background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .a2-line-chart-title {
