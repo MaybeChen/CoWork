@@ -1,4 +1,4 @@
-import { extractJsonObjects } from './streamObjectExtractor'
+const PREVIEW_CHARS_PER_FRAME = 2
 
 function buildWsUrl(pathname) {
   const { host, protocol } = window.location
@@ -23,16 +23,21 @@ export async function streamChatByWs({
 
   return new Promise((resolve) => {
     const ws = new WebSocket(url)
-    let receiveBuffer = ''
     let previewText = ''
     let previewDone = false
     let lastSentText = ''
-    let typingTimer = null
-    let syncTimer = null
+    let previewRafId = null
+    let syncTimerId = null
 
     const cleanup = () => {
-      if (typingTimer) clearInterval(typingTimer)
-      if (syncTimer) clearInterval(syncTimer)
+      if (previewRafId != null) {
+        window.cancelAnimationFrame(previewRafId)
+        previewRafId = null
+      }
+      if (syncTimerId != null) {
+        clearInterval(syncTimerId)
+        syncTimerId = null
+      }
     }
 
     const finishPreview = () => {
@@ -42,19 +47,24 @@ export async function streamChatByWs({
       safeSend(ws, { type: 'sendMessage', message: previewText, final: true })
     }
 
+    const runPreviewByRaf = () => {
+      if (previewDone) return
+      if (previewText.length >= question.length) {
+        finishPreview()
+        return
+      }
+
+      previewText += question.slice(previewText.length, previewText.length + PREVIEW_CHARS_PER_FRAME)
+      onPreview?.(previewText)
+
+      previewRafId = window.requestAnimationFrame(runPreviewByRaf)
+    }
+
     ws.onopen = () => {
       safeSend(ws, { type: 'sendMessage', ...payload })
-
-      typingTimer = window.setInterval(() => {
-        if (previewText.length >= question.length) {
-          finishPreview()
-          return
-        }
-        previewText += question.slice(previewText.length, previewText.length + 6)
-        onPreview?.(previewText)
-      }, 100)
-
-      syncTimer = window.setInterval(() => {
+      previewRafId = window.requestAnimationFrame(runPreviewByRaf)
+      syncTimerId = window.setInterval(() => {
+        if (previewDone) return
         if (previewText !== lastSentText) {
           lastSentText = previewText
           safeSend(ws, { type: 'sendMessage', message: previewText, final: false })
@@ -63,10 +73,14 @@ export async function streamChatByWs({
     }
 
     ws.onmessage = async (event) => {
-      receiveBuffer += `${event.data || ''}`
-      const { objects, remainder } = extractJsonObjects(receiveBuffer)
-      receiveBuffer = remainder
-      if (objects.length) await onObjects?.(objects)
+      try {
+        const parsed = JSON.parse(event.data)
+        if (parsed.type === 'a2ui_frame' && parsed.frame) {
+          await onObjects?.(Array.isArray(parsed.frame) ? parsed.frame : [parsed.frame])
+        }
+      } catch (error) {
+        // ignore malformed frame payload
+      }
     }
 
     ws.onerror = () => {
@@ -82,10 +96,6 @@ export async function streamChatByWs({
         onPreview?.(question)
       }
 
-      if (receiveBuffer.trim()) {
-        const { objects } = extractJsonObjects(receiveBuffer)
-        if (objects.length) await onObjects?.(objects)
-      }
       resolve()
     }
   })
