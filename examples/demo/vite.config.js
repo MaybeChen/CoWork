@@ -34,7 +34,7 @@ export default defineConfig({
           Referer: devServer,
         },
       },
-      '/ws/debug': {
+      '/api/chat/ws/stream': {
         target: devServer,
         ws: true,
         changeOrigin: true,
