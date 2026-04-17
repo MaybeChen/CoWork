@@ -1,5 +1,5 @@
 import { nextTick } from 'vue'
-import { normalizeProtocolMessage } from './protocolNormalizer'
+import { normalizeProtocolMessage, unwrapProtocolMessages } from './protocolNormalizer'
 
 export async function flushToFrame() {
   await nextTick()
@@ -13,6 +13,14 @@ export function sleep(ms) {
 }
 
 export async function applyMessageProgressively(turn, parsed, { applyMessageFn }) {
+  const chunks = unwrapProtocolMessages(parsed)
+  if (chunks.length > 1 || (chunks.length === 1 && chunks[0] !== parsed)) {
+    for (const chunk of chunks) {
+      await applyMessageProgressively(turn, chunk, { applyMessageFn })
+    }
+    return
+  }
+
   const normalized = normalizeProtocolMessage(parsed)
   const type = normalized.type || normalized.messageType
 
@@ -50,6 +58,9 @@ export async function applyMessageProgressively(turn, parsed, { applyMessageFn }
 
 export async function applyObjectsProgressively(turn, objectList, { applyMessageFn }) {
   for (const raw of objectList) {
+    if (typeof raw === 'object') {
+      await applyMessageProgressively(turn, raw, { applyMessageFn })
+    }
     try {
       const parsed = JSON.parse(raw)
       await applyMessageProgressively(turn, parsed, { applyMessageFn })
