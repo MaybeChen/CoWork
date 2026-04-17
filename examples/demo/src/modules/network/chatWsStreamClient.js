@@ -74,6 +74,10 @@ export async function streamChatByWs({
     ws.onmessage = async (event) => {
       try {
         const parsed = JSON.parse(event.data)
+        if (parsed.type === 'complete') {
+          ws.close()
+          return
+        }
         if (parsed.type === 'a2ui_frame' && parsed.frame) {
           await onObjects?.(Array.isArray(parsed.frame) ? parsed.frame : [parsed.frame])
         }
