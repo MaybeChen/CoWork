@@ -637,6 +637,7 @@ async function handleAction(turn, action) {
 .composer-sidebar {
   margin-top: auto;
   padding-top: 0;
+  position: relative;
 }
 
 .composer-inner {
