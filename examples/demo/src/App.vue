@@ -118,6 +118,12 @@ function appendObjectsRawLines(turn, objects) {
   }
 }
 
+function getRawLineToneClass(line) {
+  const raw = String(line || '').toLowerCase()
+  if (raw.includes('datamodelupdate')) return 'raw-text-data-model'
+  return 'raw-text-surface'
+}
+
 function openOutputPanel(turn) {
   if (!turn) return
   const snapshot = ensureOutputSnapshot(turn)
@@ -238,7 +244,7 @@ async function handleAction(turn, action) {
                 <div ref="rawContentRef" class="output-card-content">
                   <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">
                     <span class="raw-index">{{ index + 1 }}.</span>
-                    <span class="raw-text">{{ line }}</span>
+                    <span :class="['raw-text', getRawLineToneClass(line)]">{{ line }}</span>
                   </p>
                 </div>
               </section>
@@ -863,6 +869,14 @@ async function handleAction(turn, action) {
 .raw-text {
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.raw-text-surface {
+  color: #4ade80;
+}
+
+.raw-text-data-model {
+  color: #facc15;
 }
 
 .output-panel-enter-active,
