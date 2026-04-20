@@ -236,7 +236,7 @@ async function handleAction(turn, action) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 600px 1fr;
+  grid-template-columns: 500px 1fr;
   gap: 20px;
   padding: 20px;
   overflow: hidden;
