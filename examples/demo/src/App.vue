@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { streamChatByWs } from './modules/network/chatWsStreamClient'
@@ -24,8 +24,11 @@ const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value)
 const outputPanelVisible = ref(false)
 const activeOutputTurnId = ref('')
-const outputRawText = ref('')
+const outputRawLines = ref([])
 const outputParsedText = ref('')
+const rawContentRef = ref(null)
+const parsedContentRef = ref(null)
+const outputSnapshots = reactive({})
 
 const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
 
@@ -56,12 +59,71 @@ function buildParsedPayload(turn) {
   }
 }
 
+function ensureOutputSnapshot(turn) {
+  if (!outputSnapshots[turn.id]) {
+    outputSnapshots[turn.id] = {
+      rawLines: [],
+      parsedText: '',
+      lastWsPreviewText: '',
+    }
+  }
+  return outputSnapshots[turn.id]
+}
+
+function scrollOutputToBottom() {
+  nextTick(() => {
+    const rawEl = rawContentRef.value
+    if (rawEl) rawEl.scrollTop = rawEl.scrollHeight
+    const parsedEl = parsedContentRef.value
+    if (parsedEl) parsedEl.scrollTop = parsedEl.scrollHeight
+  })
+}
+
+function syncOutputPanel(turn) {
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.parsedText = stringifyPretty(buildParsedPayload(turn))
+  if (activeOutputTurnId.value === turn.id) {
+    outputRawLines.value = [...snapshot.rawLines]
+    outputParsedText.value = snapshot.parsedText
+    scrollOutputToBottom()
+  }
+}
+
+function appendRawLine(turn, line) {
+  if (!line) return
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.rawLines.push(line)
+  if (activeOutputTurnId.value === turn.id) {
+    outputRawLines.value = [...snapshot.rawLines]
+    scrollOutputToBottom()
+  }
+}
+
+function appendWsRawLine(turn, previewText) {
+  const snapshot = ensureOutputSnapshot(turn)
+  const prev = snapshot.lastWsPreviewText || ''
+  const next = previewText || ''
+  snapshot.lastWsPreviewText = next
+  if (!next) return
+  const delta = next.startsWith(prev) ? next.slice(prev.length) : next
+  if (delta) appendRawLine(turn, delta)
+}
+
+function appendObjectsRawLines(turn, objects) {
+  for (const item of objects || []) {
+    appendRawLine(turn, stringifyPretty(item))
+  }
+}
+
 function openOutputPanel(turn) {
   if (!turn) return
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.parsedText = stringifyPretty(buildParsedPayload(turn))
   activeOutputTurnId.value = turn.id
-  outputRawText.value = turn.userText || ''
-  outputParsedText.value = stringifyPretty(buildParsedPayload(turn))
+  outputRawLines.value = [...snapshot.rawLines]
+  outputParsedText.value = snapshot.parsedText
   outputPanelVisible.value = true
+  scrollOutputToBottom()
 }
 
 function closeOutputPanel() {
@@ -78,6 +140,8 @@ async function send(turn, payload) {
     payload,
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      appendObjectsRawLines(turn, objects)
+      syncOutputPanel(turn)
       openOutputPanel(turn)
     },
     onError: (e) => {
@@ -101,11 +165,14 @@ async function sendByWsStream(turn, payload) {
     payload,
     onPreview: (text) => {
       turn.streamPreviewText = text
+      appendWsRawLine(turn, text)
+      syncOutputPanel(turn)
       scheduleAutoScroll({ force: true })
       scheduleQuestionAutoScroll({ force: true })
     },
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      syncOutputPanel(turn)
       openOutputPanel(turn)
     },
     onError: (e) => {
@@ -172,11 +239,13 @@ async function handleAction(turn, action) {
               </header>
               <section class="output-card">
                 <h4>Raw</h4>
-                <pre>{{ outputRawText }}</pre>
+                <div ref="rawContentRef" class="output-card-content">
+                  <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">{{ line }}</p>
+                </div>
               </section>
               <section class="output-card">
                 <h4>Parsed</h4>
-                <pre>{{ outputParsedText }}</pre>
+                <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
               </section>
             </section>
           </transition>
@@ -582,20 +651,17 @@ async function handleAction(turn, action) {
 }
 
 .output-overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(100% + 10px);
-  max-height: 360px;
-  overflow: auto;
+  width: 100%;
+  height: min(46vh, 460px);
   border-radius: 14px;
   border: 1px solid rgba(138, 164, 255, 0.24);
   background: rgba(8, 17, 31, 0.96);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
   padding: 12px;
-  display: grid;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  z-index: 8;
 }
 
 .output-overlay-header {
@@ -621,6 +687,10 @@ async function handleAction(turn, action) {
   background: rgba(11, 18, 32, 0.85);
   border-radius: 10px;
   padding: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .output-card h4 {
@@ -629,14 +699,20 @@ async function handleAction(turn, action) {
   font-size: 12px;
 }
 
-.output-card pre {
+.output-card-content {
   margin: 0;
-  max-height: 120px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
   color: #b8c7e6;
   font-size: 12px;
+  line-height: 1.6;
+}
+
+.raw-line {
+  margin: 0;
 }
 
 .output-panel-enter-active,
