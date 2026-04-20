@@ -236,7 +236,7 @@ async function handleAction(turn, action) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 500px 1fr;
   gap: 20px;
   padding: 20px;
   overflow: hidden;
@@ -415,11 +415,9 @@ async function handleAction(turn, action) {
   margin-left: auto;
   margin-right: auto;
   border-radius: 22px;
-  border: 1px solid rgba(130, 160, 255, 0.12);
-  background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: none;
+  background: transparent;
+  box-shadow: none;
   padding: 0;
 }
 
