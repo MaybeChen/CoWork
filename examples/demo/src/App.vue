@@ -215,6 +215,24 @@ async function handleAction(turn, action) {
 
     <section class="workspace">
       <aside class="sidebar left">
+        <transition name="output-panel">
+          <section v-if="outputPanelVisible && hasActiveOutput" class="output-overlay">
+            <header class="output-overlay-header">
+              <strong>输出预览</strong>
+              <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
+            </header>
+            <section class="output-card">
+              <h4>Raw</h4>
+              <div ref="rawContentRef" class="output-card-content">
+                <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">{{ line }}</p>
+              </div>
+            </section>
+            <section class="output-card">
+              <h4>Parsed</h4>
+              <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
+            </section>
+          </section>
+        </transition>
         <section ref="questionPanelRef" class="panel question-panel">
           <ul v-if="hasTurns" class="question-list">
             <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
@@ -397,6 +415,7 @@ async function handleAction(turn, action) {
 .sidebar {
   display: flex;
   flex-direction: column;
+  position: relative;
   gap: 16px;
   padding: 12px;
   border-radius: 20px;
@@ -610,16 +629,18 @@ async function handleAction(turn, action) {
   padding-top: 12px;
   border-top: 1px solid rgba(138, 164, 255, 0.2);
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .view-output-btn {
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(138, 164, 255, 0.22);
-  background: rgba(14, 23, 40, 0.9);
-  color: #dce6ff;
-  padding: 0 12px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #ffffff;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -651,17 +672,18 @@ async function handleAction(turn, action) {
 }
 
 .output-overlay {
-  width: 100%;
-  height: min(46vh, 460px);
-  border-radius: 14px;
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  border-radius: 20px;
   border: 1px solid rgba(138, 164, 255, 0.24);
-  background: rgba(8, 17, 31, 0.96);
+  background: rgba(8, 17, 31, 0.98);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  z-index: 20;
 }
 
 .output-overlay-header {
