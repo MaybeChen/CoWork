@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { streamChatByWs } from './modules/network/chatWsStreamClient'
@@ -22,8 +22,125 @@ const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoSc
 })
 const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value)
+const outputPanelVisible = ref(false)
+const activeOutputTurnId = ref('')
+const outputRawLines = ref([])
+const outputParsedText = ref('')
+const rawContentRef = ref(null)
+const parsedContentRef = ref(null)
+const outputSnapshots = reactive({})
+
+const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
 
 const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
+
+function stringifyPretty(value) {
+  const circular = new WeakSet()
+  return JSON.stringify(
+    value,
+    (key, currentValue) => {
+      if (typeof currentValue === 'function') return '[Function]'
+      if (currentValue && typeof currentValue === 'object') {
+        if (circular.has(currentValue)) return '[Circular]'
+        circular.add(currentValue)
+      }
+      return currentValue
+    },
+    2,
+  )
+}
+
+function buildParsedPayload(turn) {
+  return {
+    turnId: turn.id,
+    mode: turn.mode,
+    surfaces: Object.values(turn.surfaces),
+    dataModels: turn.dataModels,
+  }
+}
+
+function ensureOutputSnapshot(turn) {
+  if (!outputSnapshots[turn.id]) {
+    outputSnapshots[turn.id] = {
+      rawLines: [],
+      parsedText: '',
+      lastWsPreviewText: '',
+    }
+  }
+  return outputSnapshots[turn.id]
+}
+
+function scrollOutputToBottom() {
+  nextTick(() => {
+    const rawEl = rawContentRef.value
+    if (rawEl) rawEl.scrollTop = rawEl.scrollHeight
+    const parsedEl = parsedContentRef.value
+    if (parsedEl) parsedEl.scrollTop = parsedEl.scrollHeight
+  })
+}
+
+function syncOutputPanel(turn) {
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.parsedText = stringifyPretty(buildParsedPayload(turn))
+  if (activeOutputTurnId.value === turn.id) {
+    outputRawLines.value = [...snapshot.rawLines]
+    outputParsedText.value = snapshot.parsedText
+    scrollOutputToBottom()
+  }
+}
+
+function appendRawLine(turn, line) {
+  if (!line) return
+  const normalized = String(line).replace(/\\/g, '')
+  const cleaned = normalized.trimEnd()
+  if (!cleaned) return
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.rawLines.push(cleaned)
+  if (activeOutputTurnId.value === turn.id) {
+    outputRawLines.value = [...snapshot.rawLines]
+    scrollOutputToBottom()
+  }
+}
+
+function appendWsRawLine(turn, previewText) {
+  const snapshot = ensureOutputSnapshot(turn)
+  const prev = snapshot.lastWsPreviewText || ''
+  const next = previewText || ''
+  snapshot.lastWsPreviewText = next
+  if (!next) return
+  const delta = next.startsWith(prev) ? next.slice(prev.length) : next
+  if (delta) appendRawLine(turn, delta)
+}
+
+function appendObjectsRawLines(turn, objects) {
+  for (const item of objects || []) {
+    appendRawLine(turn, stringifyPretty(item))
+  }
+}
+
+function openOutputPanel(turn) {
+  if (!turn) return
+  const snapshot = ensureOutputSnapshot(turn)
+  snapshot.parsedText = stringifyPretty(buildParsedPayload(turn))
+  activeOutputTurnId.value = turn.id
+  outputRawLines.value = [...snapshot.rawLines]
+  outputParsedText.value = snapshot.parsedText
+  outputPanelVisible.value = true
+  scrollOutputToBottom()
+}
+
+function closeOutputPanel() {
+  outputPanelVisible.value = false
+}
+
+watch(
+  [outputPanelVisible, activeOutputTurnId, () => outputRawLines.value.length, outputParsedText],
+  ([visible]) => {
+    if (!visible) return
+    scrollOutputToBottom()
+  },
+  { flush: 'post' },
+)
 
 async function send(turn, payload) {
   loading.value = true
@@ -35,6 +152,9 @@ async function send(turn, payload) {
     payload,
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      appendObjectsRawLines(turn, objects)
+      syncOutputPanel(turn)
+      openOutputPanel(turn)
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -43,6 +163,7 @@ async function send(turn, payload) {
 
   turn.streaming = false
   loading.value = false
+  closeOutputPanel()
 }
 
 async function sendByWsStream(turn, payload) {
@@ -56,11 +177,15 @@ async function sendByWsStream(turn, payload) {
     payload,
     onPreview: (text) => {
       turn.streamPreviewText = text
+      appendWsRawLine(turn, text)
+      syncOutputPanel(turn)
       scheduleAutoScroll({ force: true })
       scheduleQuestionAutoScroll({ force: true })
     },
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      syncOutputPanel(turn)
+      openOutputPanel(turn)
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -69,6 +194,7 @@ async function sendByWsStream(turn, payload) {
 
   turn.streaming = false
   loading.value = false
+  closeOutputPanel()
 }
 
 async function submit() {
@@ -101,6 +227,27 @@ async function handleAction(turn, action) {
 
     <section class="workspace">
       <aside class="sidebar left">
+        <transition name="output-panel">
+          <section v-if="outputPanelVisible && hasActiveOutput" class="output-overlay">
+            <header class="output-overlay-header">
+              <strong>输出预览</strong>
+              <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
+            </header>
+              <section class="output-card">
+                <h4>Raw</h4>
+                <div ref="rawContentRef" class="output-card-content">
+                  <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">
+                    <span class="raw-index">{{ index + 1 }}.</span>
+                    <span class="raw-text">{{ line }}</span>
+                  </p>
+                </div>
+              </section>
+            <section class="output-card">
+              <h4>Parsed</h4>
+              <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
+            </section>
+          </section>
+        </transition>
         <section ref="questionPanelRef" class="panel question-panel">
           <ul v-if="hasTurns" class="question-list">
             <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
@@ -148,10 +295,22 @@ async function handleAction(turn, action) {
           <div v-if="centerTurns.length" class="conversation">
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
               <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
-              <div class="bubble bubble-assistant" v-if="Object.values(turn.surfaces).some((s) => s.ready)">
+              <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
+                <div class="bubble bubble-assistant">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
                     <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
                   </article>
+                </div>
+                <div class="result-toolbar">
+                  <button
+                    type="button"
+                    class="view-output-btn"
+                    :disabled="loading || turn.streaming"
+                    @click="openOutputPanel(turn)"
+                  >
+                    查看输出
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -236,7 +395,7 @@ async function handleAction(turn, action) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
   padding: 20px;
   overflow: hidden;
@@ -253,6 +412,7 @@ async function handleAction(turn, action) {
 .sidebar {
   display: flex;
   flex-direction: column;
+  position: relative;
   gap: 16px;
   padding: 12px;
   border-radius: 20px;
@@ -409,17 +569,19 @@ async function handleAction(turn, action) {
   gap: 12px;
 }
 
-.bubble-assistant {
+.turn-result {
   width: 90%;
   min-width: 640px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.bubble-assistant {
+  width: 100%;
   border-radius: 22px;
-  border: 1px solid rgba(130, 160, 255, 0.12);
-  background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: none;
+  background: transparent;
+  box-shadow: none;
   padding: 0;
 }
 
@@ -459,6 +621,33 @@ async function handleAction(turn, action) {
   color: #fca5a5;
 }
 
+.result-toolbar {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(138, 164, 255, 0.2);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.view-output-btn {
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #ffffff;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.view-output-btn:disabled {
+  cursor: not-allowed;
+  color: rgba(220, 230, 255, 0.45);
+  border-color: rgba(138, 164, 255, 0.12);
+  background: rgba(14, 23, 40, 0.45);
+}
+
 .composer {
   padding: 8px 0 0;
 }
@@ -466,6 +655,7 @@ async function handleAction(turn, action) {
 .composer-sidebar {
   margin-top: auto;
   padding-top: 0;
+  position: relative;
 }
 
 .composer-inner {
@@ -476,6 +666,101 @@ async function handleAction(turn, action) {
   display: flex;
   align-items: center;
   padding: 10px;
+}
+
+.output-overlay {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+}
+
+.output-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #4ade80;
+}
+
+.output-close {
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  color: #4ade80;
+  border-radius: 8px;
+  height: 28px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.output-card {
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  border-radius: 14px;
+  padding: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.output-card h4 {
+  margin: 0 0 8px;
+  color: #4ade80;
+  font-size: 12px;
+}
+
+.output-card-content {
+  margin: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #4ade80;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.raw-line {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.raw-line:last-child {
+  margin-bottom: 0;
+}
+
+.raw-index {
+  flex: 0 0 auto;
+  color: #4ade80;
+}
+
+.raw-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.output-panel-enter-active,
+.output-panel-leave-active {
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: bottom center;
+}
+
+.output-panel-enter-from,
+.output-panel-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
 }
 
 .content,
