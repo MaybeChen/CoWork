@@ -22,8 +22,51 @@ const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoSc
 })
 const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value)
+const outputPanelVisible = ref(false)
+const activeOutputTurnId = ref('')
+const outputRawText = ref('')
+const outputParsedText = ref('')
+
+const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
 
 const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
+
+function stringifyPretty(value) {
+  const circular = new WeakSet()
+  return JSON.stringify(
+    value,
+    (key, currentValue) => {
+      if (typeof currentValue === 'function') return '[Function]'
+      if (currentValue && typeof currentValue === 'object') {
+        if (circular.has(currentValue)) return '[Circular]'
+        circular.add(currentValue)
+      }
+      return currentValue
+    },
+    2,
+  )
+}
+
+function buildParsedPayload(turn) {
+  return {
+    turnId: turn.id,
+    mode: turn.mode,
+    surfaces: Object.values(turn.surfaces),
+    dataModels: turn.dataModels,
+  }
+}
+
+function openOutputPanel(turn) {
+  if (!turn) return
+  activeOutputTurnId.value = turn.id
+  outputRawText.value = turn.userText || ''
+  outputParsedText.value = stringifyPretty(buildParsedPayload(turn))
+  outputPanelVisible.value = true
+}
+
+function closeOutputPanel() {
+  outputPanelVisible.value = false
+}
 
 async function send(turn, payload) {
   loading.value = true
@@ -35,6 +78,7 @@ async function send(turn, payload) {
     payload,
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      openOutputPanel(turn)
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -43,6 +87,7 @@ async function send(turn, payload) {
 
   turn.streaming = false
   loading.value = false
+  closeOutputPanel()
 }
 
 async function sendByWsStream(turn, payload) {
@@ -61,6 +106,7 @@ async function sendByWsStream(turn, payload) {
     },
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      openOutputPanel(turn)
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -69,6 +115,7 @@ async function sendByWsStream(turn, payload) {
 
   turn.streaming = false
   loading.value = false
+  closeOutputPanel()
 }
 
 async function submit() {
@@ -117,6 +164,22 @@ async function handleAction(turn, action) {
         </section>
 
         <footer class="composer composer-sidebar">
+          <transition name="output-panel">
+            <section v-if="outputPanelVisible && hasActiveOutput" class="output-overlay">
+              <header class="output-overlay-header">
+                <strong>输出预览</strong>
+                <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
+              </header>
+              <section class="output-card">
+                <h4>Raw</h4>
+                <pre>{{ outputRawText }}</pre>
+              </section>
+              <section class="output-card">
+                <h4>Parsed</h4>
+                <pre>{{ outputParsedText }}</pre>
+              </section>
+            </section>
+          </transition>
           <form class="composer-inner" @submit.prevent="submit">
             <select v-model="streamMode" :disabled="loading" class="mode-select">
               <option value="default">非流式</option>
@@ -145,16 +208,28 @@ async function handleAction(turn, action) {
             <p class="hero-subtitle">界面随需而生，协作自由生长</p>
           </div>
 
-          <div v-if="centerTurns.length" class="conversation">
-            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
-              <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
-              <div class="bubble bubble-assistant" v-if="Object.values(turn.surfaces).some((s) => s.ready)">
-                  <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
-                    <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
-                  </article>
-              </div>
-            </div>
-          </div>
+	          <div v-if="centerTurns.length" class="conversation">
+	            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
+	              <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
+                <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
+                  <div class="bubble bubble-assistant">
+                    <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
+                      <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
+                    </article>
+                  </div>
+                  <div class="result-toolbar">
+                    <button
+                      type="button"
+                      class="view-output-btn"
+                      :disabled="loading || turn.streaming"
+                      @click="openOutputPanel(turn)"
+                    >
+                      查看输出
+                    </button>
+                  </div>
+                </div>
+	            </div>
+	          </div>
           <div v-else-if="hasTurns" class="hero">
             <h1 class="hero-brand">无形之界，无限之能</h1>
             <p class="hero-subtitle">界面随需而生，协作自由生长</p>
@@ -236,7 +311,7 @@ async function handleAction(turn, action) {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
   padding: 20px;
   overflow: hidden;
@@ -409,17 +484,19 @@ async function handleAction(turn, action) {
   gap: 12px;
 }
 
-.bubble-assistant {
+.turn-result {
   width: 90%;
   min-width: 640px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.bubble-assistant {
+  width: 100%;
   border-radius: 22px;
-  border: 1px solid rgba(130, 160, 255, 0.12);
-  background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: none;
+  background: transparent;
+  box-shadow: none;
   padding: 0;
 }
 
@@ -459,6 +536,31 @@ async function handleAction(turn, action) {
   color: #fca5a5;
 }
 
+.result-toolbar {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(138, 164, 255, 0.2);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-output-btn {
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(138, 164, 255, 0.22);
+  background: rgba(14, 23, 40, 0.9);
+  color: #dce6ff;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.view-output-btn:disabled {
+  cursor: not-allowed;
+  color: rgba(220, 230, 255, 0.45);
+  border-color: rgba(138, 164, 255, 0.12);
+  background: rgba(14, 23, 40, 0.45);
+}
+
 .composer {
   padding: 8px 0 0;
 }
@@ -466,6 +568,7 @@ async function handleAction(turn, action) {
 .composer-sidebar {
   margin-top: auto;
   padding-top: 0;
+  position: relative;
 }
 
 .composer-inner {
@@ -476,6 +579,76 @@ async function handleAction(turn, action) {
   display: flex;
   align-items: center;
   padding: 10px;
+}
+
+.output-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 10px);
+  max-height: 360px;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 164, 255, 0.24);
+  background: rgba(8, 17, 31, 0.96);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  z-index: 8;
+}
+
+.output-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #dce6ff;
+}
+
+.output-close {
+  border: 1px solid rgba(138, 164, 255, 0.24);
+  background: rgba(14, 23, 40, 0.9);
+  color: #dce6ff;
+  border-radius: 8px;
+  height: 28px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.output-card {
+  border: 1px solid rgba(138, 164, 255, 0.18);
+  background: rgba(11, 18, 32, 0.85);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.output-card h4 {
+  margin: 0 0 8px;
+  color: #dce6ff;
+  font-size: 12px;
+}
+
+.output-card pre {
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #b8c7e6;
+  font-size: 12px;
+}
+
+.output-panel-enter-active,
+.output-panel-leave-active {
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: bottom center;
+}
+
+.output-panel-enter-from,
+.output-panel-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
 }
 
 .content,
