@@ -264,24 +264,6 @@ async function handleAction(turn, action) {
         </section>
 
         <footer class="composer composer-sidebar">
-          <transition name="output-panel">
-            <section v-if="outputPanelVisible && hasActiveOutput" class="output-overlay">
-              <header class="output-overlay-header">
-                <strong>输出预览</strong>
-                <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
-              </header>
-              <section class="output-card">
-                <h4>Raw</h4>
-                <div ref="rawContentRef" class="output-card-content">
-                  <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">{{ line }}</p>
-                </div>
-              </section>
-              <section class="output-card">
-                <h4>Parsed</h4>
-                <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
-              </section>
-            </section>
-          </transition>
           <form class="composer-inner" @submit.prevent="submit">
             <select v-model="streamMode" :disabled="loading" class="mode-select">
               <option value="default">非流式</option>
