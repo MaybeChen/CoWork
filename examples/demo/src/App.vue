@@ -264,24 +264,6 @@ async function handleAction(turn, action) {
         </section>
 
         <footer class="composer composer-sidebar">
-          <transition name="output-panel">
-            <section v-if="outputPanelVisible && hasActiveOutput" class="output-overlay">
-              <header class="output-overlay-header">
-                <strong>输出预览</strong>
-                <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
-              </header>
-              <section class="output-card">
-                <h4>Raw</h4>
-                <div ref="rawContentRef" class="output-card-content">
-                  <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">{{ line }}</p>
-                </div>
-              </section>
-              <section class="output-card">
-                <h4>Parsed</h4>
-                <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
-              </section>
-            </section>
-          </transition>
           <form class="composer-inner" @submit.prevent="submit">
             <select v-model="streamMode" :disabled="loading" class="mode-select">
               <option value="default">非流式</option>
@@ -312,18 +294,28 @@ async function handleAction(turn, action) {
 
           <div v-if="centerTurns.length" class="conversation">
             <div v-for="turn in centerTurns" :key="turn.id" class="turn">
-              <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
+              <div v-if="turn.streaming" class="streaming-tip" aria-live="polite">
+                <span class="streaming-tip-core">
+                  <span class="streaming-ping" />
+                  <span class="streaming-label">渲染中</span>
+                  <span class="streaming-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </span>
+                <span class="streaming-scanline" />
+              </div>
               <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
                 <div class="bubble bubble-assistant">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
                     <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
                   </article>
                 </div>
-                <div class="result-toolbar">
+                <div v-if="!turn.streaming" class="result-toolbar">
                   <button
                     type="button"
                     class="view-output-btn"
-                    :disabled="loading || turn.streaming"
                     @click="openOutputPanel(turn)"
                   >
                     查看输出
@@ -577,7 +569,7 @@ async function handleAction(turn, action) {
 .conversation {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 60px;
   padding-bottom: 12px;
 }
 
@@ -604,12 +596,116 @@ async function handleAction(turn, action) {
 }
 
 .streaming-tip {
-  color: rgba(127, 144, 180, 0.9);
-  font-size: 12px;
   width: 90%;
   min-width: 640px;
   margin-left: auto;
   margin-right: auto;
+  border: 1px solid rgba(99, 216, 255, 0.28);
+  border-radius: 12px;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(26, 35, 58, 0.95), rgba(13, 20, 36, 0.9)),
+    radial-gradient(circle at 22% 50%, rgba(99, 216, 255, 0.16), transparent 48%);
+  box-shadow:
+    inset 0 0 0 1px rgba(99, 216, 255, 0.08),
+    0 0 0 1px rgba(99, 216, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+.streaming-tip-core {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.streaming-ping {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #63d8ff;
+  box-shadow: 0 0 10px rgba(99, 216, 255, 0.8);
+  animation: streaming-pulse 1.25s ease-in-out infinite;
+}
+
+.streaming-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(204, 232, 255, 0.95);
+  text-shadow: 0 0 12px rgba(99, 216, 255, 0.22);
+}
+
+.streaming-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.streaming-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(199, 240, 255, 0.9);
+  transform: translateY(0);
+  animation: streaming-dot-wave 1s ease-in-out infinite;
+}
+
+.streaming-dots i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.streaming-dots i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.streaming-scanline {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(99, 216, 255, 0.03) 40%,
+    rgba(99, 216, 255, 0.22) 48%,
+    rgba(99, 216, 255, 0.03) 56%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: streaming-scan 2.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes streaming-pulse {
+  0%, 100% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes streaming-dot-wave {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes streaming-scan {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
 }
 
 .surface {
