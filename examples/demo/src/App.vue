@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { streamChatByWs } from './modules/network/chatWsStreamClient'
@@ -132,6 +132,15 @@ function openOutputPanel(turn) {
 function closeOutputPanel() {
   outputPanelVisible.value = false
 }
+
+watch(
+  [outputPanelVisible, activeOutputTurnId, () => outputRawLines.value.length, outputParsedText],
+  ([visible]) => {
+    if (!visible) return
+    scrollOutputToBottom()
+  },
+  { flush: 'post' },
+)
 
 async function send(turn, payload) {
   loading.value = true
