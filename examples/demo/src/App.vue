@@ -91,8 +91,11 @@ function syncOutputPanel(turn) {
 
 function appendRawLine(turn, line) {
   if (!line) return
+  const normalized = String(line).replace(/\\/g, '')
+  const cleaned = normalized.trimEnd()
+  if (!cleaned) return
   const snapshot = ensureOutputSnapshot(turn)
-  snapshot.rawLines.push(line)
+  snapshot.rawLines.push(cleaned)
   if (activeOutputTurnId.value === turn.id) {
     outputRawLines.value = [...snapshot.rawLines]
     scrollOutputToBottom()
@@ -221,12 +224,15 @@ async function handleAction(turn, action) {
               <strong>输出预览</strong>
               <button type="button" class="output-close" @click="closeOutputPanel">关闭</button>
             </header>
-            <section class="output-card">
-              <h4>Raw</h4>
-              <div ref="rawContentRef" class="output-card-content">
-                <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">{{ line }}</p>
-              </div>
-            </section>
+              <section class="output-card">
+                <h4>Raw</h4>
+                <div ref="rawContentRef" class="output-card-content">
+                  <p v-for="(line, index) in outputRawLines" :key="`${activeOutputTurnId}-raw-${index}`" class="raw-line">
+                    <span class="raw-index">{{ index + 1 }}.</span>
+                    <span class="raw-text">{{ line }}</span>
+                  </p>
+                </div>
+              </section>
             <section class="output-card">
               <h4>Parsed</h4>
               <pre ref="parsedContentRef" class="output-card-content">{{ outputParsedText }}</pre>
@@ -675,11 +681,11 @@ async function handleAction(turn, action) {
   position: absolute;
   inset: 0;
   height: 100%;
-  border-radius: 20px;
-  border: 1px solid rgba(138, 164, 255, 0.24);
-  background: rgba(8, 17, 31, 0.98);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -691,13 +697,13 @@ async function handleAction(turn, action) {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #dce6ff;
+  color: #4ade80;
 }
 
 .output-close {
-  border: 1px solid rgba(138, 164, 255, 0.24);
-  background: rgba(14, 23, 40, 0.9);
-  color: #dce6ff;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  color: #4ade80;
   border-radius: 8px;
   height: 28px;
   padding: 0 10px;
@@ -705,9 +711,9 @@ async function handleAction(turn, action) {
 }
 
 .output-card {
-  border: 1px solid rgba(138, 164, 255, 0.18);
-  background: rgba(11, 18, 32, 0.85);
-  border-radius: 10px;
+  border: 1px solid rgba(138, 164, 255, 0.14);
+  background: rgba(11, 18, 32, 0.9);
+  border-radius: 14px;
   padding: 10px;
   flex: 1;
   min-height: 0;
@@ -717,7 +723,7 @@ async function handleAction(turn, action) {
 
 .output-card h4 {
   margin: 0 0 8px;
-  color: #dce6ff;
+  color: #4ade80;
   font-size: 12px;
 }
 
@@ -728,13 +734,30 @@ async function handleAction(turn, action) {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #b8c7e6;
+  color: #4ade80;
   font-size: 12px;
   line-height: 1.6;
 }
 
 .raw-line {
-  margin: 0;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.raw-line:last-child {
+  margin-bottom: 0;
+}
+
+.raw-index {
+  flex: 0 0 auto;
+  color: #4ade80;
+}
+
+.raw-text {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .output-panel-enter-active,
