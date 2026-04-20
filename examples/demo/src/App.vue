@@ -569,7 +569,7 @@ async function handleAction(turn, action) {
 .conversation {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 60px;
   padding-bottom: 12px;
 }
 
