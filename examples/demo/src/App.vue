@@ -310,28 +310,28 @@ async function handleAction(turn, action) {
             <p class="hero-subtitle">界面随需而生，协作自由生长</p>
           </div>
 
-	          <div v-if="centerTurns.length" class="conversation">
-	            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
-	              <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
-                <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
-                  <div class="bubble bubble-assistant">
-                    <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
-                      <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
-                    </article>
-                  </div>
-                  <div class="result-toolbar">
-                    <button
-                      type="button"
-                      class="view-output-btn"
-                      :disabled="loading || turn.streaming"
-                      @click="openOutputPanel(turn)"
-                    >
-                      查看输出
-                    </button>
-                  </div>
+          <div v-if="centerTurns.length" class="conversation">
+            <div v-for="turn in centerTurns" :key="turn.id" class="turn">
+              <div v-if="turn.streaming" class="streaming-tip">渲染中…（渐进更新）</div>
+              <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
+                <div class="bubble bubble-assistant">
+                  <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
+                    <A2UIRenderer :surface="surface" :data-model="turn.dataModels[surface.id] || {}" :on-action="(action) => handleAction(turn, action)" />
+                  </article>
                 </div>
-	            </div>
-	          </div>
+                <div class="result-toolbar">
+                  <button
+                    type="button"
+                    class="view-output-btn"
+                    :disabled="loading || turn.streaming"
+                    @click="openOutputPanel(turn)"
+                  >
+                    查看输出
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div v-else-if="hasTurns" class="hero">
             <h1 class="hero-brand">无形之界，无限之能</h1>
             <p class="hero-subtitle">界面随需而生，协作自由生长</p>
