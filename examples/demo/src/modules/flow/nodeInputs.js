@@ -1,12 +1,167 @@
 export const NODE_INPUTS = {
   log: `{
-  "result": {
-    "logResult": [],
-    "ciInfo": {
-      "ciName": "模型服务千问实例",
-      "ciId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
-      "ciType": "InferenceModelInstance",
-      "ciSubType": "InferenceModelInstance"
+  "code": 200,
+  "data": "answer:{\"fieldRelations\":[{\"fieldKey\":\"id\",\"fieldNameCn\":\"CI ID\",\"fieldNameEn\":\"CI ID\",\"fieldOrder\":1,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"name\",\"fieldNameCn\":\"CI名称\",\"fieldNameEn\":\"CI Name\",\"fieldOrder\":2,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"business_tag\",\"fieldNameCn\":\"业务标签\",\"fieldNameEn\":\"Business Tag\",\"fieldOrder\":3,\"filterType\":\"NONE\",\"valueType\":\"Array\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"type\",\"fieldNameCn\":\"类型\",\"fieldNameEn\":\"CI Type\",\"fieldOrder\":4,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"subtype\",\"fieldNameCn\":\"子类型\",\"fieldNameEn\":\"CI Subtype\",\"fieldOrder\":5,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"organization\",\"fieldNameCn\":\"CI组织\",\"fieldNameEn\":\"CI Organisation\",\"fieldOrder\":6,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"},{\"fieldKey\":\"istatus\",\"fieldNameCn\":\"CI状态\",\"fieldNameEn\":\"Status\",\"fieldOrder\":7,\"filterType\":\"FILTER\",\"valueType\":\"Enum\",\"enumValues\":[{\"code\":\"normal\",\"name\":\"正常\"},{\"code\":\"offline\",\"name\":\"离线\"},{\"code\":\"abnormal\",\"name\":\"故障\"},{\"code\":\"unknown\",\"name\":\"未知\"}],\"url\":\"\"},{\"fieldKey\":\"contact_name\",\"fieldNameCn\":\"CI使用人\",\"fieldNameEn\":\"CI Owner\",\"fieldOrder\":8,\"filterType\":\"NONE\",\"valueType\":\"String\",\"enumValues\":\"\",\"url\":\"\"}],\"data\":[{\"service_ip\":\"\",\"exception_status_desc\":\"\",\"agent_name\":\"\",\"site_type\":\"\",\"source\":\"CMDB\",\"type\":\"InferenceModelInstance\",\"inference_model_type\":\"\",\"launch_time\":\"\",\"last_updated_by\":\"hcadmin001\",\"provider\":\"\",\"supported_applications\":\"\",\"subtype\":\"InferenceModelInstance\",\"third_party_model_name\":\"\",\"business_type\":\"\",\"name_i18n\":{},\"service_code\":\"\",\"tag\":{\"originalLabel\":[],\"values\":[],\"tagPos\":null,\"tags\":{}},\"id\":\"14537ad8-df06-4fb9-a584-e3a30b80b877\",\"last_update_date\":1770773127402,\"del_flag\":\"N\",\"contact_name\":\"\",\"comments\":\"\",\"inference_model_name\":\"\",\"assignment\":\"dev\",\"istatus\":\"healthy\",\"display_name\":\"模型服务千问实例\",\"created_by\":\"hcadmin001\",\"_tenant\":\"HWCloudInfra\",\"business_tag\":[],\"site_name\":\"\",\"class_Name\":\"InferenceModelInstance\",\"created_by_date\":1770773127402,\"parent_application_name\":\"\",\"organization\":\"\",\"name\":\"模型服务千问实例\",\"service_port\":\"\"}],\"luiStyle\":{\"contextType\":\"Ci List Data\",\"showType\":\"Table\"},\"summary\":\"已为你识别到 1 条数据，前 1 条数据列表如下：\",\"requestBody\":{\"search\":{\"type\":[\"InferenceModelInstance\"],\"name\":[\"模型服务千问实例\"]},\"pageSize\":100},\"_context.sys.current_date_time\":\"2026-04-08 11:09:41\"}",
+  "body": {
+    "summary": "已为你识别到 1 条数据，前 1 条数据列表如下：",
+    "data": [
+      {
+        "service_ip": "",
+        "exception_status_desc": "",
+        "agent_name": "",
+        "site_type": "",
+        "source": "CMDB",
+        "type": "InferenceModelInstance",
+        "inference_model_type": "",
+        "launch_time": "",
+        "last_updated_by": "hcadmin001",
+        "provider": "",
+        "supported_applications": "",
+        "subtype": "InferenceModelInstance",
+        "third_party_model_name": "",
+        "business_type": "",
+        "name_i18n": {},
+        "service_code": "",
+        "tag": {
+          "values": [],
+          "originalLabel": [],
+          "tags": {}
+        },
+        "id": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+        "last_update_date": 1770773127402,
+        "del_flag": "N",
+        "contact_name": "",
+        "comments": "",
+        "inference_model_name": "",
+        "assignment": "dev",
+        "istatus": "healthy",
+        "display_name": "模型服务千问实例",
+        "created_by": "hcadmin001",
+        "_tenant": "HWCloudInfra",
+        "business_tag": [],
+        "site_name": "",
+        "class_Name": "InferenceModelInstance",
+        "created_by_date": 1770773127402,
+        "parent_application_name": "",
+        "organization": "",
+        "name": "模型服务千问实例",
+        "service_port": ""
+      }
+    ],
+    "requestBody": {
+      "search": {
+        "name": [
+          "模型服务千问实例"
+        ],
+        "type": [
+          "InferenceModelInstance"
+        ]
+      },
+      "pageSize": 100
+    },
+    "fieldRelations": [
+      {
+        "fieldNameCn": "CI ID",
+        "fieldKey": "id",
+        "valueType": "String",
+        "fieldOrder": 1,
+        "filterType": "NONE",
+        "fieldNameEn": "CI ID",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "CI名称",
+        "fieldKey": "name",
+        "valueType": "String",
+        "fieldOrder": 2,
+        "filterType": "NONE",
+        "fieldNameEn": "CI Name",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "业务标签",
+        "fieldKey": "business_tag",
+        "valueType": "Array",
+        "fieldOrder": 3,
+        "filterType": "NONE",
+        "fieldNameEn": "Business Tag",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "类型",
+        "fieldKey": "type",
+        "valueType": "String",
+        "fieldOrder": 4,
+        "filterType": "NONE",
+        "fieldNameEn": "CI Type",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "子类型",
+        "fieldKey": "subtype",
+        "valueType": "String",
+        "fieldOrder": 5,
+        "filterType": "NONE",
+        "fieldNameEn": "CI Subtype",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "CI组织",
+        "fieldKey": "organization",
+        "valueType": "String",
+        "fieldOrder": 6,
+        "filterType": "NONE",
+        "fieldNameEn": "CI Organisation",
+        "url": "",
+        "enumValues": ""
+      },
+      {
+        "fieldNameCn": "CI状态",
+        "fieldKey": "istatus",
+        "valueType": "Enum",
+        "fieldOrder": 7,
+        "filterType": "FILTER",
+        "fieldNameEn": "Status",
+        "url": "",
+        "enumValues": [
+          {
+            "code": "normal",
+            "name": "正常"
+          },
+          {
+            "code": "offline",
+            "name": "离线"
+          },
+          {
+            "code": "abnormal",
+            "name": "故障"
+          },
+          {
+            "code": "unknown",
+            "name": "未知"
+          }
+        ]
+      },
+      {
+        "fieldNameCn": "CI使用人",
+        "fieldKey": "contact_name",
+        "valueType": "String",
+        "fieldOrder": 8,
+        "filterType": "NONE",
+        "fieldNameEn": "CI Owner",
+        "url": "",
+        "enumValues": ""
+      }
+    ],
+    "_context.sys.current_date_time": "2026-04-08 11:09:41",
+    "luiStyle": {
+      "contextType": "Ci List Data",
+      "showType": "Table"
     }
   }
 }`,
