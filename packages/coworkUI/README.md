@@ -23,7 +23,7 @@ const app = createApp(App)
 const coworkUI = createCoworkUI({
   sweetBase,
   locale: 'zh_CN',
-  themeName: 'dark',
+  themeName: 'light',
   installSweetBase: true,
 })
 
@@ -78,7 +78,7 @@ app.mount('#app')
 ### 1) 创建插件实例并保留引用
 
 ```js
-const coworkUI = createCoworkUI({ sweetBase, themeName: 'dark', installSweetBase: true })
+const coworkUI = createCoworkUI({ sweetBase, themeName: 'light', installSweetBase: true })
 app.use(coworkUI)
 ```
 
@@ -86,6 +86,7 @@ app.use(coworkUI)
 
 ```js
 coworkUI.setTheme('light')
+// 或 coworkUI.setTheme('dark')
 ```
 
 当传入了 `sweetBase` 时，`setTheme` 会同步调用 `sweetBase.setTheme(themeName)`。

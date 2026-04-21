@@ -1,7 +1,8 @@
 <script setup>
+import { computed, inject } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
 
-defineProps({
+const props = defineProps({
   surface: {
     type: Object,
     required: true,
@@ -16,9 +17,12 @@ defineProps({
   },
   theme: {
     type: Object,
-    default: () => defaultTheme,
+    default: null,
   },
 })
+
+const injectedTheme = inject('coworkui:theme', null)
+const resolvedTheme = computed(() => props.theme || injectedTheme?.value || defaultTheme)
 </script>
 
 <template>
@@ -29,7 +33,7 @@ defineProps({
       :data-model="dataModel"
       :surface-id="surface.id"
       :registry="defaultRegistry"
-      :theme="theme"
+      :theme="resolvedTheme"
       :on-action="onAction"
     />
   </div>
@@ -38,7 +42,7 @@ defineProps({
 
 <style scoped>
 .empty-tip {
-  color: rgba(255, 255, 255, 0.6);
+  color: #64748b;
   padding: 10px;
 }
 </style>
