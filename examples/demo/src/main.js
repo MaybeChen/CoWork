@@ -10,7 +10,7 @@ const app = createApp(App)
 const coworkUI = createCoworkUI({
   sweetBase,
   locale: 'zh_CN',
-  themeName: 'dark',
+  themeName: 'light',
   installSweetBase: true,
 })
 
