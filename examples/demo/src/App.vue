@@ -8,9 +8,9 @@ import { applyObjectsProgressively } from './modules/message/progressiveSchedule
 const endpoint = '/api/chat/stream'
 
 const sampleQuestions = [
-  '请从日志、告警和工单信息中定位故障根因并给出处理建议',
-  '基于当前业务异常，结合指标和拓扑信息生成排障路径',
-  '请按节点流程自动分析风险并输出最终推理结论',
+  { id: 'q1', text: '请从日志、告警和工单信息中定位故障根因并给出处理建议' },
+  { id: 'q2', text: '基于当前业务异常，结合指标和拓扑信息生成排障路径' },
+  { id: 'q3', text: '请按节点流程自动分析风险并输出最终推理结论' },
 ]
 
 const nodeDefs = [
@@ -175,8 +175,13 @@ async function handleAction(nodeId, action) {
         <h1 class="hero-brand">形之界，无限之能</h1>
         <p class="hero-subtitle">界面随需而生，协作自由生长</p>
         <div class="example-list">
-          <button v-for="item in sampleQuestions" :key="item" class="example-btn" @click="startFlow(item)">
-            {{ item }}
+          <button v-for="item in sampleQuestions" :key="item.id" class="example-btn" @click="startFlow(item.text)">
+            <span class="chart-icon" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <span class="example-text">{{ item.text }}</span>
           </button>
         </div>
       </section>
@@ -256,15 +261,21 @@ async function handleAction(nodeId, action) {
 .global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
 .brand { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #2563eb; }
 .workspace { flex: 1; padding: 16px; min-height: 0; }
-.panel { border: 1px solid #d7e3f3; border-radius: 16px; background: rgba(255,255,255,.95); box-shadow: 0 10px 20px rgba(148,163,184,.12); }
+.panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
 .hero-brand { margin: 0; font-size: 34px; }
 .hero-subtitle { margin: 0; color: #64748b; }
-.example-list { display: grid; gap: 10px; max-width: 840px; }
-.example-btn { border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; border-radius: 12px; padding: 12px 14px; text-align: left; cursor: pointer; }
-.example-btn:hover { background: #dbeafe; }
+.example-list { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 12px; max-width: 1080px; }
+.example-btn { border: 1px solid #d5e5fb; background: #ffffff; color: #1e3a8a; border-radius: 14px; padding: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 86px; }
+.example-btn:hover { background: #f8fbff; border-color: #93c5fd; box-shadow: 0 8px 16px rgba(148,163,184,.16); }
+.chart-icon { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #bfdbfe; background: #eff6ff; display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding: 6px; flex: 0 0 auto; }
+.chart-icon i { display: inline-block; width: 5px; background: linear-gradient(180deg, #60a5fa, #2563eb); border-radius: 4px; }
+.chart-icon i:nth-child(1) { height: 8px; }
+.chart-icon i:nth-child(2) { height: 14px; }
+.chart-icon i:nth-child(3) { height: 11px; }
+.example-text { line-height: 1.4; }
 .flow-layout { height: 100%; display: grid; grid-template-rows: 160px 1fr auto; gap: 12px; }
-.graph { padding: 14px; overflow: hidden; }
+.graph { padding: 10px 0; overflow: hidden; }
 .graph h3 { margin: 0 0 10px; font-size: 14px; color: #334155; }
 .graph-track { position: relative; display: grid; grid-template-columns: repeat(9, minmax(110px, 1fr)); gap: 12px; align-items: center; height: calc(100% - 28px); }
 .node { z-index: 2; border: 1px solid #bfdbfe; border-radius: 12px; background: #eff6ff; color: #1e3a8a; padding: 8px; cursor: pointer; display: grid; gap: 4px; min-height: 72px; }
@@ -286,7 +297,7 @@ async function handleAction(nodeId, action) {
 .edge-active { background: linear-gradient(90deg, rgba(59,130,246,.12), rgba(59,130,246,.95), rgba(59,130,246,.12)); background-size: 220% 100%; animation: flow 1.2s linear infinite; box-shadow: 0 0 12px rgba(59,130,246,.35); }
 @keyframes flow { from { background-position: 220% 0; } to { background-position: -20% 0; } }
 
-.result-stage { min-height: 0; padding: 12px; }
+.result-stage { min-height: 0; padding: 0; }
 .result-card { height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .result-left { min-height: 0; display: grid; grid-template-rows: 2fr 4fr 4fr; gap: 10px; }
 .data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; min-height: 0; }
@@ -301,4 +312,8 @@ async function handleAction(nodeId, action) {
 .surface-wrap { display: grid; gap: 12px; }
 .empty-render { height: 100%; display: grid; place-content: center; color: #64748b; }
 .error { margin: 0; color: #dc2626; }
+
+@media (max-width: 1080px) {
+  .example-list { grid-template-columns: 1fr; max-width: 820px; }
+}
 </style>
