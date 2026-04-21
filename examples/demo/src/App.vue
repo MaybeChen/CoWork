@@ -295,7 +295,7 @@ async function handleAction(nodeId, action) {
 .workspace { flex: 1; padding: 16px; min-height: 0; }
 .panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
-.hero-brand { margin: 0; font-size: 34px; background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 45%, #0ea5e9 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-brand { margin: 0; font-size: 34px; background: linear-gradient(90deg, #60a5fa 0%, #38bdf8 48%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hero-subtitle { margin: 0; color: #64748b; }
 .example-list { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 12px; max-width: 1080px; }
 .example-btn { border: 1px solid #d5e5fb; background: #ffffff; color: #1e3a8a; border-radius: 14px; padding: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 86px; }
