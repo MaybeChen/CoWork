@@ -73,7 +73,7 @@ const chartData = computed(() => {
 <style scoped>
 .a2-pie-chart-wrap {
   width: 100%;
-  max-width: 100%;
+  max-width: 600px;
   border: 1px solid rgba(138, 164, 255, 0.14);
   border-radius: 8px;
   padding: 22px 22px 18px;
