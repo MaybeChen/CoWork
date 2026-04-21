@@ -43,6 +43,10 @@ export const componentSpecificStyles = `
   margin: 0;
 }
 
+.a2ui-surface em {
+  font-style: italic;
+}
+
 .a2ui-surface .hero_fact .a2-column{
   border: 1px solid rgba(138, 164, 255, 0.14);
   backdrop-filter: blur(8px);
@@ -69,6 +73,5 @@ export const componentSpecificStyles = `
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:last-child{
   font-weight: bold;
-  font-size: 120%;
 }
 `
