@@ -32,6 +32,8 @@ const error = ref('')
 const activeQuestion = ref('')
 const currentNodeId = ref('')
 const activeEdgeId = ref('')
+const activeAbortController = ref(null)
+const runVersion = ref(0)
 const nodeStates = reactive({})
 const nodeResults = reactive({})
 
@@ -99,9 +101,13 @@ async function runSingleNode(node) {
   currentNodeId.value = node.id
   nodeStates[node.id] = 'running'
 
+  const controller = new AbortController()
+  activeAbortController.value = controller
+
   await streamChat({
     endpoint,
     payload: { message: node.input },
+    signal: controller.signal,
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn: (targetTurn, payload) => applyMessage(targetTurn, payload) })
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
@@ -118,6 +124,8 @@ async function runSingleNode(node) {
 
 async function startFlow(question) {
   if (loading.value) return
+  runVersion.value += 1
+  const currentRun = runVersion.value
   activeQuestion.value = question
   error.value = ''
   currentNodeId.value = ''
@@ -130,6 +138,7 @@ async function startFlow(question) {
   }
 
   for (let i = 0; i < nodeDefs.length; i += 1) {
+    if (currentRun !== runVersion.value) break
     const node = nodeDefs[i]
     const next = nodeDefs[i + 1]
     activeEdgeId.value = next ? `${node.id}-${next.id}` : ''
@@ -139,6 +148,22 @@ async function startFlow(question) {
 
   activeEdgeId.value = ''
   loading.value = false
+  activeAbortController.value = null
+}
+
+function backToHome() {
+  activeAbortController.value?.abort()
+  runVersion.value += 1
+  loading.value = false
+  error.value = ''
+  activeQuestion.value = ''
+  currentNodeId.value = ''
+  activeEdgeId.value = ''
+  activeAbortController.value = null
+  for (const node of nodeDefs) {
+    nodeStates[node.id] = 'idle'
+    delete nodeResults[node.id]
+  }
 }
 
 function selectNode(nodeId) {
@@ -167,12 +192,12 @@ async function handleAction(nodeId, action) {
 <template>
   <main class="page">
     <header class="global-header">
-      <div class="brand">CoWorker</div>
+      <button type="button" class="brand" @click="backToHome">COWORKER</button>
     </header>
 
     <section class="workspace">
       <section v-if="!started" class="hero panel">
-        <h1 class="hero-brand">形之界，无限之能</h1>
+        <h1 class="hero-brand">无形之界，无限之能</h1>
         <p class="hero-subtitle">界面随需而生，协作自由生长</p>
         <div class="example-list">
           <button v-for="item in sampleQuestions" :key="item.id" class="example-btn" @click="startFlow(item.text)">
@@ -259,11 +284,11 @@ async function handleAction(nodeId, action) {
 <style scoped>
 .page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; }
 .global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
-.brand { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #2563eb; }
+.brand { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: none; background: linear-gradient(90deg, #2563eb, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; padding: 0; }
 .workspace { flex: 1; padding: 16px; min-height: 0; }
 .panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
-.hero-brand { margin: 0; font-size: 34px; }
+.hero-brand { margin: 0; font-size: 34px; background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 45%, #0ea5e9 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hero-subtitle { margin: 0; color: #64748b; }
 .example-list { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 12px; max-width: 1080px; }
 .example-btn { border: 1px solid #d5e5fb; background: #ffffff; color: #1e3a8a; border-radius: 14px; padding: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 86px; }

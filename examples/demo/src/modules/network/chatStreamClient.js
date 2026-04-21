@@ -1,11 +1,12 @@
 import { extractJsonObjects } from './streamObjectExtractor'
 
-export async function streamChat({ endpoint, payload, onObjects, onError }) {
+export async function streamChat({ endpoint, payload, onObjects, onError, signal }) {
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal,
     })
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -31,6 +32,7 @@ export async function streamChat({ endpoint, payload, onObjects, onError }) {
       if (objects.length) await onObjects(objects)
     }
   } catch (e) {
+    if (e?.name === 'AbortError') return
     onError?.(e)
   }
 }
