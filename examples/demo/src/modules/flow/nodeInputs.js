@@ -281,7 +281,62 @@ export const NODE_INPUTS = {
 对象子类型：LQL2Switch
 对象名称：YGAA2-2F02-08-14-A1P1-LQL2switch-LQLEAF-HW630-02U43
 发生时间：2026-03-03 05:14:26`,
-  metric: '444',
+  metric: `{
+  "result": {
+    "code": 200,
+    "data": "metricValues:",
+    "errorMessage": "",
+    "body": {
+      "data": [],
+      "fieldRelations": [
+        {
+          "fieldNameCn": "对象名称",
+          "fieldKey": "displayName",
+          "valueType": "String",
+          "filedOrder": 1,
+          "filterType": "NONE",
+          "fieldNameEn": "CI Name",
+          "url": null,
+          "enumValues": null
+        },
+        {
+          "fieldNameCn": "最大值",
+          "fieldKey": "metricValueMax",
+          "valueType": "String",
+          "filedOrder": 2,
+          "filterType": "NONE",
+          "fieldNameEn": "Maximum Value",
+          "url": null,
+          "enumValues": null
+        },
+        {
+          "fieldNameCn": "最小值",
+          "fieldKey": "metricValueMin",
+          "valueType": "String",
+          "filedOrder": 3,
+          "filterType": "NONE",
+          "fieldNameEn": "Minimum Value",
+          "url": null,
+          "enumValues": null
+        },
+        {
+          "fieldNameCn": "平均值",
+          "fieldKey": "metricValueAvg",
+          "valueType": "String",
+          "filedOrder": 4,
+          "filterType": "NONE",
+          "fieldNameEn": "Average Value",
+          "url": null,
+          "enumValues": null
+        }
+      ],
+      "luiStyle": {
+        "contextType": "Metric",
+        "showType": "Chart Table"
+      }
+    }
+  }
+}`,
   topology: `{
   "result": {
     "summary": "已为你识别到 23 个点，55 条边，拓扑关系生成如下：",
