@@ -4,6 +4,7 @@ import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
+import { NODE_INPUTS } from './modules/flow/nodeInputs'
 
 const endpoint = '/api/chat/stream'
 
@@ -14,15 +15,15 @@ const sampleQuestions = [
 ]
 
 const nodeDefs = [
-  { id: 'log', title: '日志', input: '111' },
-  { id: 'alert', title: '告警', input: '222' },
-  { id: 'ticket', title: '工单', input: '333' },
-  { id: 'metric', title: '指标', input: '444' },
-  { id: 'topology', title: '拓扑', input: '555' },
-  { id: 'knowledge', title: '知识', input: '666' },
-  { id: 'command', title: '命令', input: '777' },
-  { id: 'judge', title: '结果判断', input: '999' },
-  { id: 'inference', title: '推理结果', input: '结果123456' },
+  { id: 'log', title: '日志', input: NODE_INPUTS.log },
+  { id: 'alert', title: '告警', input: NODE_INPUTS.alert },
+  { id: 'ticket', title: '工单', input: NODE_INPUTS.ticket },
+  { id: 'metric', title: '指标', input: NODE_INPUTS.metric },
+  { id: 'topology', title: '拓扑', input: NODE_INPUTS.topology },
+  { id: 'knowledge', title: '知识', input: NODE_INPUTS.knowledge },
+  { id: 'command', title: '命令', input: NODE_INPUTS.command },
+  { id: 'judge', title: '结果判断', input: NODE_INPUTS.judge },
+  { id: 'inference', title: '推理结果', input: NODE_INPUTS.inference },
 ]
 
 const edgeDefs = nodeDefs.slice(0, -1).map((node, index) => ({ id: `${node.id}-${nodeDefs[index + 1].id}`, from: node.id, to: nodeDefs[index + 1].id }))
@@ -74,6 +75,12 @@ function getRawLineToneClass(line) {
   const raw = String(line || '').toLowerCase()
   if (raw.includes('datamodelupdate')) return 'raw-text-data-model'
   return 'raw-text-surface'
+}
+
+function formatNodeInputPreview(inputText) {
+  const text = String(inputText || '').replace(/\s+/g, ' ').trim()
+  if (text.length <= 18) return text
+  return `${text.slice(0, 18)}...`
 }
 
 function appendRawLine(result, line) {
@@ -228,7 +235,7 @@ async function handleAction(nodeId, action) {
               @click="selectNode(node.id)"
             >
               <span class="node-title">{{ node.title }}</span>
-              <small class="node-input">输入: {{ node.input }}</small>
+              <small class="node-input">输入: {{ formatNodeInputPreview(node.input) }}</small>
             </button>
           </div>
         </section>
