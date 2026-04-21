@@ -69,6 +69,5 @@ export const componentSpecificStyles = `
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:last-child{
   font-weight: bold;
-  font-size: 120%;
 }
 `
