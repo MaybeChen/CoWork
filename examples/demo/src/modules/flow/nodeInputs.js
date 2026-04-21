@@ -585,7 +585,88 @@ export const NODE_INPUTS = {
 网络带宽 (Networking)：营收 1,000 万元，占比 10%。
 
 安全服务 (Security)：虽然目前营收仅为 500 万元，占比 5%，但同比增速最高，属于潜力板块。`,
-  command: '777',
+  command: `registry=https://cmc.centralrepo.rnd.huawei.com/artifactory/api/npm/npm-central-repo/
+npm set strict-ssl false
+export PUPPETEER_SKIP_DOWNLOAD=true
+workDir=$(cd $(dirname $0); pwd)
+echo work dir: $workDir
+mkdir target
+echo create target dir
+
+echo ------- work path -------
+pwd
+
+echo ------- node version -------
+node -v
+
+echo ------- npm version -------
+npm -v
+
+echo ------- npm install begin -------
+cd $workDir/
+npm --registry $registry install esbuild-linux-64@0.15.18 -D --omit=optional
+npm --registry $registry install @rollup/rollup-linux-x64-gnu -D --omit=optional
+echo ------- npm install end -------
+
+echo ------- run build begin -------
+cd $workDir/
+
+if [ "${isMvp}" == true ]; then
+  npm run build:mvpprod
+elif [ "${isRelease}" == true ]; then
+  npm run build
+else
+  npm run build:uat
+fi
+if [ $? -ne 0 ]; then
+    echo "编译失败"
+    exit 1
+else
+    echo "编译成功"
+fi
+echo ------- run build end -------
+
+echo ------- make image begin -------
+cd $workDir/
+if [ "${IS_UAT}" == "false" ];then
+  docker pull cd-docker-hub.szg1.artifactory.inhuawei.com/tpsp_o3/susex86nginx:23.3.2
+  docker tag cd-docker-hub.szg1.artifactory.inhuawei.com/tpsp_o3/susex86nginx:23.3.2 susex86nginx:23.3.2
+  if [ "${isRelease}" == true ]; then
+    image_version=${ENV_RELEASE_VERSION}
+  else
+    image_version=${buildVersion}
+  fi
+  docker build -t asko3portal:${image_version} --network host --no-cache . -f Dockerfile
+  docker save -o asko3portal.tar.gz asko3portal:${image_version}
+  mv asko3portal.tar.gz $workDir/target
+elif [ "${isMvp}" == true ]; then
+  tar -zcvf asko3portalMvp.tar.gz scripts/nginx.conf dist/ scripts/customize_dockerfile.sh scripts/mycrond.sh scripts/entrypoint.sh scripts/*.txt
+  mv asko3portalMvp.tar.gz $workDir/target
+else
+  tar -zcvf asko3portal.tar.gz scripts/nginx.conf dist/ scripts/customize_dockerfile.sh scripts/mycrond.sh scripts/entrypoint.sh scripts/*.txt
+  mv asko3portal.tar.gz $workDir/target
+fi
+
+echo ------- sourcemap打包 -------
+zip -r sourcemap.zip sourcemap/
+mv sourcemap.zip $workDir/target
+
+echo ------- 部署文件打包 -------
+tar -zcvf deploy.tar.gz -C$workDir/deploy prod/asko3-frontend-prod.yaml -C$workDir/deploy mvpbeta/asko3-frontend-mvp-beta.yaml -C$workDir/deploy uat/asko3-frontend.yaml -C$workDir/deploy mvp/asko3-frontend-mvp.yaml
+cp deploy.tar.gz $workDir/target
+
+# set buildVersion
+echo "Release is ${ENV_IS_RELEASE}"
+if [ "${ENV_IS_RELEASE}" == "false" ];then
+    echo "buildVersion=${buildVersion}.${ENV_PIPELINE_STARTTIME}">${WORKSPACE}/buildInfo.properties
+else
+    if [ "${ENV_IS_RELEASE}" == "true" ];then
+        echo "buildVersion=${ENV_RELEASE_VERSION}">${WORKSPACE}/buildInfo.properties
+    fi
+fi
+
+cd $workDir/target
+ls`,
   judge: `{
   "output": [
     {
