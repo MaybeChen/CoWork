@@ -644,52 +644,64 @@ export const NODE_INPUTS = {
 "
 }`,
   inference: `{
-  "output": [
-    {
-      "rootCause": "模型服务千问实例调用多个NPU资源时出现资源竞争或调度延迟",
-      "rootCauseTitle": "NPU资源调度延迟",
-      "rootCauseConfidence": 7,
-      "ciType": "InferenceModelInstance",
-      "ciName": "模型服务千问实例",
-      "abnormality": [
-        {
-          "ciId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
-          "ciName": "模型服务千问实例",
-          "abnormalityId": "019d6afe5cbd7309ad650db03ad964a3",
-          "abnormalityType": "告警",
-          "abnormalityName": "模型实例时延过长",
-          "abnormalityDescription": "来自于CCAE，调测序号=3"
-        }
-      ],
-      "transmissionChain": [
-        {
-          "abnormalityIdFrom": "019d6afe5cbd7309ad650db03ad964a3",
-          "abnormalityIdTo": "019d6afe5cbd7309ad650db03ad964a3",
-          "type": "触发"
-        }
-      ],
-      "evidenceChain": [
-        "2026-04-08 10:50:34 告警显示模型服务千问实例出现时延过长",
-        "拓扑分析显示该模型实例连接16个NPU节点（NPU1-NPU8分布在两台物理服务器上）",
-        "告警级别为2（重要）表明属于关键性能问题",
-        "无指标和日志异常数据支撑具体硬件故障，需重点排查NPU资源调度机制"
-      ],
-      "influence": [
-        "影响模型服务千问实例的推理响应时间",
-        "可能波及依赖该模型服务的下游业务链路"
-      ],
-      "repairSuggestion": [
-        "检查NPU资源调度策略是否合理，优化并发请求分配",
-        "验证NPU设备性能状态，确认是否存在硬件资源瓶颈",
-        "分析调测序号3的详细调用链路，定位具体延迟环节"
-      ],
-      "flowGraph": "graph TD
+  "result": {
+    "knowledgeDocuments": [
+      {
+        "reason": [
+          "node type=hccp, sensor type=Safety Sensor, event state=use backup link"
+        ],
+        "file_name": "Atlas A3 中心推理和训练硬件 25.5.0 健康管理故障定义 01.xlsx",
+        "description": "",
+        "advance": null,
+        "ciId": null
+      }
+    ],
+    "inferenceOutput": [
+      {
+        "rootCauseTitle": "NPU资源调度延迟",
+        "flowGraph": "graph TD
     A[2026-04-08 10:50:34 模型服务千问实例告警触发] --> B[拓扑显示连接16个NPU节点]
     B --> C[告警级别2表明关键性能问题]
-    C --> D[无指标日志异常需排查调度机制]"
-    }
-  ],
-  "reasoning_output": "
+    C --> D[无指标日志异常需排查调度机制]",
+        "transmissionChain": [
+          {
+            "type": "触发",
+            "abnormalityIdFrom": "019d6afe5cbd7309ad650db03ad964a3",
+            "abnormalityIdTo": "019d6afe5cbd7309ad650db03ad964a3"
+          }
+        ],
+        "rootCause": "模型服务千问实例调用多个NPU资源时出现资源竞争或调度延迟",
+        "abnormality": [
+          {
+            "abnormalityId": "019d6afe5cbd7309ad650db03ad964a3",
+            "abnormalityName": "模型实例时延过长",
+            "abnormalityDescription": "来自于CCAE，调测序号=3",
+            "abnormalityType": "告警",
+            "ciName": "模型服务千问实例",
+            "ciId": "14537ad8-df06-4fb9-a584-e3a30b80b877"
+          }
+        ],
+        "repairSuggestion": [
+          "检查NPU资源调度策略是否合理，优化并发请求分配",
+          "验证NPU设备性能状态，确认是否存在硬件资源瓶颈",
+          "分析调测序号3的详细调用链路，定位具体延迟环节"
+        ],
+        "ciName": "模型服务千问实例",
+        "rootCauseConfidence": 7,
+        "ciType": "InferenceModelInstance",
+        "evidenceChain": [
+          "2026-04-08 10:50:34 告警显示模型服务千问实例出现时延过长",
+          "拓扑分析显示该模型实例连接16个NPU节点（NPU1-NPU8分布在两台物理服务器上）",
+          "告警级别为2（重要）表明属于关键性能问题",
+          "无指标和日志异常数据支撑具体硬件故障，需重点排查NPU资源调度机制"
+        ],
+        "influence": [
+          "影响模型服务千问实例的推理响应时间",
+          "可能波及依赖该模型服务的下游业务链路"
+        ]
+      }
+    ],
+    "executionDetails": "
 好的，我现在需要处理用户提供的关于模型服务千问实例在2026-04-08 10:50:34出现的时延过长告警。首先，我得仔细分析用户提供的所有数据，包括告警信息、指标分析、日志分析和拓扑结构。
 
 首先看告警分析结果，告警编码是019d6afe5cbd7309ad650db03ad964a3，标题是“模型实例时延过长”，属于InferenceModelInstance类型，告警级别是2（重要）。关联告警信息显示该告警来自CCAE，调测序号3，但指标和日志分析结果中没有发现异常，这可能意味着问题不在常规指标或日志中，需要从拓扑结构入手。
@@ -707,6 +719,515 @@ export const NODE_INPUTS = {
 影响范围方面，模型服务千问实例本身受到影响，可能导致依赖该服务的其他应用或任务延迟。修复建议可能包括优化NPU资源分配，检查NPU性能，或者调整模型实例的调度策略。
 
 总结，由于缺乏具体的指标和日志异常，只能基于拓扑结构推测根因为NPU资源分配或处理问题，但置信度可能较低，需要进一步数据验证。
-"
+",
+    "log_analysis_agent_output": {
+      "output": {
+        "executionDetails": {},
+        "exceptionInfos": []
+      }
+    },
+    "topo_analysis_agent_output": {
+      "output": {
+        "summary": "已为你识别到 23 个点，55 条边，拓扑关系生成如下：",
+        "vertexes": [
+          {
+            "ciDisplayName": "模型服务千问实例",
+            "ciName": "模型服务千问实例",
+            "cmdbId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "ciType": "InferenceModelInstance",
+            "ciSubType": "InferenceModelInstance"
+          },
+          {
+            "ciDisplayName": "NPU4(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU4(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "548ae1df-984a-4230-874f-1a0b009d4e9d",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU6(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU6(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "80033788-d959-4d5b-badc-be974e2ae782",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU8(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU8(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "4d152341-e4bc-4757-bb24-d8e5b7607f47",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU3(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU3(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "90456ce2-1830-4b3f-8d08-46341d99cb74",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU7(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU7(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "2ef9cd84-71f5-49ea-943b-9c22c2ce9832",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU5(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU5(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "425f2a75-f3fc-4fde-9aeb-f7276fd2f89a",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU8(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU8(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "d23a2412-7262-4703-8669-510734129c56",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU6(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU6(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "288d764a-a988-485c-b307-2165caf40648",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU1(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU1(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "303fe5ff-987b-48eb-91cd-d36e5fcb2eba",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU2(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU2(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "655065ae-3096-4d32-8f8b-d7621a2f8833",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU3(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU3(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "f9cd6845-8517-4c76-858f-624279969ea6",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU1(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU1(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "b050783c-cae3-4933-ad77-9f437a0f6d85",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU7(A2-IT301-I06-26U-TS-A924-088)",
+            "ciName": "NPU7(A2-IT301-I06-26U-TS-A924-088)",
+            "cmdbId": "0092755d-b006-4fab-8558-270d3e956325",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU2(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU2(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "de7156fa-0a2b-464b-a7b5-86ac0149a3a6",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU4(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU4(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "1d2a7b39-c25e-431c-a852-257c81d706e4",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "NPU5(A2-IT301-I06-26U-TS-A924-089)",
+            "ciName": "NPU5(A2-IT301-I06-26U-TS-A924-089)",
+            "cmdbId": "3cf5b6de-4d51-4ea9-8c9f-04df11a35525",
+            "ciType": "NPU",
+            "ciSubType": "NPU"
+          },
+          {
+            "ciDisplayName": "A2-IT301-I06-26U-TS-A924-089",
+            "ciName": "A2-IT301-I06-26U-TS-A924-089",
+            "cmdbId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "ciType": "PhysicalServer",
+            "ciSubType": "PhysicalServer"
+          },
+          {
+            "ciDisplayName": "A2-IT301-I06-26U-TS-A924-088",
+            "ciName": "A2-IT301-I06-26U-TS-A924-088",
+            "cmdbId": "ec913831-b603-4762-912a-409631684636",
+            "ciType": "PhysicalServer",
+            "ciSubType": "PhysicalServer"
+          },
+          {
+            "ciDisplayName": "集群",
+            "ciName": "集群",
+            "cmdbId": "8d46082d-81fb-4b90-b126-eedc75a19196",
+            "ciType": "Cluster",
+            "ciSubType": "compute"
+          },
+          {
+            "ciDisplayName": "机房1机柜2",
+            "ciName": "机房1机柜2",
+            "cmdbId": "a3ba3093-181b-4097-9c6d-f11d45a1ff65",
+            "ciType": "Rack",
+            "ciSubType": "Rack"
+          }
+        ],
+        "edges": [
+          {
+            "targetId": "548ae1df-984a-4230-874f-1a0b009d4e9d",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "80033788-d959-4d5b-badc-be974e2ae782",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "4d152341-e4bc-4757-bb24-d8e5b7607f47",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "90456ce2-1830-4b3f-8d08-46341d99cb74",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "2ef9cd84-71f5-49ea-943b-9c22c2ce9832",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "425f2a75-f3fc-4fde-9aeb-f7276fd2f89a",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "d23a2412-7262-4703-8669-510734129c56",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "288d764a-a988-485c-b307-2165caf40648",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "303fe5ff-987b-48eb-91cd-d36e5fcb2eba",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "655065ae-3096-4d32-8f8b-d7621a2f8833",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "f9cd6845-8517-4c76-858f-624279969ea6",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "b050783c-cae3-4933-ad77-9f437a0f6d85",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "0092755d-b006-4fab-8558-270d3e956325",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "de7156fa-0a2b-464b-a7b5-86ac0149a3a6",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "1d2a7b39-c25e-431c-a852-257c81d706e4",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "3cf5b6de-4d51-4ea9-8c9f-04df11a35525",
+            "srcId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "count": 2
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "de7156fa-0a2b-464b-a7b5-86ac0149a3a6",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "de7156fa-0a2b-464b-a7b5-86ac0149a3a6",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "3cf5b6de-4d51-4ea9-8c9f-04df11a35525",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "3cf5b6de-4d51-4ea9-8c9f-04df11a35525",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "1d2a7b39-c25e-431c-a852-257c81d706e4",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "1d2a7b39-c25e-431c-a852-257c81d706e4",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "b050783c-cae3-4933-ad77-9f437a0f6d85",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "b050783c-cae3-4933-ad77-9f437a0f6d85",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "4d152341-e4bc-4757-bb24-d8e5b7607f47",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "4d152341-e4bc-4757-bb24-d8e5b7607f47",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "f9cd6845-8517-4c76-858f-624279969ea6",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "f9cd6845-8517-4c76-858f-624279969ea6",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "548ae1df-984a-4230-874f-1a0b009d4e9d",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "548ae1df-984a-4230-874f-1a0b009d4e9d",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "303fe5ff-987b-48eb-91cd-d36e5fcb2eba",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "303fe5ff-987b-48eb-91cd-d36e5fcb2eba",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "90456ce2-1830-4b3f-8d08-46341d99cb74",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "90456ce2-1830-4b3f-8d08-46341d99cb74",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "288d764a-a988-485c-b307-2165caf40648",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "288d764a-a988-485c-b307-2165caf40648",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "655065ae-3096-4d32-8f8b-d7621a2f8833",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "655065ae-3096-4d32-8f8b-d7621a2f8833",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "2ef9cd84-71f5-49ea-943b-9c22c2ce9832",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "2ef9cd84-71f5-49ea-943b-9c22c2ce9832",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "0092755d-b006-4fab-8558-270d3e956325",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "0092755d-b006-4fab-8558-270d3e956325",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "80033788-d959-4d5b-badc-be974e2ae782",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "80033788-d959-4d5b-badc-be974e2ae782",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "d23a2412-7262-4703-8669-510734129c56",
+            "count": 2
+          },
+          {
+            "targetId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "srcId": "d23a2412-7262-4703-8669-510734129c56",
+            "count": 3
+          },
+          {
+            "targetId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "srcId": "425f2a75-f3fc-4fde-9aeb-f7276fd2f89a",
+            "count": 2
+          },
+          {
+            "targetId": "ec913831-b603-4762-912a-409631684636",
+            "srcId": "425f2a75-f3fc-4fde-9aeb-f7276fd2f89a",
+            "count": 3
+          },
+          {
+            "targetId": "8d46082d-81fb-4b90-b126-eedc75a19196",
+            "srcId": "ec913831-b603-4762-912a-409631684636",
+            "count": 2
+          },
+          {
+            "targetId": "a3ba3093-181b-4097-9c6d-f11d45a1ff65",
+            "srcId": "ec913831-b603-4762-912a-409631684636",
+            "count": 2
+          },
+          {
+            "targetId": "8d46082d-81fb-4b90-b126-eedc75a19196",
+            "srcId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "count": 2
+          },
+          {
+            "targetId": "a3ba3093-181b-4097-9c6d-f11d45a1ff65",
+            "srcId": "a245d378-e343-4317-88f3-e562026e1dc9",
+            "count": 2
+          }
+        ],
+        "startVertexes": [
+          {
+            "ciDisplayName": "模型服务千问实例",
+            "ciName": "模型服务千问实例",
+            "cmdbId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "ciType": "InferenceModelInstance",
+            "ciSubType": "InferenceModelInstance"
+          }
+        ],
+        "luiStyle": {
+          "contextType": "Topo Data",
+          "showType": "2D Topo Graph"
+        }
+      }
+    },
+    "alarm_analysis_agent_output": {
+      "output": {
+        "processData": {
+          "topoData": {},
+          "alarm": [
+            {
+              "locationInfo": "",
+              "discribe": "来自于CCAE，调测序号=3",
+              "startTime": "2026-04-08 10:50:34",
+              "endTime": "2026-04-08 10:50:34",
+              "alarmTitle": "模型实例时延过长",
+              "alarmCode": "019d6afe5cbd7309ad650db03ad964a3",
+              "ciName": "模型服务千问实例",
+              "ciType": "InferenceModelInstance",
+              "ciSubType": "InferenceModelInstance"
+            }
+          ]
+        },
+        "alarmKnowledges": [],
+        "associatedAlarms": [
+          {
+            "locationInfo": null,
+            "metricName": null,
+            "displayName": "模型服务千问实例",
+            "occurCount": 1,
+            "mainRule": -1,
+            "alarmCode": "019d6afe5cbd7309ad650db03ad964a3",
+            "ciName": "模型服务千问实例",
+            "url": "/adc-static/static/procodeComp/2000/IMOC-Aiops-MgrWeb-Release/IMOC-Aiops-MgrWeb-Release/mgr-web/0.1.0/dist/index.html#/alarmManage/alarmDetail/019d6afe5cbd7309ad650db03ad964a3/1",
+            "ciId": "14537ad8-df06-4fb9-a584-e3a30b80b877",
+            "alarmDescription": "来自于CCAE，调测序号=3",
+            "groupName": "dev",
+            "domain": 0,
+            "additionalInfo": null,
+            "alarmLevel": 2,
+            "newTabTitle": "告警详情 - 模型实例时延过长",
+            "alarmTitle": "模型实例时延过长",
+            "incidentUpdateTime": "2026-04-08 10:50:34",
+            "incidentOpenTime": "2026-04-08 10:50:34",
+            "tenant": "HWCloudInfra",
+            "fileList": [],
+            "ciType": "InferenceModelInstance",
+            "ciSubType": "InferenceModelInstance",
+            "status": 5
+          }
+        ],
+        "fieldRelations": [],
+        "alarm": [
+          {
+            "locationInfo": "",
+            "discribe": "来自于CCAE，调测序号=3",
+            "startTime": "2026-04-08 10:50:34",
+            "endTime": "2026-04-08 10:50:34",
+            "alarmTitle": "模型实例时延过长",
+            "alarmCode": "019d6afe5cbd7309ad650db03ad964a3",
+            "ciName": "模型服务千问实例",
+            "ciType": "InferenceModelInstance",
+            "ciSubType": "InferenceModelInstance"
+          }
+        ],
+        "showKeys": [
+          "alarmKnowledges",
+          "associatedAlarms"
+        ],
+        "alarmPropationRelation": null
+      }
+    },
+    "metric_analysis_agent_output": {
+      "output": {
+        "ciInfo": null,
+        "exceptionInfos": []
+      }
+    }
+  }
 }`,
 }
