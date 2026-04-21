@@ -165,7 +165,78 @@ export const NODE_INPUTS = {
     }
   }
 }`,
-  alert: '222',
+  alert: `{
+  "result": {
+    "executionDetails": {},
+    "exceptionInfos": [
+      {
+        "exceptionLogTime": "2026/2/13 19:44:30",
+        "exceptionType": "服务日志",
+        "logType": "collect",
+        "logContent": "首次告警：Dynamic batch error: input length varies (128-4096 tokens) in batch",
+        "abnormalityDescription": "首次告警：Dynamic batch error: input length varies (128-4096 tokens) in batch",
+        "abnormalityId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciName": "PJINS-HJ6863E-STALI-BRH-TX1-1_25GE1/0/46",
+        "ciType": "Port",
+        "ciSubType": "Port",
+        "alarmLevel": 3
+      },
+      {
+        "exceptionLogTime": "2026/2/13 19:45:30",
+        "exceptionType": "负载均衡器日志",
+        "logType": "collect",
+        "logContent": "负载失衡告警：Node 10.1.1.101: NPU utilization 100%, Node 10.1.1.102: NPU utilization 35%",
+        "abnormalityDescription": "负载失衡告警：Node 10.1.1.101: NPU utilization 100%, Node 10.1.1.102: NPU utilization 35%",
+        "abnormalityId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciName": "PJINS-HJ6863E-STALI-BRH-TX1-1_25GE1/0/46",
+        "ciType": "Port",
+        "ciSubType": "Port",
+        "alarmLevel": 4
+      },
+      {
+        "exceptionLogTime": "2026/2/13 19:47:30",
+        "exceptionType": "服务访问日志",
+        "logType": "collect",
+        "logContent": "请求超时雪崩：2000+ requests timed out (5000ms), queue backlog 10000+",
+        "abnormalityDescription": "请求超时雪崩：2000+ requests timed out (5000ms), queue backlog 10000+",
+        "abnormalityId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciName": "PJINS-HJ6863E-STALI-BRH-TX1-1_25GE1/0/46",
+        "ciType": "Port",
+        "ciSubType": "Port",
+        "alarmLevel": 5
+      },
+      {
+        "exceptionLogTime": "2026/1/13 19:48:30",
+        "exceptionType": "系统日志",
+        "logType": "collect",
+        "logContent": "服务进程崩溃：inference_server killed by signal 9 (OOM)",
+        "abnormalityDescription": "服务进程崩溃：inference_server killed by signal 9 (OOM)",
+        "abnormalityId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciName": "PJINS-HJ6863E-STALI-BRH-TX1-1_25GE1/0/46",
+        "ciType": "Port",
+        "ciSubType": "Port",
+        "alarmLevel": 6
+      },
+      {
+        "exceptionLogTime": "2026/2/13 19:49:30",
+        "exceptionType": "网络中间件日志",
+        "logType": "collect",
+        "logContent": "网络过载告警：gRPC error: Unavailable: connection closed due to high load",
+        "abnormalityDescription": "网络过载告警：gRPC error: Unavailable: connection closed due to high load",
+        "abnormalityId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciId": "f0fbb624-5c13-45a4-901f-33d848ead7d2",
+        "ciName": "PJINS-HJ6863E-STALI-BRH-TX1-1_25GE1/0/46",
+        "ciType": "Port",
+        "ciSubType": "Port",
+        "alarmLevel": 3
+      }
+    ]
+  }
+}`,
   ticket: '333',
   metric: '444',
   topology: `{
