@@ -347,7 +347,7 @@ async function handleAction(turn, action) {
 .nav-link:hover { background: #dbeafe; }
 .workspace { flex: 1; display: grid; grid-template-columns: 1fr 2fr; gap: 16px; padding: 16px; overflow: hidden; }
 .sidebar, .center { min-height: 0; }
-.sidebar { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 16px; border: 1px solid #dbe4f3; background: #ffffff; box-shadow: 0 8px 20px rgba(148,163,184,.14); position: relative; }
+.sidebar { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 16px; border: 1px solid #dbe4f3; background: #ffffff; box-shadow: 0 8px 20px rgba(148,163,184,.14); position: relative; font-size: 12px; }
 .panel { border: 1px solid #dbe4f3; border-radius: 14px; padding: 14px; background: #ffffff; }
 .content { overflow: auto; flex: 1; min-height: 0; border: none; background: transparent; box-shadow: none; }
 .center { min-width: 0; display: flex; }
