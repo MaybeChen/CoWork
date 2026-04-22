@@ -367,6 +367,7 @@ async function handleAction(turn, action) {
 .conversation { display: flex; flex-direction: column; gap: 42px; padding-bottom: 12px; }
 .turn { display: flex; flex-direction: column; gap: 10px; }
 .turn-result, .streaming-tip { width: 92%; min-width: 640px; margin: 0 auto; }
+.turn-result { background: #ffffff; border: 1px solid #dbe4f3; border-radius: 16px; padding: 12px; box-shadow: 0 6px 16px rgba(148,163,184,.12); }
 .bubble-assistant { width: 100%; background: transparent; }
 .streaming-tip { border: 1px solid #bfdbfe; border-radius: 12px; padding: 10px 12px; position: relative; overflow: hidden; background: linear-gradient(135deg, #eff6ff, #f8fafc); box-shadow: inset 0 0 0 1px rgba(59,130,246,.08); }
 .streaming-tip-core { display: inline-flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
