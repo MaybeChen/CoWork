@@ -239,6 +239,7 @@ async function handleAction(nodeId, action) {
   <main class="page">
     <header class="global-header">
       <button type="button" class="brand" @click="backToHome">COWORKER</button>
+      <RouterLink class="chat-nav-btn" to="/chat">Chat</RouterLink>
     </header>
 
     <section class="workspace">
@@ -343,8 +344,10 @@ async function handleAction(nodeId, action) {
 
 <style scoped>
 .page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; }
-.global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
+.global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
 .brand { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: none; background: linear-gradient(90deg, #2563eb, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; padding: 0; }
+.chat-nav-btn { text-decoration: none; font-size: 12px; color: #1e3a8a; border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; padding: 6px 10px; }
+.chat-nav-btn:hover { background: #dbeafe; }
 .workspace { flex: 1; padding: 16px; min-height: 0; }
 .panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
