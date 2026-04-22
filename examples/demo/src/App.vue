@@ -85,12 +85,6 @@ function formatRawLine(line) {
   return String(line || '').replace(/\\/g, '')
 }
 
-function formatNodeInputPreview(inputText) {
-  const text = String(inputText || '').replace(/\s+/g, ' ').trim()
-  if (text.length <= 18) return text
-  return `${text.slice(0, 18)}...`
-}
-
 function appendRawLine(result, line) {
   if (!line) return
   const cleaned = String(line).trimEnd()
@@ -267,7 +261,6 @@ async function handleAction(nodeId, action) {
             :node-states="nodeStates"
             :active-node-id="currentNodeId"
             :active-edge-id="activeEdgeId"
-            :format-node-input-preview="formatNodeInputPreview"
             @select-node="selectNode"
           />
         </section>
