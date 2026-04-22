@@ -85,7 +85,8 @@ const orderedNodes = computed(() =>
 .flow-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 180px));
+  justify-content: flex-start;
 }
 
 .flow-node {
@@ -94,7 +95,8 @@ const orderedNodes = computed(() =>
   padding: 8px;
   background: rgba(255, 255, 255, 0.04);
   min-height: 52px;
-  max-width: 280px;
+  width: 180px;
+  max-width: 100%;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
