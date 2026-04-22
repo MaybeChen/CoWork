@@ -47,10 +47,10 @@ function resolveNodePalette(node, selected) {
   const state = getNodeState(node)
   if (state === 'start') {
     return {
-      fill: '#eff6ff',
-      stroke: '#93c5fd',
-      text: '#1e3a8a',
-      shadow: selected ? 'rgba(59,130,246,0.3)' : '',
+      fill: '#dcfce7',
+      stroke: '#86efac',
+      text: '#166534',
+      shadow: '',
     }
   }
   if (state === 'running') {
@@ -89,8 +89,8 @@ function drawGraph(elapsed = 0) {
 
   const horizontalPadding = 12
   const gap = 12
-  const nodeWidth = Math.max(90, (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length)
-  const nodeHeight = 72
+  const nodeWidth = Math.max(72, (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length)
+  const nodeHeight = 52
   const top = Math.max(8, (rect.height - nodeHeight) / 2)
 
   nodeRects.clear()
@@ -159,7 +159,7 @@ function drawGraph(elapsed = 0) {
     ctx.stroke()
 
     ctx.fillStyle = palette.text
-    ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
+    ctx.font = '600 13px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(node.title, rectInfo.x + rectInfo.width / 2, rectInfo.y + rectInfo.height / 2)
@@ -252,6 +252,6 @@ watch(() => props.activeEdgeId, () => nextTick(startAnimation))
   width: 100%;
   height: 100%;
   z-index: 1;
-  cursor: pointer;
+  cursor: default;
 }
 </style>
