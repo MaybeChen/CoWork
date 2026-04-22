@@ -87,15 +87,18 @@ function drawGraph(elapsed = 0) {
   const displayNodes = getDisplayNodes()
   if (!displayNodes.length) return
 
-  const horizontalPadding = 12
-  const gap = 12
-  const nodeWidth = Math.max(72, (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length)
+  const horizontalPadding = 8
+  const gap = 10
+  const idealWidth = (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length
+  const nodeWidth = Math.max(72, Math.min(88, idealWidth))
   const nodeHeight = 52
   const top = Math.max(8, (rect.height - nodeHeight) / 2)
+  const totalWidth = nodeWidth * displayNodes.length + gap * (displayNodes.length - 1)
+  const startX = Math.max(horizontalPadding, (rect.width - totalWidth) / 2)
 
   nodeRects.clear()
   const centers = displayNodes.map((node, index) => {
-    const x = horizontalPadding + index * (nodeWidth + gap)
+    const x = startX + index * (nodeWidth + gap)
     const y = top
     nodeRects.set(node.id, { x, y, width: nodeWidth, height: nodeHeight, node })
     return { id: node.id, x: x + nodeWidth / 2, y: y + nodeHeight / 2, virtual: node.virtual }
