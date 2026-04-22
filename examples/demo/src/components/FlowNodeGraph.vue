@@ -15,13 +15,15 @@ const trackRef = ref(null)
 const canvasRef = ref(null)
 const nodeRefs = new Map()
 let resizeObserver
+let rafId = 0
+let animationStart = 0
 
 function setNodeRef(nodeId, el) {
   if (el) nodeRefs.set(nodeId, el)
   else nodeRefs.delete(nodeId)
 }
 
-function drawGraph() {
+function drawGraph(elapsed = 0) {
   const trackEl = trackRef.value
   const canvasEl = canvasRef.value
   if (!trackEl || !canvasEl) return
@@ -69,6 +71,46 @@ function drawGraph() {
     ctx.lineTo(to.x, to.y)
     ctx.stroke()
     ctx.restore()
+
+    if (active) {
+      const progress = ((elapsed % 1200) / 1200)
+      const dotX = from.x + (to.x - from.x) * progress
+      const dotY = from.y + (to.y - from.y) * progress
+
+      ctx.save()
+      const gradient = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 7)
+      gradient.addColorStop(0, 'rgba(191,219,254,1)')
+      gradient.addColorStop(0.5, 'rgba(96,165,250,0.95)')
+      gradient.addColorStop(1, 'rgba(59,130,246,0)')
+      ctx.fillStyle = gradient
+      ctx.beginPath()
+      ctx.arc(dotX, dotY, 7, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
+  }
+}
+
+function renderFrame(timestamp) {
+  if (!animationStart) animationStart = timestamp
+  drawGraph(timestamp - animationStart)
+  if (props.activeEdgeId) rafId = requestAnimationFrame(renderFrame)
+}
+
+function startAnimation() {
+  stopAnimation()
+  if (!props.activeEdgeId) {
+    nextTick(() => drawGraph(0))
+    return
+  }
+  animationStart = 0
+  rafId = requestAnimationFrame(renderFrame)
+}
+
+function stopAnimation() {
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = 0
   }
 }
 
@@ -77,27 +119,30 @@ function handleNodeClick(nodeId) {
 }
 
 onMounted(() => {
-  nextTick(drawGraph)
-  window.addEventListener('resize', drawGraph)
+  startAnimation()
+  window.addEventListener('resize', startAnimation)
 
   if (typeof ResizeObserver === 'function' && trackRef.value) {
     resizeObserver = new ResizeObserver(() => {
-      drawGraph()
+      startAnimation()
     })
     resizeObserver.observe(trackRef.value)
   }
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', drawGraph)
+  stopAnimation()
+  window.removeEventListener('resize', startAnimation)
   if (resizeObserver) resizeObserver.disconnect()
 })
 
 watch(
-  () => [props.nodes, props.nodeStates, props.activeNodeId, props.activeEdgeId],
-  () => nextTick(drawGraph),
+  () => [props.nodes, props.nodeStates, props.activeNodeId],
+  () => nextTick(() => drawGraph(0)),
   { deep: true },
 )
+
+watch(() => props.activeEdgeId, () => nextTick(startAnimation))
 </script>
 
 <template>
@@ -126,16 +171,7 @@ watch(
   align-items: center;
   height: calc(100% - 28px);
 }
-
-.graph-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
+.graph-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 .node {
   z-index: 2;
   border: 1px solid #bfdbfe;
@@ -148,7 +184,6 @@ watch(
   gap: 4px;
   min-height: 72px;
 }
-
 .node-title { font-weight: 600; }
 .node-input { opacity: .86; }
 .state-running { box-shadow: 0 0 0 1px rgba(37,99,235,.35), 0 0 16px rgba(147,197,253,.9); border-color: #60a5fa; background: #dbeafe; }

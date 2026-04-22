@@ -46,9 +46,13 @@ const { contentRef: cardsContainerRef, scheduleAutoScroll } = useAutoScroll({
     ),
 })
 
-for (const node of nodeDefs) {
-  nodeStates[node.id] = 'idle'
-}
+const inputRefs = new Map()
+const renderRefs = new Map()
+
+const { contentRef: inputPanelRef, scheduleAutoScroll: scheduleInputScroll } = useAutoScroll()
+const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll } = useAutoScroll()
+
+for (const node of nodeDefs) nodeStates[node.id] = 'idle'
 
 const started = computed(() => Boolean(activeQuestion.value))
 const resultCards = computed(() => nodeDefs.map((node) => nodeResults[node.id]).filter(Boolean))
@@ -101,15 +105,21 @@ function syncParsed(result) {
   result.parsedText = stringifyPretty(buildParsedPayload(result.turn))
 }
 
-function setCardRef(nodeId, el) {
-  if (el) cardRefs.set(nodeId, el)
-  else cardRefs.delete(nodeId)
+function setInputRef(nodeId, el) {
+  if (el) inputRefs.set(nodeId, el)
+  else inputRefs.delete(nodeId)
 }
 
-function scrollToNodeCard(nodeId) {
-  const cardEl = cardRefs.get(nodeId)
-  if (!cardEl) return
-  cardEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+function setRenderRef(nodeId, el) {
+  if (el) renderRefs.set(nodeId, el)
+  else renderRefs.delete(nodeId)
+}
+
+function scrollToNodeSections(nodeId) {
+  const inputEl = inputRefs.get(nodeId)
+  const renderEl = renderRefs.get(nodeId)
+  if (inputEl) inputEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  if (renderEl) renderEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function runSingleNode(node) {
@@ -121,13 +131,16 @@ async function runSingleNode(node) {
     turn,
     rawLines: [],
     parsedText: '',
+    streaming: true,
   })
+
   nodeResults[node.id] = result
   currentNodeId.value = node.id
   nodeStates[node.id] = 'running'
 
   await nextTick()
-  scheduleAutoScroll({ force: true })
+  scheduleInputScroll({ force: true })
+  scheduleRenderScroll({ force: true })
 
   const controller = new AbortController()
   activeAbortController.value = controller
@@ -141,13 +154,15 @@ async function runSingleNode(node) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleAutoScroll({ force: true })
+      scheduleInputScroll({ force: true })
+      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
     },
   })
 
+  result.streaming = false
   nodeStates[node.id] = error.value ? 'error' : 'done'
   syncParsed(result)
 }
@@ -162,7 +177,8 @@ async function startFlow(question) {
   activeEdgeId.value = ''
   loading.value = true
 
-  cardRefs.clear()
+  inputRefs.clear()
+  renderRefs.clear()
   for (const node of nodeDefs) {
     nodeStates[node.id] = 'idle'
     delete nodeResults[node.id]
@@ -191,7 +207,8 @@ function backToHome() {
   currentNodeId.value = ''
   activeEdgeId.value = ''
   activeAbortController.value = null
-  cardRefs.clear()
+  inputRefs.clear()
+  renderRefs.clear()
   for (const node of nodeDefs) {
     nodeStates[node.id] = 'idle'
     delete nodeResults[node.id]
@@ -201,12 +218,13 @@ function backToHome() {
 function selectNode(nodeId) {
   if (!nodeResults[nodeId]) return
   currentNodeId.value = nodeId
-  scrollToNodeCard(nodeId)
+  scrollToNodeSections(nodeId)
 }
 
 async function handleAction(nodeId, action) {
   const result = nodeResults[nodeId]
   if (!result) return
+  result.streaming = true
   await streamChat({
     endpoint,
     payload: { message: JSON.stringify({ userAction: action }) },
@@ -215,12 +233,14 @@ async function handleAction(nodeId, action) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleAutoScroll({ force: true })
+      scheduleInputScroll({ force: true })
+      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
     },
   })
+  result.streaming = false
 }
 </script>
 
@@ -236,11 +256,7 @@ async function handleAction(nodeId, action) {
         <p class="hero-subtitle">界面随需而生，协作自由生长</p>
         <div class="example-list">
           <button v-for="item in sampleQuestions" :key="item.id" class="example-btn" @click="startFlow(item.text)">
-            <span class="chart-icon" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
+            <span class="chart-icon" aria-hidden="true"><i /><i /><i /></span>
             <span class="example-text">{{ item.text }}</span>
           </button>
         </div>
@@ -260,57 +276,75 @@ async function handleAction(nodeId, action) {
         </section>
 
         <section class="result-stage panel">
-          <section v-if="resultCards.length" ref="cardsContainerRef" class="result-cards-container">
-            <article
-              v-for="result in resultCards"
-              :key="result.nodeId"
-              :ref="(el) => setCardRef(result.nodeId, el)"
-              :class="['result-card', { active: currentNodeId === result.nodeId }]"
-            >
-              <header class="result-card-header">
-                <h4>{{ result.title }}</h4>
-                <small>{{ result.nodeId }}</small>
-              </header>
-
-              <section class="result-card-content">
-                <aside class="result-left">
-                  <article class="data-card input-card">
-                    <h5>Input</h5>
-                    <pre>{{ result.inputText }}</pre>
-                  </article>
-                  <article class="data-card raw-card">
-                    <h5>Raw</h5>
-                    <div class="scroll-content">
-                      <p v-for="(line, index) in result.rawLines" :key="`${result.nodeId}-raw-${index}`" class="raw-line">
-                        <span class="raw-index">{{ index + 1 }}.</span>
-                        <span :class="['raw-text', getRawLineToneClass(line)]">{{ line }}</span>
-                      </p>
-                    </div>
-                  </article>
-                  <article class="data-card parsed-card">
-                    <h5>Parsed</h5>
-                    <pre class="scroll-content">{{ result.parsedText }}</pre>
-                  </article>
-                </aside>
-
-                <article class="result-right">
-                  <div v-if="Object.values(result.turn.surfaces).some((s) => s.ready)" class="surface-wrap">
-                    <article
-                      v-for="surface in Object.values(result.turn.surfaces).filter((s) => s.ready)"
-                      :key="surface.id"
-                      class="surface"
-                    >
-                      <A2UIRenderer
-                        :surface="surface"
-                        :data-model="result.turn.dataModels[surface.id] || {}"
-                        :on-action="(action) => handleAction(result.nodeId, action)"
-                      />
-                    </article>
-                  </div>
-                  <div v-else class="empty-render">节点执行中，等待 GenUI 卡片数据...</div>
+          <section v-if="resultCards.length" class="result-dual-pane">
+            <section ref="inputPanelRef" class="data-pane">
+              <article
+                v-for="result in resultCards"
+                :key="`input-${result.nodeId}`"
+                :ref="(el) => setInputRef(result.nodeId, el)"
+                :class="['io-card', { active: currentNodeId === result.nodeId }]"
+              >
+                <header class="io-head">
+                  <h4>{{ result.title }}</h4>
+                  <small>{{ result.nodeId }}</small>
+                </header>
+                <article class="data-card input-card">
+                  <h5>Input</h5>
+                  <pre>{{ result.inputText }}</pre>
                 </article>
-              </section>
-            </article>
+                <article class="data-card raw-card">
+                  <h5>Raw</h5>
+                  <div class="scroll-content">
+                    <p v-for="(line, index) in result.rawLines" :key="`${result.nodeId}-raw-${index}`" class="raw-line">
+                      <span class="raw-index">{{ index + 1 }}.</span>
+                      <span :class="['raw-text', getRawLineToneClass(line)]">{{ line }}</span>
+                    </p>
+                  </div>
+                </article>
+                <article class="data-card parsed-card">
+                  <h5>Parsed</h5>
+                  <pre class="scroll-content">{{ result.parsedText }}</pre>
+                </article>
+              </article>
+            </section>
+
+            <section ref="renderPanelRef" class="render-pane">
+              <article
+                v-for="result in resultCards"
+                :key="`render-${result.nodeId}`"
+                :ref="(el) => setRenderRef(result.nodeId, el)"
+                :class="['render-card', { active: currentNodeId === result.nodeId }]"
+                @click="selectNode(result.nodeId)"
+              >
+                <header class="render-head">
+                  <h4>{{ result.title }}</h4>
+                </header>
+
+                <div v-if="result.streaming" class="streaming-tip" aria-live="polite">
+                  <span class="streaming-tip-core">
+                    <span class="streaming-ping" />
+                    <span class="streaming-label">渲染中</span>
+                    <span class="streaming-dots"><i /><i /><i /></span>
+                  </span>
+                  <span class="streaming-scanline" />
+                </div>
+
+                <div v-if="Object.values(result.turn.surfaces).some((s) => s.ready)" class="surface-wrap">
+                  <article
+                    v-for="surface in Object.values(result.turn.surfaces).filter((s) => s.ready)"
+                    :key="surface.id"
+                    class="surface"
+                  >
+                    <A2UIRenderer
+                      :surface="surface"
+                      :data-model="result.turn.dataModels[surface.id] || {}"
+                      :on-action="(action) => handleAction(result.nodeId, action)"
+                    />
+                  </article>
+                </div>
+                <div v-else-if="!result.streaming" class="empty-render">节点执行中，等待 GenUI 卡片数据...</div>
+              </article>
+            </section>
           </section>
           <section v-else class="empty-render">正在准备节点结果...</section>
         </section>
@@ -344,43 +378,46 @@ async function handleAction(nodeId, action) {
 .graph h3 { margin: 0 0 10px; font-size: 14px; color: #334155; }
 
 .result-stage { min-height: 0; padding: 0; }
-.result-cards-container {
-  height: 100%;
-  display: grid;
-  gap: 12px;
-  overflow: auto;
-  padding-right: 4px;
-}
-.result-card {
-  border: 1px solid #dbe4f3;
-  border-radius: 12px;
-  padding: 10px;
-  background: #ffffff;
-  min-height: 360px;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 10px;
-}
-.result-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
-.result-card-header { display: flex; justify-content: space-between; align-items: baseline; }
-.result-card-header h4 { margin: 0; }
-.result-card-content { min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.result-left { min-height: 0; display: grid; grid-template-rows: 2fr 4fr 4fr; gap: 10px; }
-.data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; min-height: 0; }
+.result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 0; }
+.data-pane, .render-pane { overflow: auto; min-height: 0; display: grid; gap: 12px; padding-right: 4px; }
+.io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 10px; }
+.io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
+.io-head, .render-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.io-head h4, .render-head h4 { margin: 0; }
+.data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; margin-top: 8px; }
 .data-card h5 { margin: 0 0 8px; }
-.scroll-content { overflow: auto; max-height: 100%; margin: 0; }
+.scroll-content { overflow: auto; max-height: 220px; margin: 0; }
 .raw-line { margin: 0 0 6px; font-size: 12px; display: flex; gap: 6px; }
 .raw-index { color: #94a3b8; }
 .raw-text { white-space: pre-wrap; word-break: break-word; }
 .raw-text-data-model { color: #b45309; }
 .raw-text-surface { color: #0f766e; }
-.result-right { min-height: 0; border: 1px solid #dbe4f3; border-radius: 12px; background: #f8fafc; padding: 10px; overflow: auto; }
+.render-card { cursor: pointer; min-height: 180px; position: relative; overflow: hidden; }
 .surface-wrap { display: grid; gap: 12px; }
-.empty-render { height: 100%; display: grid; place-content: center; color: #64748b; }
+.empty-render { min-height: 120px; display: grid; place-content: center; color: #64748b; }
 .error { margin: 0; color: #dc2626; }
+
+.streaming-tip {
+  position: relative;
+  margin: 8px 0 12px;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: linear-gradient(90deg, rgba(59,130,246,.08), rgba(56,189,248,.12));
+  border-radius: 10px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+.streaming-tip-core { display: inline-flex; align-items: center; gap: 8px; color: #1d4ed8; font-size: 13px; font-weight: 600; }
+.streaming-ping { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 0 0 rgba(59,130,246,.45); animation: ping 1.2s infinite; }
+.streaming-dots i { display: inline-block; width: 4px; height: 4px; margin-left: 3px; border-radius: 50%; background: #2563eb; animation: dot-flash 1.2s infinite; }
+.streaming-dots i:nth-child(2) { animation-delay: .2s; }
+.streaming-dots i:nth-child(3) { animation-delay: .4s; }
+.streaming-scanline { position: absolute; top: 0; bottom: 0; width: 28%; background: linear-gradient(90deg, transparent, rgba(191,219,254,.55), transparent); animation: scanline 1.5s linear infinite; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(59,130,246,.45); } 70% { box-shadow: 0 0 0 8px rgba(59,130,246,0); } 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); } }
+@keyframes dot-flash { 0%, 80%, 100% { opacity: .35; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+@keyframes scanline { from { transform: translateX(-120%); } to { transform: translateX(420%); } }
 
 @media (max-width: 1080px) {
   .example-list { grid-template-columns: 1fr; max-width: 820px; }
-  .result-card-content { grid-template-columns: 1fr; }
+  .result-dual-pane { grid-template-columns: 1fr; }
 }
 </style>
