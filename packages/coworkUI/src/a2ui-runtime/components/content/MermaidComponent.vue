@@ -47,14 +47,14 @@ mermaid.initialize({
   theme: 'base',
   themeVariables: {
     background: 'transparent',
-    primaryColor: '#1e293b',
-    primaryTextColor: '#e2e8f0',
-    primaryBorderColor: '#334155',
-    lineColor: '#64748b',
-    secondaryColor: '#0f172a',
-    secondaryTextColor: '#cbd5e1',
-    tertiaryColor: '#111827',
-    tertiaryTextColor: '#cbd5e1',
+    primaryColor: '#e2e8f0',
+    primaryTextColor: '#0f172a',
+    primaryBorderColor: '#cbd5e1',
+    lineColor: '#94a3b8',
+    secondaryColor: '#f8fafc',
+    secondaryTextColor: '#1e293b',
+    tertiaryColor: '#eef2ff',
+    tertiaryTextColor: '#1e293b',
   },
 })
 
@@ -260,12 +260,8 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
       <span class="a2-mermaid-zoom">{{ Math.round(zoomLevel * 100) }}%</span>
       <button type="button" class="a2-mermaid-btn" @click="resetZoom">重置</button>
     </div>
-    <template v-if="error">
-      <pre v-if="mermaidSource" class="a2-mermaid-source"><code>{{ mermaidSource }}</code></pre>
-      <div class="a2-mermaid-error">Mermaid 渲染失败：{{ error }}</div>
-    </template>
     <div
-      v-else-if="svg"
+      v-if="svg"
       ref="diagramViewport"
       class="a2-mermaid-viewport"
       @wheel.prevent="handleWheel"
@@ -284,10 +280,10 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--n-20, #dbeafe);
   border-radius: 10px;
   padding: 10px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.45) 100%);
+  background: linear-gradient(180deg, var(--n-0, #ffffff) 0%, var(--n-10, #f8fafc) 100%);
 }
 
 .a2-mermaid-title {
@@ -308,16 +304,16 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 }
 
 .a2-mermaid-zoom {
-  color: #cbd5e1;
+  color: var(--n-70, #475569);
   font-size: 12px;
   line-height: 1;
 }
 
 .a2-mermaid-btn {
-  border: 1px solid rgba(59, 130, 246, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 6px;
-  background: rgba(59, 130, 246, 0.2);
-  color: #eff6ff;
+  background: rgba(191, 219, 254, 0.45);
+  color: #1d4ed8;
   font-weight: 600;
   font-size: 12px;
   padding: 4px 10px;
@@ -325,7 +321,7 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 }
 
 .a2-mermaid-btn:hover {
-  background: rgba(59, 130, 246, 0.35);
+  background: rgba(191, 219, 254, 0.8);
 }
 
 .a2-mermaid-viewport {
@@ -354,10 +350,10 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 }
 
 .a2-mermaid-btn {
-  border: 1px solid rgba(59, 130, 246, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.45);
   border-radius: 6px;
-  background: rgba(59, 130, 246, 0.2);
-  color: #eff6ff;
+  background: rgba(191, 219, 254, 0.45);
+  color: #1d4ed8;
   font-weight: 600;
   font-size: 12px;
   padding: 4px 10px;
@@ -365,7 +361,7 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 }
 
 .a2-mermaid-btn:hover {
-  background: rgba(59, 130, 246, 0.35);
+  background: rgba(191, 219, 254, 0.8);
 }
 
 .a2-mermaid-viewport {
@@ -390,19 +386,4 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   height: auto;
 }
 
-.a2-mermaid-error {
-  color: #fca5a5;
-}
-
-.a2-mermaid-source {
-  margin: 0 0 8px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  background: #0b1220;
-  color: #dbeafe;
-  font-size: 12px;
-  line-height: 1.4;
-  white-space: pre-wrap;
-}
 </style>
