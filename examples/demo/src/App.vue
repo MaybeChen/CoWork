@@ -37,6 +37,7 @@ const activeAbortController = ref(null)
 const runVersion = ref(0)
 const nodeStates = reactive({})
 const nodeResults = reactive({})
+const cardRefs = new Map()
 
 const inputRefs = new Map()
 const renderRefs = new Map()
