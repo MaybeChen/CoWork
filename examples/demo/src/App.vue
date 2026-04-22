@@ -37,6 +37,14 @@ const activeAbortController = ref(null)
 const runVersion = ref(0)
 const nodeStates = reactive({})
 const nodeResults = reactive({})
+const cardRefs = new Map()
+
+const { contentRef: cardsContainerRef, scheduleAutoScroll } = useAutoScroll({
+  mutationFilter: (mutations) =>
+    mutations.some((mutation) =>
+      Array.from(mutation.addedNodes || []).some((node) => node.nodeType === Node.ELEMENT_NODE),
+    ),
+})
 
 const inputRefs = new Map()
 const renderRefs = new Map()
