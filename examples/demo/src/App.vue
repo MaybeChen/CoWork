@@ -39,13 +39,6 @@ const nodeStates = reactive({})
 const nodeResults = reactive({})
 const cardRefs = new Map()
 
-const { contentRef: cardsContainerRef, scheduleAutoScroll } = useAutoScroll({
-  mutationFilter: (mutations) =>
-    mutations.some((mutation) =>
-      Array.from(mutation.addedNodes || []).some((node) => node.nodeType === Node.ELEMENT_NODE),
-    ),
-})
-
 const inputRefs = new Map()
 const renderRefs = new Map()
 
@@ -86,6 +79,10 @@ function getRawLineToneClass(line) {
   const raw = String(line || '').toLowerCase()
   if (raw.includes('datamodelupdate')) return 'raw-text-data-model'
   return 'raw-text-surface'
+}
+
+function formatRawLine(line) {
+  return String(line || '').replace(/\\/g, '')
 }
 
 function formatNodeInputPreview(inputText) {
@@ -294,16 +291,16 @@ async function handleAction(nodeId, action) {
                 </article>
                 <article class="data-card raw-card">
                   <h5>Raw</h5>
-                  <div class="scroll-content">
+                  <div>
                     <p v-for="(line, index) in result.rawLines" :key="`${result.nodeId}-raw-${index}`" class="raw-line">
                       <span class="raw-index">{{ index + 1 }}.</span>
-                      <span :class="['raw-text', getRawLineToneClass(line)]">{{ line }}</span>
+                      <span :class="['raw-text', getRawLineToneClass(line)]">{{ formatRawLine(line) }}</span>
                     </p>
                   </div>
                 </article>
                 <article class="data-card parsed-card">
                   <h5>Parsed</h5>
-                  <pre class="scroll-content">{{ result.parsedText }}</pre>
+                  <pre>{{ result.parsedText }}</pre>
                 </article>
               </article>
             </section>
@@ -316,10 +313,6 @@ async function handleAction(nodeId, action) {
                 :class="['render-card', { active: currentNodeId === result.nodeId }]"
                 @click="selectNode(result.nodeId)"
               >
-                <header class="render-head">
-                  <h4>{{ result.title }}</h4>
-                </header>
-
                 <div v-if="result.streaming" class="streaming-tip" aria-live="polite">
                   <span class="streaming-tip-core">
                     <span class="streaming-ping" />
@@ -378,21 +371,22 @@ async function handleAction(nodeId, action) {
 .graph h3 { margin: 0 0 10px; font-size: 14px; color: #334155; }
 
 .result-stage { min-height: 0; padding: 0; }
-.result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 0; }
-.data-pane, .render-pane { overflow: auto; min-height: 0; display: grid; gap: 12px; padding-right: 4px; }
-.io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 10px; }
+.result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 2fr; gap: 12px; min-height: 0; }
+.data-pane, .render-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
+.io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
-.io-head, .render-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-.io-head h4, .render-head h4 { margin: 0; }
-.data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; margin-top: 8px; }
+.io-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.io-head h4 { margin: 0; }
+.data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; margin-top: 10px; }
 .data-card h5 { margin: 0 0 8px; }
-.scroll-content { overflow: auto; max-height: 220px; margin: 0; }
-.raw-line { margin: 0 0 6px; font-size: 12px; display: flex; gap: 6px; }
+
+.raw-line { margin: 0 0 6px; font-size: 10px; display: flex; gap: 6px; white-space: pre-wrap; }
 .raw-index { color: #94a3b8; }
-.raw-text { white-space: pre-wrap; word-break: break-word; }
+.raw-text { white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.4; }
 .raw-text-data-model { color: #b45309; }
 .raw-text-surface { color: #0f766e; }
 .render-card { cursor: pointer; min-height: 180px; position: relative; overflow: hidden; }
+.input-card pre, .parsed-card pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.45; }
 .surface-wrap { display: grid; gap: 12px; }
 .empty-render { min-height: 120px; display: grid; place-content: center; color: #64748b; }
 .error { margin: 0; color: #dc2626; }

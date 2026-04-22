@@ -48,30 +48,33 @@ export const componentSpecificStyles = `
 }
 
 .a2ui-surface .hero_fact .a2-column{
-  border: 1px solid rgba(138, 164, 255, 0.14);
+  border: 1px solid var(--n-20, #dbeafe);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 8px 20px rgba(148, 163, 184, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
   width: fit-content;
   min-width:120px;
   border-radius: 12px;
   padding: 20px;
-  background: linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(13, 21, 38, 0.9));
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, var(--n-0, #ffffff), var(--n-10, #f8fafc));
+  color: var(--n-90, #1e293b);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease;
   will-change: transform;
 }
 
 .a2ui-surface .hero_fact .a2-column:hover{
   transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.15);
 }
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:first-child{
-  color:rgba(184, 199, 230, 0.72);
+  color: var(--n-70, #64748b);
 }
 
 .a2ui-surface .hero_fact .a2-column .a2ui-text:last-child{
+  color: var(--n-90, #0f172a);
   font-weight: bold;
 }
 `
