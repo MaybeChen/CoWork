@@ -85,12 +85,6 @@ function formatRawLine(line) {
   return String(line || '').replace(/\\/g, '')
 }
 
-function formatNodeInputPreview(inputText) {
-  const text = String(inputText || '').replace(/\s+/g, ' ').trim()
-  if (text.length <= 18) return text
-  return `${text.slice(0, 18)}...`
-}
-
 function appendRawLine(result, line) {
   if (!line) return
   const cleaned = String(line).trimEnd()
@@ -267,7 +261,6 @@ async function handleAction(nodeId, action) {
             :node-states="nodeStates"
             :active-node-id="currentNodeId"
             :active-edge-id="activeEdgeId"
-            :format-node-input-preview="formatNodeInputPreview"
             @select-node="selectNode"
           />
         </section>
@@ -373,7 +366,7 @@ async function handleAction(nodeId, action) {
 .result-stage { min-height: 0; padding: 0; }
 .result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 2fr; gap: 12px; min-height: 0; }
 .data-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
-.render-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
+.render-pane { overflow: auto; }
 .io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
 .io-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
