@@ -372,7 +372,8 @@ async function handleAction(nodeId, action) {
 
 .result-stage { min-height: 0; padding: 0; }
 .result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 2fr; gap: 12px; min-height: 0; }
-.data-pane, .render-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
+.data-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
+.render-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
 .io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
 .io-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -385,7 +386,7 @@ async function handleAction(nodeId, action) {
 .raw-text { white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.4; }
 .raw-text-data-model { color: #b45309; }
 .raw-text-surface { color: #0f766e; }
-.render-card { cursor: pointer; min-height: 180px; position: relative; overflow: hidden; }
+.render-card { cursor: pointer; min-height: 180px; position: relative; overflow: hidden; margin-top: 20px; }
 .input-card pre, .parsed-card pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.45; }
 .surface-wrap { display: grid; gap: 12px; }
 .empty-render { min-height: 120px; display: grid; place-content: center; color: #64748b; }
