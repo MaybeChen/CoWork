@@ -10,7 +10,8 @@
   "dependencies": {
     "vue": "^3.5.13",
     "coworkUI": "file:../../packages/coworkUI",
-    "@hw-seq/sweet-ui-base": "latest"
+    "@hw-seq/sweet-ui-base": "latest",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
