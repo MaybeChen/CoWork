@@ -1,26 +1,68 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
+const START_NODE_ID = '__start__'
+
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
   nodeStates: { type: Object, default: () => ({}) },
   activeNodeId: { type: String, default: '' },
   activeEdgeId: { type: String, default: '' },
-  formatNodeInputPreview: { type: Function, required: true },
 })
 
 const emit = defineEmits(['select-node'])
 
 const trackRef = ref(null)
 const canvasRef = ref(null)
-const nodeRefs = new Map()
+const nodeRects = new Map()
 let resizeObserver
 let rafId = 0
 let animationStart = 0
 
-function setNodeRef(nodeId, el) {
-  if (el) nodeRefs.set(nodeId, el)
-  else nodeRefs.delete(nodeId)
+function getDisplayNodes() {
+  return [{ id: START_NODE_ID, title: '开始', virtual: true }, ...props.nodes.map((node) => ({ ...node, virtual: false }))]
+}
+
+function getNodeState(node) {
+  if (node.virtual) return 'start'
+  return props.nodeStates[node.id] || 'idle'
+}
+
+function roundedRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2)
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + width - r, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r)
+  ctx.lineTo(x + width, y + height - r)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height)
+  ctx.lineTo(x + r, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r)
+  ctx.lineTo(x, y + r)
+  ctx.quadraticCurveTo(x, y, x + r, y)
+  ctx.closePath()
+}
+
+function resolveNodePalette(node, selected) {
+  const state = getNodeState(node)
+  if (state === 'start') {
+    return {
+      fill: '#dcfce7',
+      stroke: '#86efac',
+      text: '#166534',
+      shadow: '',
+    }
+  }
+  if (state === 'running') {
+    return { fill: '#dbeafe', stroke: '#60a5fa', text: '#1e3a8a', shadow: 'rgba(59,130,246,0.35)' }
+  }
+  if (state === 'done') {
+    return { fill: '#dcfce7', stroke: '#86efac', text: '#166534', shadow: '' }
+  }
+  if (state === 'error') {
+    return { fill: '#fee2e2', stroke: '#fca5a5', text: '#991b1b', shadow: '' }
+  }
+  return { fill: '#eff6ff', stroke: '#bfdbfe', text: '#1e3a8a', shadow: '' }
 }
 
 function drawGraph(elapsed = 0) {
@@ -37,31 +79,41 @@ function drawGraph(elapsed = 0) {
 
   const ctx = canvasEl.getContext('2d')
   if (!ctx) return
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.scale(dpr, dpr)
   ctx.clearRect(0, 0, rect.width, rect.height)
 
-  const centerPoints = props.nodes
-    .map((node) => {
-      const nodeEl = nodeRefs.get(node.id)
-      if (!nodeEl) return null
-      const nodeRect = nodeEl.getBoundingClientRect()
-      return {
-        id: node.id,
-        x: nodeRect.left - rect.left + nodeRect.width / 2,
-        y: nodeRect.top - rect.top + nodeRect.height / 2,
-      }
-    })
-    .filter(Boolean)
+  const displayNodes = getDisplayNodes()
+  if (!displayNodes.length) return
 
-  for (let i = 0; i < centerPoints.length - 1; i += 1) {
-    const from = centerPoints[i]
-    const to = centerPoints[i + 1]
+  const horizontalPadding = 8
+  const gap = 10
+  const idealWidth = (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length
+  const nodeWidth = Math.max(72, Math.min(88, idealWidth))
+  const nodeHeight = 52
+  const top = Math.max(8, (rect.height - nodeHeight) / 2)
+  const totalWidth = nodeWidth * displayNodes.length + gap * (displayNodes.length - 1)
+  const startX = Math.max(horizontalPadding, (rect.width - totalWidth) / 2)
+
+  nodeRects.clear()
+  const centers = displayNodes.map((node, index) => {
+    const x = startX + index * (nodeWidth + gap)
+    const y = top
+    nodeRects.set(node.id, { x, y, width: nodeWidth, height: nodeHeight, node })
+    return { id: node.id, x: x + nodeWidth / 2, y: y + nodeHeight / 2, virtual: node.virtual }
+  })
+
+  for (let i = 0; i < centers.length - 1; i += 1) {
+    const from = centers[i]
+    const to = centers[i + 1]
     const edgeId = `${from.id}-${to.id}`
-    const active = props.activeEdgeId === edgeId
+    const active = !from.virtual && !to.virtual && props.activeEdgeId === edgeId
 
     ctx.save()
     ctx.strokeStyle = active ? '#3b82f6' : '#cbd5e1'
     ctx.lineWidth = active ? 3 : 2
+    if (from.virtual || to.virtual) ctx.setLineDash([5, 4])
     if (active) {
       ctx.shadowColor = 'rgba(59,130,246,0.35)'
       ctx.shadowBlur = 8
@@ -89,6 +141,33 @@ function drawGraph(elapsed = 0) {
       ctx.restore()
     }
   }
+
+  for (const node of displayNodes) {
+    const rectInfo = nodeRects.get(node.id)
+    if (!rectInfo) continue
+
+    const selected = !node.virtual && props.activeNodeId === node.id
+    const palette = resolveNodePalette(node, selected)
+
+    ctx.save()
+    if (palette.shadow) {
+      ctx.shadowColor = palette.shadow
+      ctx.shadowBlur = 12
+    }
+    roundedRect(ctx, rectInfo.x, rectInfo.y, rectInfo.width, rectInfo.height, 12)
+    ctx.fillStyle = palette.fill
+    ctx.strokeStyle = palette.stroke
+    ctx.lineWidth = selected ? 2 : 1
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = palette.text
+    ctx.font = '600 13px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(node.title, rectInfo.x + rectInfo.width / 2, rectInfo.y + rectInfo.height / 2)
+    ctx.restore()
+  }
 }
 
 function renderFrame(timestamp) {
@@ -114,8 +193,20 @@ function stopAnimation() {
   }
 }
 
-function handleNodeClick(nodeId) {
-  emit('select-node', nodeId)
+function handleTrackClick(event) {
+  const trackEl = trackRef.value
+  if (!trackEl) return
+  const rect = trackEl.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+
+  for (const [, hit] of nodeRects) {
+    const inside = x >= hit.x && x <= hit.x + hit.width && y >= hit.y && y <= hit.y + hit.height
+    if (!inside) continue
+    if (hit.node.virtual) return
+    emit('select-node', hit.node.id)
+    return
+  }
 }
 
 onMounted(() => {
@@ -146,48 +237,24 @@ watch(() => props.activeEdgeId, () => nextTick(startAnimation))
 </script>
 
 <template>
-  <div ref="trackRef" class="graph-track">
-    <canvas ref="canvasRef" class="graph-canvas" aria-hidden="true" />
-    <button
-      v-for="node in nodes"
-      :key="node.id"
-      type="button"
-      :class="['node', `state-${nodeStates[node.id]}`, { selected: activeNodeId === node.id }]"
-      :ref="(el) => setNodeRef(node.id, el)"
-      @click="handleNodeClick(node.id)"
-    >
-      <span class="node-title">{{ node.title }}</span>
-      <small class="node-input">输入: {{ formatNodeInputPreview(node.input) }}</small>
-    </button>
+  <div ref="trackRef" class="graph-track" @click="handleTrackClick">
+    <canvas ref="canvasRef" class="graph-canvas" aria-label="流程节点图谱" role="img" />
   </div>
 </template>
 
 <style scoped>
 .graph-track {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(9, minmax(110px, 1fr));
-  gap: 12px;
-  align-items: center;
   height: calc(100% - 28px);
+  min-height: 96px;
 }
-.graph-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-.node {
-  z-index: 2;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  background: #eff6ff;
-  color: #1e3a8a;
-  padding: 8px;
-  cursor: pointer;
-  display: grid;
-  gap: 4px;
-  min-height: 72px;
+
+.graph-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  cursor: default;
 }
-.node-title { font-weight: 600; }
-.node-input { opacity: .86; }
-.state-running { box-shadow: 0 0 0 1px rgba(37,99,235,.35), 0 0 16px rgba(147,197,253,.9); border-color: #60a5fa; background: #dbeafe; }
-.state-done { background: #dcfce7; border-color: #86efac; color: #166534; }
-.state-error { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
-.node.selected { outline: 2px solid #60a5fa; }
 </style>

@@ -47,6 +47,15 @@ export const componentSpecificStyles = `
   font-style: italic;
 }
 
+.a2ui-surface .region_in_root {
+  border: 1px solid var(--n-20, #dbeafe);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+
 .a2ui-surface .hero_fact .a2-column{
   border: 1px solid var(--n-20, #dbeafe);
   backdrop-filter: blur(8px);
