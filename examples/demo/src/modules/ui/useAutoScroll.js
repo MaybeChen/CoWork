@@ -10,6 +10,14 @@ export function useAutoScroll(options = {}) {
   let shouldAutoScroll = true
   let isProgrammaticScroll = false
   let scrollScheduled = false
+  let userInteracted = false
+  const bottomOffsetThreshold = 20
+
+  function getBottomOffset() {
+    if (!contentRef.value) return 0
+    const el = contentRef.value
+    return Math.max(0, el.scrollHeight - (el.scrollTop + el.clientHeight))
+  }
 
   async function smoothScrollToBottom() {
     await nextTick()
@@ -42,7 +50,7 @@ export function useAutoScroll(options = {}) {
   }
 
   function scheduleAutoScroll({ force = false } = {}) {
-    if (!force && !shouldAutoScroll) return
+    if (!shouldAutoScroll && !(force && !userInteracted)) return
     if (scrollScheduled) return
     scrollScheduled = true
     const run = async () => {
@@ -72,10 +80,12 @@ export function useAutoScroll(options = {}) {
 
   function onUserScroll() {
     if (isProgrammaticScroll) return
+    userInteracted = true
     shouldAutoScroll = false
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
-      shouldAutoScroll = true
+      const bottomOffset = getBottomOffset()
+      shouldAutoScroll = bottomOffset <= bottomOffsetThreshold
     }, 150)
   }
 
@@ -83,13 +93,14 @@ export function useAutoScroll(options = {}) {
     if (!contentRef.value) return
 
     shouldAutoScroll = true
+    userInteracted = false
     scheduleAutoScroll({ force: true })
     contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
 
     if (typeof MutationObserver === 'function') {
       mutationObserver = new MutationObserver((mutations) => {
         if (shouldForceScrollOnMutation(mutations)) {
-          scheduleAutoScroll({ force: true })
+          scheduleAutoScroll()
         }
       })
       mutationObserver.observe(contentRef.value, {
@@ -101,7 +112,7 @@ export function useAutoScroll(options = {}) {
 
     if (typeof ResizeObserver === 'function') {
       resizeObserver = new ResizeObserver(() => {
-        scheduleAutoScroll({ force: true })
+        scheduleAutoScroll()
       })
       resizeObserver.observe(contentRef.value)
     }
