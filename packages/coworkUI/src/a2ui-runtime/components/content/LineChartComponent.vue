@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText, resolveValue } from '../utils'
 
 const props = defineProps({
@@ -52,12 +52,32 @@ const chartData = computed(() => {
   }
   return Array.isArray(raw) ? raw : []
 })
+
+
+const lineChartRef = ref(null)
+
+function ensureGrandParentWidth() {
+  nextTick(() => {
+    const chartEl = lineChartRef.value?.$el || lineChartRef.value
+    const grandParent = chartEl?.parentElement?.parentElement
+    if (grandParent?.style) grandParent.style.width = '100%'
+  })
+}
+
+watch(chartData, () => {
+  ensureGrandParentWidth()
+}, { deep: true })
+
+onMounted(() => {
+  ensureGrandParentWidth()
+})
 </script>
 
 <template>
   <div v-if="!hidden" class="a2-line-chart-wrap" :class="customClasses" :style="styleObject">
     <div v-if="title" class="a2-line-chart-title">{{ title }}</div>
     <sweet-line-chart
+      ref="lineChartRef"
       v-if="chartData && chartData.length > 0"
       :settings="settings"
       :chartData="chartData"
