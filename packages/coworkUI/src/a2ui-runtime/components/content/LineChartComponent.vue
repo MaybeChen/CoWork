@@ -53,24 +53,6 @@ const chartData = computed(() => {
   return Array.isArray(raw) ? raw : []
 })
 
-
-const lineChartRef = ref(null)
-
-function ensureGrandParentWidth() {
-  nextTick(() => {
-    const chartEl = lineChartRef.value?.$el || lineChartRef.value
-    const grandParent = chartEl?.parentElement?.parentElement
-    if (grandParent?.style) grandParent.style.width = '100%'
-  })
-}
-
-watch(chartData, () => {
-  ensureGrandParentWidth()
-}, { deep: true })
-
-onMounted(() => {
-  ensureGrandParentWidth()
-})
 </script>
 
 <template>
