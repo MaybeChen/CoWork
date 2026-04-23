@@ -7,6 +7,7 @@ import { streamChat } from './modules/network/chatStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { NODE_INPUTS } from './modules/flow/nodeInputs'
+import { DEFAULT_MODEL_LABEL, MODEL_OPTIONS, getSavedModelLabel, saveModelLabel, withModelParam } from './modules/network/modelConfig'
 
 const endpoint = '/api/chat/stream'
 
@@ -43,6 +44,9 @@ const inputRefs = new Map()
 const renderRefs = new Map()
 const inputExpanded = reactive({})
 const ioViewMode = reactive({})
+const selectedModelLabel = ref(getSavedModelLabel())
+const modelOptions = MODEL_OPTIONS
+const streamEndpoint = computed(() => withModelParam(endpoint, selectedModelLabel.value))
 
 
 const { contentRef: inputPanelRef, directive: inputAutoScrollDirective } = useAutoScroll()
@@ -106,6 +110,10 @@ function setIoViewMode(nodeId, mode) {
   ioViewMode[nodeId] = mode
 }
 
+function onModelChange() {
+  saveModelLabel(selectedModelLabel.value || DEFAULT_MODEL_LABEL)
+}
+
 function appendRawLine(result, line) {
   if (!line) return
   const cleaned = String(line).trimEnd()
@@ -156,7 +164,7 @@ async function runSingleNode(node) {
   activeAbortController.value = controller
 
   await streamChat({
-    endpoint,
+    endpoint: streamEndpoint.value,
     payload: { message: node.input },
     signal: controller.signal,
     onObjects: async (objects) => {
@@ -238,7 +246,7 @@ async function handleAction(nodeId, action) {
   if (!result) return
   result.streaming = true
   await streamChat({
-    endpoint,
+    endpoint: streamEndpoint.value,
     payload: { message: JSON.stringify({ userAction: action }) },
     onObjects: async (objects) => {
       await applyObjectsProgressively(result.turn, objects, { applyMessageFn: (targetTurn, payload) => applyMessage(targetTurn, payload) })
@@ -258,7 +266,15 @@ async function handleAction(nodeId, action) {
   <main class="page">
     <header class="global-header">
       <button type="button" class="brand" @click="backToHome">COWORKER</button>
-      <RouterLink class="chat-nav-btn" to="/chat">Chat</RouterLink>
+      <div class="header-actions">
+        <label class="model-picker">
+          <span>模型</span>
+          <select v-model="selectedModelLabel" class="model-select" @change="onModelChange">
+            <option v-for="item in modelOptions" :key="item.value" :value="item.label">{{ item.label }}</option>
+          </select>
+        </label>
+        <RouterLink class="chat-nav-btn" to="/chat">Chat</RouterLink>
+      </div>
     </header>
 
     <section class="workspace">
@@ -372,6 +388,9 @@ async function handleAction(nodeId, action) {
 .page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; }
 .global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
 .brand { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: none; background: linear-gradient(90deg, #2563eb, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; padding: 0; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.model-picker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #1e3a8a; }
+.model-select { height: 30px; border-radius: 8px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; padding: 0 8px; }
 .chat-nav-btn { text-decoration: none; font-size: 12px; color: #1e3a8a; border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; padding: 6px 10px; }
 .chat-nav-btn:hover { background: #dbeafe; }
 .workspace { flex: 1; padding: 16px; min-height: 0; }
