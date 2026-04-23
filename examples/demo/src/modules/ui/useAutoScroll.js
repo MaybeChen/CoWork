@@ -4,116 +4,85 @@ export function useAutoScroll(options = {}) {
   const contentRef = ref(null)
   let mutationObserver
   let resizeObserver
-  let scrollStopTimer
   let autoScrollTimer
-  let postScrollTimer
-  let shouldAutoScroll = true
+  let stopSetScrollY = false
   let isProgrammaticScroll = false
-  let scrollScheduled = false
 
-  async function smoothScrollToBottom() {
-    await nextTick()
-    if (contentRef.value) {
+  const bottomOffsetThreshold = 10
+
+  function shouldHandleMutation(mutations) {
+    if (typeof options.mutationFilter === 'function') return options.mutationFilter(mutations)
+    return true
+  }
+
+  function setScrollY() {
+    nextTick(() => {
       const el = contentRef.value
+      if (!el || stopSetScrollY) return
+      const areaHeight = el.scrollHeight
       isProgrammaticScroll = true
-      el.scrollTo({
-        top: el.scrollHeight,
-        behavior: 'auto',
-      })
-      el.scrollTop = el.scrollHeight
-      requestAnimationFrame(() => {
-        if (!contentRef.value) return
-        contentRef.value.scrollTop = contentRef.value.scrollHeight
-      })
-      if (postScrollTimer) clearTimeout(postScrollTimer)
-      postScrollTimer = setTimeout(() => {
-        if (!contentRef.value) return
-        contentRef.value.scrollTop = contentRef.value.scrollHeight
-      }, 120)
+      el.scrollTop = areaHeight
       if (autoScrollTimer) clearTimeout(autoScrollTimer)
       autoScrollTimer = setTimeout(() => {
         isProgrammaticScroll = false
-      }, 400)
-      return
-    }
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
-    }
+      }, 120)
+    })
+  }
+
+  function onResize() {
+    setScrollY()
+  }
+
+  function handleChatPageBottom() {
+    const el = contentRef.value
+    if (!el || isProgrammaticScroll) return
+
+    const currScrollTop = el.scrollTop || 0
+    const currClientHeight = el.clientHeight || 0
+    const currScrollHeight = el.scrollHeight || 0
+    stopSetScrollY = Math.abs(currScrollTop + currClientHeight - currScrollHeight) >= bottomOffsetThreshold
   }
 
   function scheduleAutoScroll({ force = false } = {}) {
-    if (!force && !shouldAutoScroll) return
-    if (scrollScheduled) return
-    scrollScheduled = true
-    const run = async () => {
-      scrollScheduled = false
-      await smoothScrollToBottom()
+    if (stopSetScrollY) return
+    if (force && contentRef.value) {
+      contentRef.value.scrollTop = contentRef.value.scrollHeight
     }
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run)
-    else setTimeout(run, 0)
-  }
-
-  function hasNewSurface(mutations) {
-    return mutations.some((mutation) =>
-      Array.from(mutation.addedNodes || []).some((node) => {
-        if (node.nodeType !== Node.ELEMENT_NODE) return false
-        const el = /** @type {Element} */ (node)
-        return el.classList.contains('surface') || !!el.querySelector('.surface')
-      }),
-    )
-  }
-
-  function shouldForceScrollOnMutation(mutations) {
-    if (typeof options.mutationFilter === 'function') {
-      return options.mutationFilter(mutations)
-    }
-    return hasNewSurface(mutations)
-  }
-
-  function onUserScroll() {
-    if (isProgrammaticScroll) return
-    shouldAutoScroll = false
-    if (scrollStopTimer) clearTimeout(scrollStopTimer)
-    scrollStopTimer = setTimeout(() => {
-      shouldAutoScroll = true
-    }, 150)
+    setScrollY()
   }
 
   onMounted(() => {
-    if (!contentRef.value) return
+    const el = contentRef.value
+    if (!el) return
 
-    shouldAutoScroll = true
+    stopSetScrollY = false
     scheduleAutoScroll({ force: true })
-    contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
+    el.addEventListener('scroll', handleChatPageBottom, { passive: true })
 
     if (typeof MutationObserver === 'function') {
-      mutationObserver = new MutationObserver((mutations) => {
-        if (shouldForceScrollOnMutation(mutations)) {
-          scheduleAutoScroll({ force: true })
-        }
-      })
-      mutationObserver.observe(contentRef.value, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      })
+      const config = { attributes: true, childList: true, subtree: true }
+      const handler = (mutations) => {
+        if (!shouldHandleMutation(mutations)) return
+        onResize()
+      }
+      mutationObserver = new MutationObserver(handler)
+      mutationObserver.observe(el, config)
     }
 
     if (typeof ResizeObserver === 'function') {
-      resizeObserver = new ResizeObserver(() => {
-        scheduleAutoScroll({ force: true })
-      })
-      resizeObserver.observe(contentRef.value)
+      const handler = () => {
+        onResize()
+      }
+      resizeObserver = new ResizeObserver(handler)
+      resizeObserver.observe(el)
     }
   })
 
   onBeforeUnmount(() => {
     if (mutationObserver) mutationObserver.disconnect()
     if (resizeObserver) resizeObserver.disconnect()
-    if (contentRef.value) contentRef.value.removeEventListener('scroll', onUserScroll)
-    if (scrollStopTimer) clearTimeout(scrollStopTimer)
+    if (contentRef.value) contentRef.value.removeEventListener('scroll', handleChatPageBottom)
     if (autoScrollTimer) clearTimeout(autoScrollTimer)
-    if (postScrollTimer) clearTimeout(postScrollTimer)
   })
 
   return {

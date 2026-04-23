@@ -69,6 +69,7 @@ const chartData = computed(() => {
 <style scoped>
 .a2-line-chart-wrap {
   width: 100%;
+  min-width: 500px;
   max-width: 100%;
   border: 1px solid var(--n-20, #dbeafe);
   border-radius: 8px;
