@@ -23,6 +23,10 @@ export const structuralStyles = `
 .a2ui-surface .layout-gap-2 { gap: 8px; }
 .a2ui-surface .layout-gap-3 { gap: 12px; }
 
+.a2ui-surface .a2-column:has(.a2-line-chart-wrap) {
+  width: 100%;
+}
+
 .a2ui-surface .typography-body { font-size: 14px; line-height: 1.6; }
 .a2ui-surface .typography-h1 { font-size: 28px; line-height: 1.25; font-weight: 700; }
 .a2ui-surface .typography-h2 { font-size: 22px; line-height: 1.3; font-weight: 650; }
