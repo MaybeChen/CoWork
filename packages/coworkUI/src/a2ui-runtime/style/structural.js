@@ -23,7 +23,8 @@ export const structuralStyles = `
 .a2ui-surface .layout-gap-2 { gap: 8px; }
 .a2ui-surface .layout-gap-3 { gap: 12px; }
 
-.a2ui-surface .a2-column:has(.a2-line-chart-wrap) {
+.a2ui-surface .a2-column:has(.a2-line-chart-wrap),
+.a2ui-surface .a2-column:has(.hero_fact) {
   width: 100%;
 }
 

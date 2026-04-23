@@ -86,4 +86,14 @@ export const componentSpecificStyles = `
   color: var(--n-90, #0f172a);
   font-weight: bold;
 }
+
+.a2ui-surface .code_block {
+  white-space: pre-line;
+  padding: 15px;
+  color: #fff;
+  background: #000;
+  font-family: monospace;
+  border-radius: 15px 10px;
+}
+
 `
