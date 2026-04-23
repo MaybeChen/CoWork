@@ -12,11 +12,11 @@ const justify = { start:'flex-start', center:'center', end:'flex-end', spaceBetw
 const align = { start:'flex-start', center:'center', end:'flex-end', stretch:'stretch' }
 
 const distribution = computed(() => props.payload?.distribution ?? 'start')
-const alignment = computed(() => props.payload?.alignment ?? 'stretch')
+const alignment = computed(() => props.payload?.alignment ?? 'start')
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
 const hostStyle = computed(() => ({
   justifyContent: justify[distribution.value] || 'flex-start',
-  alignItems: align[alignment.value] || 'stretch',
+  alignItems: align[alignment.value] || 'flex-start',
   ...hostStyleFromNode(props.node, props.payload, props.payload?.usageHint),
 }))
 const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))

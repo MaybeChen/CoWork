@@ -88,17 +88,27 @@ function drawGraph(elapsed = 0) {
   if (!displayNodes.length) return
 
   const horizontalPadding = 8
-  const gap = 10
-  const idealWidth = (rect.width - horizontalPadding * 2 - gap * (displayNodes.length - 1)) / displayNodes.length
-  const nodeWidth = Math.max(72, Math.min(88, idealWidth))
+  const minGap = 100
+  const maxGap = 240
+  const minNodeWidth = 56
+  const maxNodeWidth = 96
+  const nodeCount = displayNodes.length
+  const availableWidth = Math.max(0, rect.width - horizontalPadding * 2)
+  const maxNodeWidthThatFitsMinGap =
+    nodeCount > 1 ? (availableWidth - minGap * (nodeCount - 1)) / nodeCount : availableWidth
+  const nodeWidth = Math.max(minNodeWidth, Math.min(maxNodeWidth, maxNodeWidthThatFitsMinGap))
+  const adaptiveGap = nodeCount > 1 ? (availableWidth - nodeWidth * nodeCount) / (nodeCount - 1) : 0
+  const gap = nodeCount > 1 ? Math.max(minGap, Math.min(maxGap, adaptiveGap)) : 0
+  const fallbackGap = nodeCount > 1 ? Math.max(24, adaptiveGap) : 0
+  const finalGap = Number.isFinite(gap) && gap >= minGap ? gap : fallbackGap
   const nodeHeight = 52
   const top = Math.max(8, (rect.height - nodeHeight) / 2)
-  const totalWidth = nodeWidth * displayNodes.length + gap * (displayNodes.length - 1)
+  const totalWidth = nodeWidth * nodeCount + finalGap * (nodeCount - 1)
   const startX = Math.max(horizontalPadding, (rect.width - totalWidth) / 2)
 
   nodeRects.clear()
   const centers = displayNodes.map((node, index) => {
-    const x = startX + index * (nodeWidth + gap)
+    const x = startX + index * (nodeWidth + finalGap)
     const y = top
     nodeRects.set(node.id, { x, y, width: nodeWidth, height: nodeHeight, node })
     return { id: node.id, x: x + nodeWidth / 2, y: y + nodeHeight / 2, virtual: node.virtual }
