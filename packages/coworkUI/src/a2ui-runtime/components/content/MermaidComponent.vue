@@ -43,6 +43,7 @@ const dragStartY = ref(0)
 
 mermaid.initialize({
   startOnLoad: false,
+  suppressErrorRendering: true,
   flowchart: { htmlLabels: false },
   theme: 'base',
   themeVariables: {
@@ -135,11 +136,25 @@ function applyRepairPipeline(source, levels = ['A']) {
   return { fixed: fixed.trim(), appliedRules }
 }
 
+
+function isMermaidErrorSvg(svgText) {
+  const raw = String(svgText || '')
+  if (!raw) return false
+  return /syntax error in text/i.test(raw)
+    || /mermaid version\s*\d+/i.test(raw)
+    || /class="error-icon"/i.test(raw)
+    || /id="error"/i.test(raw)
+}
+
 async function renderSvg(source, seq) {
   const id = `a2-mermaid-${seq}-${Math.random().toString(36).slice(2, 8)}`
   const result = await mermaid.render(id, source)
   if (seq !== renderSeq) return
-  svg.value = result?.svg || ''
+  const nextSvg = result?.svg || ''
+  if (isMermaidErrorSvg(nextSvg)) {
+    throw new Error('Mermaid returned an error diagram')
+  }
+  svg.value = nextSvg
 }
 
 function applySvgZoom() {
