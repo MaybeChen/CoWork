@@ -46,7 +46,7 @@ const ioViewMode = reactive({})
 
 
 const { contentRef: inputPanelRef, directive: inputAutoScrollDirective } = useAutoScroll()
-const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll, directive: renderAutoScrollDirective } = useAutoScroll()
+const { contentRef: renderPanelRef, directive: renderAutoScrollDirective } = useAutoScroll()
 const vInputAutoScroll = inputAutoScrollDirective
 const vRenderAutoScroll = renderAutoScrollDirective
 
@@ -151,7 +151,6 @@ async function runSingleNode(node) {
   nodeStates[node.id] = 'running'
 
   await nextTick()
-  scheduleRenderScroll({ force: true })
 
   const controller = new AbortController()
   activeAbortController.value = controller
@@ -165,7 +164,6 @@ async function runSingleNode(node) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -247,7 +245,6 @@ async function handleAction(nodeId, action) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
