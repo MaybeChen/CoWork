@@ -16,10 +16,12 @@ const loading = ref(false)
 const error = ref('')
 const turns = ref([])
 
-const { contentRef, scheduleAutoScroll } = useAutoScroll()
-const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoScroll } = useAutoScroll({
+const { contentRef, scheduleAutoScroll, directive: contentAutoScrollDirective } = useAutoScroll()
+const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoScroll, directive: questionAutoScrollDirective } = useAutoScroll({
   mutationFilter: (mutations) => mutations.some((mutation) => (mutation.addedNodes?.length || 0) > 0 || mutation.type === 'characterData'),
 })
+const vContentAutoScroll = contentAutoScrollDirective
+const vQuestionAutoScroll = questionAutoScrollDirective
 const hasTurns = computed(() => turns.value.length > 0)
 const centerTurns = computed(() => turns.value)
 const outputPanelVisible = ref(false)
@@ -255,7 +257,7 @@ async function handleAction(turn, action) {
             </section>
           </section>
         </transition>
-        <section ref="questionPanelRef" class="panel question-panel">
+        <section ref="questionPanelRef" v-question-auto-scroll class="panel question-panel">
           <ul v-if="hasTurns" class="question-list">
             <li v-for="turn in turns" :key="`q-${turn.id}`" class="question-item">
               <p class="terminal-line">
@@ -293,7 +295,7 @@ async function handleAction(turn, action) {
       </aside>
 
       <section class="center">
-        <section ref="contentRef" class="content panel">
+        <section ref="contentRef" v-content-auto-scroll class="content panel">
           <div v-if="!hasTurns" class="hero">
             <h1 class="hero-brand">无形之界，无限之能</h1>
             <p class="hero-subtitle">界面随需而生，协作自由生长</p>

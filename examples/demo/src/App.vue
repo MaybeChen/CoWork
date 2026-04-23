@@ -45,8 +45,10 @@ const inputExpanded = reactive({})
 const ioViewMode = reactive({})
 
 
-const { contentRef: inputPanelRef, scheduleAutoScroll: scheduleInputScroll } = useAutoScroll()
-const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll } = useAutoScroll()
+const { contentRef: inputPanelRef, scheduleAutoScroll: scheduleInputScroll, directive: inputAutoScrollDirective } = useAutoScroll()
+const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll, directive: renderAutoScrollDirective } = useAutoScroll()
+const vInputAutoScroll = inputAutoScrollDirective
+const vRenderAutoScroll = renderAutoScrollDirective
 
 for (const node of nodeDefs) nodeStates[node.id] = 'idle'
 
@@ -291,7 +293,7 @@ async function handleAction(nodeId, action) {
 
         <section class="result-stage panel">
           <section v-if="resultCards.length" class="result-dual-pane">
-            <section ref="inputPanelRef" class="data-pane">
+            <section ref="inputPanelRef" v-input-auto-scroll class="data-pane">
               <article
                 v-for="result in resultCards"
                 :key="`input-${result.nodeId}`"
@@ -330,7 +332,7 @@ async function handleAction(nodeId, action) {
               </article>
             </section>
 
-            <section ref="renderPanelRef" class="render-pane">
+            <section ref="renderPanelRef" v-render-auto-scroll class="render-pane">
               <article
                 v-for="result in resultCards"
                 :key="`render-${result.nodeId}`"

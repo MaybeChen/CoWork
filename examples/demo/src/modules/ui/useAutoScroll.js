@@ -1,4 +1,4 @@
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, ref } from 'vue'
 
 export function useAutoScroll(options = {}) {
   const contentRef = ref(null)
@@ -10,6 +10,10 @@ export function useAutoScroll(options = {}) {
 
   const bottomOffsetThreshold = 10
 
+  function getElement() {
+    return contentRef.value
+  }
+
   function shouldHandleMutation(mutations) {
     if (typeof options.mutationFilter === 'function') return options.mutationFilter(mutations)
     return true
@@ -17,11 +21,10 @@ export function useAutoScroll(options = {}) {
 
   function setScrollY() {
     nextTick(() => {
-      const el = contentRef.value
+      const el = getElement()
       if (!el || stopSetScrollY) return
-      const areaHeight = el.scrollHeight
       isProgrammaticScroll = true
-      el.scrollTop = areaHeight
+      el.scrollTop = el.scrollHeight
       if (autoScrollTimer) clearTimeout(autoScrollTimer)
       autoScrollTimer = setTimeout(() => {
         isProgrammaticScroll = false
@@ -33,8 +36,8 @@ export function useAutoScroll(options = {}) {
     setScrollY()
   }
 
-  function handleChatPageBottom() {
-    const el = contentRef.value
+  function handleScroll() {
+    const el = getElement()
     if (!el || isProgrammaticScroll) return
 
     const currScrollTop = el.scrollTop || 0
@@ -43,24 +46,28 @@ export function useAutoScroll(options = {}) {
     stopSetScrollY = Math.abs(currScrollTop + currClientHeight - currScrollHeight) >= bottomOffsetThreshold
   }
 
-  function scheduleAutoScroll({ force = false } = {}) {
-    if (force) {
-      stopSetScrollY = false
-      if (contentRef.value) contentRef.value.scrollTop = contentRef.value.scrollHeight
-      setScrollY()
-      return
+  function cleanupObservers() {
+    if (mutationObserver) {
+      mutationObserver.disconnect()
+      mutationObserver = null
     }
-    if (stopSetScrollY) return
-    setScrollY()
+    if (resizeObserver) {
+      resizeObserver.disconnect()
+      resizeObserver = null
+    }
+    const el = getElement()
+    if (el) el.removeEventListener('scroll', handleScroll)
+    if (autoScrollTimer) clearTimeout(autoScrollTimer)
   }
 
-  onMounted(() => {
-    const el = contentRef.value
+  function bindElement(el) {
     if (!el) return
+    cleanupObservers()
+    contentRef.value = el
 
     stopSetScrollY = false
     scheduleAutoScroll({ force: true })
-    el.addEventListener('scroll', handleChatPageBottom, { passive: true })
+    el.addEventListener('scroll', handleScroll, { passive: true })
 
     if (typeof MutationObserver === 'function') {
       const config = { attributes: true, childList: true, subtree: true }
@@ -79,17 +86,41 @@ export function useAutoScroll(options = {}) {
       resizeObserver = new ResizeObserver(handler)
       resizeObserver.observe(el)
     }
-  })
+  }
 
-  onBeforeUnmount(() => {
-    if (mutationObserver) mutationObserver.disconnect()
-    if (resizeObserver) resizeObserver.disconnect()
-    if (contentRef.value) contentRef.value.removeEventListener('scroll', handleChatPageBottom)
-    if (autoScrollTimer) clearTimeout(autoScrollTimer)
-  })
+  function unbindElement(el) {
+    if (el) el.removeEventListener('scroll', handleScroll)
+    cleanupObservers()
+    if (contentRef.value === el) contentRef.value = null
+  }
+
+  function scheduleAutoScroll({ force = false } = {}) {
+    if (force) {
+      stopSetScrollY = false
+      const el = getElement()
+      if (el) el.scrollTop = el.scrollHeight
+      setScrollY()
+      return
+    }
+    if (stopSetScrollY) return
+    setScrollY()
+  }
+
+  const directive = {
+    mounted(el) {
+      bindElement(el)
+    },
+    updated(el) {
+      if (contentRef.value !== el) bindElement(el)
+    },
+    unmounted(el) {
+      unbindElement(el)
+    },
+  }
 
   return {
     contentRef,
     scheduleAutoScroll,
+    directive,
   }
 }
