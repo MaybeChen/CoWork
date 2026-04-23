@@ -44,7 +44,10 @@ export function useAutoScroll(options = {}) {
   }
 
   function scheduleAutoScroll({ force = false } = {}) {
-    if (force) stopSetScrollY = false
+    if (stopSetScrollY) return
+    if (force && contentRef.value) {
+      contentRef.value.scrollTop = contentRef.value.scrollHeight
+    }
     setScrollY()
   }
 
