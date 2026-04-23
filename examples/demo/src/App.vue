@@ -41,9 +41,14 @@ const cardRefs = new Map()
 
 const inputRefs = new Map()
 const renderRefs = new Map()
+const inputExpanded = reactive({})
+const ioViewMode = reactive({})
 
-const { contentRef: inputPanelRef, scheduleAutoScroll: scheduleInputScroll } = useAutoScroll()
-const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll } = useAutoScroll()
+
+const { contentRef: inputPanelRef, directive: inputAutoScrollDirective } = useAutoScroll()
+const { contentRef: renderPanelRef, directive: renderAutoScrollDirective } = useAutoScroll()
+const vInputAutoScroll = inputAutoScrollDirective
+const vRenderAutoScroll = renderAutoScrollDirective
 
 for (const node of nodeDefs) nodeStates[node.id] = 'idle'
 
@@ -85,10 +90,20 @@ function formatRawLine(line) {
   return String(line || '').replace(/\\/g, '')
 }
 
-function formatNodeInputPreview(inputText) {
-  const text = String(inputText || '').replace(/\s+/g, ' ').trim()
-  if (text.length <= 18) return text
-  return `${text.slice(0, 18)}...`
+function isInputExpanded(nodeId) {
+  return Boolean(inputExpanded[nodeId])
+}
+
+function toggleInputExpanded(nodeId) {
+  inputExpanded[nodeId] = !inputExpanded[nodeId]
+}
+
+function getIoViewMode(nodeId) {
+  return ioViewMode[nodeId] || 'raw'
+}
+
+function setIoViewMode(nodeId, mode) {
+  ioViewMode[nodeId] = mode
 }
 
 function appendRawLine(result, line) {
@@ -136,8 +151,6 @@ async function runSingleNode(node) {
   nodeStates[node.id] = 'running'
 
   await nextTick()
-  scheduleInputScroll({ force: true })
-  scheduleRenderScroll({ force: true })
 
   const controller = new AbortController()
   activeAbortController.value = controller
@@ -151,8 +164,6 @@ async function runSingleNode(node) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleInputScroll({ force: true })
-      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -179,6 +190,8 @@ async function startFlow(question) {
   for (const node of nodeDefs) {
     nodeStates[node.id] = 'idle'
     delete nodeResults[node.id]
+    delete inputExpanded[node.id]
+    delete ioViewMode[node.id]
   }
 
   for (let i = 0; i < nodeDefs.length; i += 1) {
@@ -209,6 +222,8 @@ function backToHome() {
   for (const node of nodeDefs) {
     nodeStates[node.id] = 'idle'
     delete nodeResults[node.id]
+    delete inputExpanded[node.id]
+    delete ioViewMode[node.id]
   }
 }
 
@@ -230,8 +245,6 @@ async function handleAction(nodeId, action) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleInputScroll({ force: true })
-      scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
       error.value = e instanceof Error ? e.message : 'Unknown error'
@@ -245,6 +258,7 @@ async function handleAction(nodeId, action) {
   <main class="page">
     <header class="global-header">
       <button type="button" class="brand" @click="backToHome">COWORKER</button>
+      <RouterLink class="chat-nav-btn" to="/chat">Chat</RouterLink>
     </header>
 
     <section class="workspace">
@@ -267,14 +281,13 @@ async function handleAction(nodeId, action) {
             :node-states="nodeStates"
             :active-node-id="currentNodeId"
             :active-edge-id="activeEdgeId"
-            :format-node-input-preview="formatNodeInputPreview"
             @select-node="selectNode"
           />
         </section>
 
         <section class="result-stage panel">
           <section v-if="resultCards.length" class="result-dual-pane">
-            <section ref="inputPanelRef" class="data-pane">
+            <section ref="inputPanelRef" v-input-auto-scroll class="data-pane">
               <article
                 v-for="result in resultCards"
                 :key="`input-${result.nodeId}`"
@@ -285,27 +298,35 @@ async function handleAction(nodeId, action) {
                   <h4>{{ result.title }}</h4>
                   <small>{{ result.nodeId }}</small>
                 </header>
-                <article class="data-card input-card">
-                  <h5>Input</h5>
-                  <pre>{{ result.inputText }}</pre>
+                <article class="data-card input-card no-border">
+                  <header class="io-mini-head">
+                    <h5>Input</h5>
+                    <button type="button" class="mini-toggle" @click="toggleInputExpanded(result.nodeId)">
+                      {{ isInputExpanded(result.nodeId) ? '收起' : '展开' }}
+                    </button>
+                  </header>
+                  <pre :class="['input-pre', { collapsed: !isInputExpanded(result.nodeId) }]">{{ result.inputText }}</pre>
                 </article>
-                <article class="data-card raw-card">
-                  <h5>Raw</h5>
-                  <div>
+                <article class="data-card io-combined-card">
+                  <header class="io-mini-head">
+                    <h5>Output</h5>
+                    <div class="tab-switch">
+                      <button type="button" :class="['tab-btn', { active: getIoViewMode(result.nodeId) === 'raw' }]" @click="setIoViewMode(result.nodeId, 'raw')">Raw</button>
+                      <button type="button" :class="['tab-btn', { active: getIoViewMode(result.nodeId) === 'parsed' }]" @click="setIoViewMode(result.nodeId, 'parsed')">Parsed</button>
+                    </div>
+                  </header>
+                  <div v-if="getIoViewMode(result.nodeId) === 'raw'">
                     <p v-for="(line, index) in result.rawLines" :key="`${result.nodeId}-raw-${index}`" class="raw-line">
                       <span class="raw-index">{{ index + 1 }}.</span>
                       <span :class="['raw-text', getRawLineToneClass(line)]">{{ formatRawLine(line) }}</span>
                     </p>
                   </div>
-                </article>
-                <article class="data-card parsed-card">
-                  <h5>Parsed</h5>
-                  <pre>{{ result.parsedText }}</pre>
+                  <pre v-else class="parsed-pre">{{ result.parsedText }}</pre>
                 </article>
               </article>
             </section>
 
-            <section ref="renderPanelRef" class="render-pane">
+            <section ref="renderPanelRef" v-render-auto-scroll class="render-pane">
               <article
                 v-for="result in resultCards"
                 :key="`render-${result.nodeId}`"
@@ -350,8 +371,10 @@ async function handleAction(nodeId, action) {
 
 <style scoped>
 .page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; }
-.global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
+.global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
 .brand { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: none; background: linear-gradient(90deg, #2563eb, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; padding: 0; }
+.chat-nav-btn { text-decoration: none; font-size: 12px; color: #1e3a8a; border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; padding: 6px 10px; }
+.chat-nav-btn:hover { background: #dbeafe; }
 .workspace { flex: 1; padding: 16px; min-height: 0; }
 .panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
@@ -373,21 +396,32 @@ async function handleAction(nodeId, action) {
 .result-stage { min-height: 0; padding: 0; }
 .result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 2fr; gap: 12px; min-height: 0; }
 .data-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
-.render-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
+.render-pane { overflow: auto; }
 .io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
+.io-card { font-size: 12px; }
 .io-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .io-head h4 { margin: 0; }
 .data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; margin-top: 10px; }
 .data-card h5 { margin: 0 0 8px; }
 
-.raw-line { margin: 0 0 6px; font-size: 10px; display: flex; gap: 6px; white-space: pre-wrap; }
+.raw-line { margin: 0 0 6px; font-size: 12px; display: flex; gap: 6px; white-space: pre-wrap; }
 .raw-index { color: #94a3b8; }
-.raw-text { white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.4; }
+.raw-text { white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.5; }
 .raw-text-data-model { color: #b45309; }
 .raw-text-surface { color: #0f766e; }
+
+.io-mini-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.mini-toggle { border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; border-radius: 8px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.no-border { border: none; background: transparent; padding: 0; }
+.input-pre, .parsed-pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.5; }
+.input-pre.collapsed { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.io-combined-card { margin-top: 10px; }
+.tab-switch { display: inline-flex; gap: 6px; }
+.tab-btn { border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; border-radius: 8px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.tab-btn.active { border-color: #60a5fa; background: #dbeafe; color: #1e3a8a; }
 .render-card { cursor: pointer; min-height: 180px; position: relative; overflow: hidden; margin-top: 20px; }
-.input-card pre, .parsed-card pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 10px; line-height: 1.45; }
+
 .surface-wrap { display: grid; gap: 12px; }
 .empty-render { min-height: 120px; display: grid; place-content: center; color: #64748b; }
 .error { margin: 0; color: #dc2626; }

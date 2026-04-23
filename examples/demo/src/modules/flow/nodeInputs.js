@@ -282,60 +282,91 @@ export const NODE_INPUTS = {
 对象名称：YGAA2-2F02-08-14-A1P1-LQL2switch-LQLEAF-HW630-02U43
 发生时间：2026-03-03 05:14:26`,
   metric: `{
-  "result": {
-    "code": 200,
-    "data": "metricValues:",
-    "errorMessage": "",
-    "body": {
-      "data": [],
-      "fieldRelations": [
-        {
-          "fieldNameCn": "对象名称",
-          "fieldKey": "displayName",
-          "valueType": "String",
-          "filedOrder": 1,
-          "filterType": "NONE",
-          "fieldNameEn": "CI Name",
-          "url": null,
-          "enumValues": null
-        },
-        {
-          "fieldNameCn": "最大值",
-          "fieldKey": "metricValueMax",
-          "valueType": "String",
-          "filedOrder": 2,
-          "filterType": "NONE",
-          "fieldNameEn": "Maximum Value",
-          "url": null,
-          "enumValues": null
-        },
-        {
-          "fieldNameCn": "最小值",
-          "fieldKey": "metricValueMin",
-          "valueType": "String",
-          "filedOrder": 3,
-          "filterType": "NONE",
-          "fieldNameEn": "Minimum Value",
-          "url": null,
-          "enumValues": null
-        },
-        {
-          "fieldNameCn": "平均值",
-          "fieldKey": "metricValueAvg",
-          "valueType": "String",
-          "filedOrder": 4,
-          "filterType": "NONE",
-          "fieldNameEn": "Average Value",
-          "url": null,
-          "enumValues": null
-        }
-      ],
-      "luiStyle": {
-        "contextType": "Metric",
-        "showType": "Chart Table"
+  "keycode": "62d9443e-32f8-11f1-82cd-0255ac1200d6",
+  "llm_times": 0,
+  "rag_times": 0,
+  "agent_output": {
+    "executionDetails": [],
+    "showKeys": [
+      "exceptionInfos"
+    ],
+    "exceptionInfos": [
+      {
+        "abnormalityId": "5c9b5eb2-963d-4246-a0d4-37acee4f8946",
+        "metricName": [
+          "AI Core利用率"
+        ],
+        "metricTimes": [
+          [
+            "2026-04-08 09:51:01",
+            "2026-04-08 09:52:01",
+            "2026-04-08 09:53:01",
+            "2026-04-08 09:54:01",
+            "2026-04-08 09:55:01",
+            "2026-04-08 09:56:01",
+            "2026-04-08 10:47:49",
+            "2026-04-08 10:48:01",
+            "2026-04-08 10:49:01",
+            "2026-04-08 11:09:01",
+            "2026-04-08 11:10:01",
+            "2026-04-08 11:11:01"
+          ]
+        ],
+        "abnormalityDescription": "2026-04-08 09:52:01时间点，AI Core利用率指标值为0.8，超过K-sigma动态阈值上限;2026-04-08 10:49:01时间点，AI Core利用率指标值为0.76，超过K-sigma动态阈值下限;2026-04-08 11:09:01时间点，AI Core利用率指标值为0.8，超过K-sigma动态阈值上限",
+        "threshold": [
+          [
+            0.78,
+            0.76
+          ]
+        ],
+        "abnormalityTime": [
+          [
+            "2026-04-08 09:52:01",
+            "2026-04-08 09:53:01",
+            "2026-04-08 10:49:01",
+            "2026-04-08 11:09:01"
+          ]
+        ],
+        "units": [
+          "%"
+        ],
+        "ciName": "NPU8(A2-IT301-I06-26U-TS-A924-089)",
+        "ciId": "d23a2412-7262-4703-8669-510734129c56",
+        "metricId": [
+          "@NPU@ai_core_usage@2000@"
+        ],
+        "analysisMethod": "动态阈值",
+        "ciType": "NPU",
+        "ciSubType": "NPU",
+        "metricValues": [
+          [
+            0.78,
+            0.8,
+            0.8,
+            0.79,
+            0.77,
+            0.8,
+            0.8,
+            0.76,
+            0.78,
+            0.8,
+            0.77,
+            0.79
+          ]
+        ]
       }
-    }
-  }
+    ]
+  },
+  "end_time": "2026-04-08 11:11:29",
+  "active": true,
+  "diagnosis_task_id": "9d4748f9-8d1a-4b56-9a28-1efc4ed00419",
+  "agent_record_id": "62d9443e-32f8-11f1-82cd-0255ac1200d6",
+  "start_time": "2026-04-08 11:09:41",
+  "api_times": 2,
+  "agent_status": "成功",
+  "id": "62d9443d-32f8-11f1-82cd-0255ac1200d6",
+  "agent_code": "mindops_metric_analysis_agent",
+  "change_time": 1775617889727
 }`,
   topology: `{
   "result": {
