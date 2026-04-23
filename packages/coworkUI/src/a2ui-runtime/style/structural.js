@@ -5,7 +5,7 @@ export const structuralStyles = `
 .a2ui-surface {
   --a2ui-font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-family: var(--a2ui-font);
-  color: var(--n-100, #f8fafc);
+  color: var(--n-90, #0f172a);
 }
 
 .a2ui-surface .a2ui-hidden {
@@ -27,9 +27,9 @@ export const structuralStyles = `
 .a2ui-surface .typography-h1 { font-size: 28px; line-height: 1.25; font-weight: 700; }
 .a2ui-surface .typography-h2 { font-size: 22px; line-height: 1.3; font-weight: 650; }
 
-.a2ui-surface .color-c-n100 { color: var(--n-100, #f8fafc); }
+.a2ui-surface .color-c-n100 { color: var(--n-90, #0f172a); }
 .a2ui-surface .color-c-warning { color: #facc15; }
-.a2ui-surface .color-bgc-n10 { background-color: var(--n-10, rgba(255,255,255,0.03)); }
+.a2ui-surface .color-bgc-n10 { background-color: var(--n-10, #f8fafc); }
 .a2ui-surface .color-bgc-p30 { background-color: var(--p-30, #2563eb); }
 
 .a2ui-surface .border-br-8 { border-radius: 8px; }
