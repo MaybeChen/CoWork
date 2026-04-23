@@ -6,6 +6,7 @@ import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
+import { DEFAULT_MODEL_LABEL, MODEL_OPTIONS, getSavedModelLabel, saveModelLabel, withModelParam } from './modules/network/modelConfig'
 
 const endpoint = '/api/chat/stream'
 const wsEndpoint = '/api/chat/ws/stream'
@@ -15,6 +16,10 @@ const streamMode = ref('default')
 const loading = ref(false)
 const error = ref('')
 const turns = ref([])
+const selectedModelLabel = ref(getSavedModelLabel())
+const modelOptions = MODEL_OPTIONS
+const streamEndpoint = computed(() => withModelParam(endpoint, selectedModelLabel.value))
+const wsStreamEndpoint = computed(() => withModelParam(wsEndpoint, selectedModelLabel.value))
 
 const { contentRef, scheduleAutoScroll, directive: contentAutoScrollDirective } = useAutoScroll()
 const { contentRef: questionPanelRef, scheduleAutoScroll: scheduleQuestionAutoScroll, directive: questionAutoScrollDirective } = useAutoScroll({
@@ -33,6 +38,10 @@ const parsedContentRef = ref(null)
 const outputSnapshots = reactive({})
 
 const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
+
+function onModelChange() {
+  saveModelLabel(selectedModelLabel.value || DEFAULT_MODEL_LABEL)
+}
 
 const applyMessageFn = (turn, payload) => applyMessage(turn, payload, { onChanged: () => scheduleAutoScroll({ force: true }) })
 
@@ -156,7 +165,7 @@ async function send(turn, payload) {
   error.value = ''
 
   await streamChat({
-    endpoint,
+    endpoint: streamEndpoint.value,
     payload,
     onObjects: async (objects) => {
       await applyObjectsProgressively(turn, objects, { applyMessageFn })
@@ -181,7 +190,7 @@ async function sendByWsStream(turn, payload) {
   turn.streamPreviewText = ''
 
   await streamChatByWs({
-    endpoint: wsEndpoint,
+    endpoint: wsStreamEndpoint.value,
     payload,
     onPreview: (text) => {
       turn.streamPreviewText = text
@@ -231,7 +240,15 @@ async function handleAction(turn, action) {
   <main class="page">
     <header class="global-header">
       <div class="brand">CoWorker</div>
-      <RouterLink class="nav-link" to="/">Home</RouterLink>
+      <div class="header-actions">
+        <label class="model-picker">
+          <span>模型</span>
+          <select v-model="selectedModelLabel" class="model-select" @change="onModelChange">
+            <option v-for="item in modelOptions" :key="item.value" :value="item.label">{{ item.label }}</option>
+          </select>
+        </label>
+        <RouterLink class="nav-link" to="/">Home</RouterLink>
+      </div>
     </header>
 
     <section class="workspace">
@@ -345,6 +362,9 @@ async function handleAction(turn, action) {
 .page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; overflow: hidden; }
 .global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(255,255,255,.86); backdrop-filter: blur(8px); }
 .brand { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; background: linear-gradient(102deg, #1d4ed8 0%, #0ea5e9 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.model-picker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #1e3a8a; }
+.model-select { height: 30px; border-radius: 8px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; padding: 0 8px; }
 .nav-link { color: #1e3a8a; text-decoration: none; font-size: 12px; border: 1px solid #bfdbfe; background: #eff6ff; padding: 6px 10px; border-radius: 8px; }
 .nav-link:hover { background: #dbeafe; }
 .workspace { flex: 1; display: grid; grid-template-columns: 1fr 2fr; gap: 16px; padding: 16px; overflow: hidden; }

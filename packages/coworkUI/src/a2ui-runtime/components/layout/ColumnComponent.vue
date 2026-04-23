@@ -4,14 +4,12 @@ import { hostStyleFromNode, isHidden, resolveComponentClasses } from '../utils'
 
 const props = defineProps({ payload: { type: Object, default: () => ({}) }, node:{type:Object,default:null}, dataModel:{type:Object,default:()=>({})} })
 const justify = { start:'flex-start', center:'center', end:'flex-end', spaceBetween:'space-between' }
-const align = { start:'flex-start', center:'center', end:'flex-end', stretch:'stretch' }
-
 const distribution = computed(() => props.payload?.distribution ?? 'start')
-const alignment = computed(() => props.payload?.alignment ?? 'stretch')
+const alignment = computed(() => 'stretch')
 const hidden = computed(() => isHidden(props.dataModel, props.payload))
 const hostStyle = computed(() => ({
   justifyContent: justify[distribution.value]||'flex-start',
-  alignItems: align[alignment.value]||'stretch',
+  alignItems: 'stretch',
   ...hostStyleFromNode(props.node, props.payload, props.payload?.usageHint),
 }))
 const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))

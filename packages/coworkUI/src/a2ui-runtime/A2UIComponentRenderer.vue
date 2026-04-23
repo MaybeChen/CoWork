@@ -62,11 +62,21 @@ const childIds = computed(() => {
   return []
 })
 
+
+const layoutKinds = new Set(['Row', 'Column', 'List', 'Card', 'Modal', 'Tabs', 'Timeline', 'TimelineItem'])
+const shouldUseLayoutPlaceholder = computed(() => {
+  if (!node.value) return false
+  if (!layoutKinds.has(kind.value)) return false
+  return childIds.value.length === 0
+})
+
 </script>
 
 <template>
+  <div v-if="shouldUseLayoutPlaceholder" />
+
   <component
-    v-if="node && resolvedComponent"
+    v-else-if="node && resolvedComponent"
     :is="resolvedComponent"
     class="a2ui-node"
     :node="node"
