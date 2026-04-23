@@ -43,6 +43,7 @@ const dragStartY = ref(0)
 
 mermaid.initialize({
   startOnLoad: false,
+  suppressErrorRendering: true,
   flowchart: { htmlLabels: false },
   theme: 'base',
   themeVariables: {
