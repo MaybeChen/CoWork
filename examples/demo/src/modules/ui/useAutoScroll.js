@@ -10,6 +10,7 @@ export function useAutoScroll(options = {}) {
   let shouldAutoScroll = true
   let isProgrammaticScroll = false
   let scrollScheduled = false
+  let userInteracted = false
   const bottomOffsetThreshold = 20
 
   function getBottomOffset() {
@@ -49,7 +50,7 @@ export function useAutoScroll(options = {}) {
   }
 
   function scheduleAutoScroll({ force = false } = {}) {
-    if (!force && !shouldAutoScroll) return
+    if (!shouldAutoScroll && !(force && !userInteracted)) return
     if (scrollScheduled) return
     scrollScheduled = true
     const run = async () => {
@@ -79,6 +80,8 @@ export function useAutoScroll(options = {}) {
 
   function onUserScroll() {
     if (isProgrammaticScroll) return
+    userInteracted = true
+    shouldAutoScroll = false
     if (scrollStopTimer) clearTimeout(scrollStopTimer)
     scrollStopTimer = setTimeout(() => {
       const bottomOffset = getBottomOffset()
@@ -90,6 +93,7 @@ export function useAutoScroll(options = {}) {
     if (!contentRef.value) return
 
     shouldAutoScroll = true
+    userInteracted = false
     scheduleAutoScroll({ force: true })
     contentRef.value.addEventListener('scroll', onUserScroll, { passive: true })
 
