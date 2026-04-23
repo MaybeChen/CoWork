@@ -296,7 +296,6 @@ async function handleAction(nodeId, action) {
               >
                 <header class="io-head">
                   <h4>{{ result.title }}</h4>
-                  <small>{{ result.nodeId }}</small>
                 </header>
                 <article class="data-card input-card no-border">
                   <header class="io-mini-head">
@@ -400,7 +399,7 @@ async function handleAction(nodeId, action) {
 .io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
 .io-card { font-size: 12px; }
-.io-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.io-head { display: flex; align-items: baseline; margin-bottom: 8px; }
 .io-head h4 { margin: 0; }
 .data-card { border: 1px solid #dbe4f3; border-radius: 12px; padding: 10px; background: #ffffff; margin-top: 10px; }
 .data-card h5 { margin: 0 0 8px; }
@@ -412,6 +411,7 @@ async function handleAction(nodeId, action) {
 .raw-text-surface { color: #0f766e; }
 
 .io-mini-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.io-mini-head h5 { margin: 0; font-size: 16px; font-weight: 600; }
 .mini-toggle { border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; border-radius: 8px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
 .no-border { border: none; background: transparent; padding: 0; }
 .input-pre, .parsed-pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.5; }
