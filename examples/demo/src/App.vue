@@ -45,7 +45,7 @@ const inputExpanded = reactive({})
 const ioViewMode = reactive({})
 
 
-const { contentRef: inputPanelRef, scheduleAutoScroll: scheduleInputScroll, directive: inputAutoScrollDirective } = useAutoScroll()
+const { contentRef: inputPanelRef, directive: inputAutoScrollDirective } = useAutoScroll()
 const { contentRef: renderPanelRef, scheduleAutoScroll: scheduleRenderScroll, directive: renderAutoScrollDirective } = useAutoScroll()
 const vInputAutoScroll = inputAutoScrollDirective
 const vRenderAutoScroll = renderAutoScrollDirective
@@ -151,7 +151,6 @@ async function runSingleNode(node) {
   nodeStates[node.id] = 'running'
 
   await nextTick()
-  scheduleInputScroll({ force: true })
   scheduleRenderScroll({ force: true })
 
   const controller = new AbortController()
@@ -166,7 +165,6 @@ async function runSingleNode(node) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleInputScroll({ force: true })
       scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
@@ -249,7 +247,6 @@ async function handleAction(nodeId, action) {
       for (const item of objects || []) appendRawLine(result, stringifyPretty(item))
       syncParsed(result)
       await nextTick()
-      scheduleInputScroll({ force: true })
       scheduleRenderScroll({ force: true })
     },
     onError: (e) => {
