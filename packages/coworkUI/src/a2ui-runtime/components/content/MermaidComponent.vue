@@ -293,6 +293,7 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 <style scoped>
 .a2-mermaid-wrap {
   width: 100%;
+  min-width: 500px;
   max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--n-20, #dbeafe);
