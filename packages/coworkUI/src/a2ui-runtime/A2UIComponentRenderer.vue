@@ -63,7 +63,7 @@ const childIds = computed(() => {
 })
 
 
-const layoutKinds = new Set(['Row', 'Column', 'List', 'Card', 'Modal', 'Tabs', 'Timeline', 'TimelineItem'])
+const layoutKinds = new Set(['Row', 'Column', 'List', 'Card', 'Modal'])
 const shouldUseLayoutPlaceholder = computed(() => {
   if (!node.value) return false
   if (!layoutKinds.has(kind.value)) return false
