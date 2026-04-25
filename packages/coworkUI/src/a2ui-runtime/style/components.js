@@ -87,6 +87,30 @@ export const componentSpecificStyles = `
   font-weight: bold;
 }
 
+.a2ui-surface .detail_fact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 15px;
+  column-gap: 15px;
+}
+
+.a2ui-surface .detail_fact .a2-column{
+  border: 1px solid var(--n-20, #dbeafe);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 8px 20px rgba(148, 163, 184, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  background: linear-gradient(180deg, var(--n-0, #ffffff), var(--n-10, #f8fafc));
+  color: var(--n-90, #1e293b);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease;
+  will-change: transform;
+  border-left: #b7d1f0 3px solid;
+  max-width: 500px;
+}
+
 .a2ui-surface .code_block {
   white-space: pre-line;
   padding: 15px;
