@@ -2,6 +2,8 @@ export const MODEL_OPTIONS = [
   { label: 'Qwen3.5', value: 'qwen3.5' },
   { label: 'Glm5', value: 'glm-5' },
   { label: 'Glm5.1', value: 'glm-5.1' },
+  { label: 'deepseek-v4-flash', value: 'deepseek-v4-flash' },
+  { label: 'deepseek-v4-pro', value: 'deepseek-v4-pro' },
 ]
 
 export const DEFAULT_MODEL_LABEL = 'Qwen3.5'
