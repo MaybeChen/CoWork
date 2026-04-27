@@ -1,0 +1,371 @@
+<script setup>
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { hostStyleFromNode, isHidden, resolveComponentClasses, resolveText, resolveValue } from '../utils'
+
+const props = defineProps({
+  payload: { type: Object, default: () => ({}) },
+  dataModel: { type: Object, default: () => ({}) },
+  node: { type: Object, default: null },
+})
+
+const hidden = computed(() => isHidden(props.dataModel, props.payload))
+const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
+const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
+
+const containerRef = ref(null)
+const graphError = ref('')
+let graph = null
+let G6Lib = null
+
+const rawSpec = computed(() => resolveValue(props.dataModel, props.payload?.spec ?? props.payload?.topologySpec))
+
+function parseJsonLike(value, fallback) {
+  if (value == null || value === '') return fallback
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return fallback
+    }
+  }
+  return typeof value === 'object' ? value : fallback
+}
+
+const spec = computed(() => parseJsonLike(rawSpec.value, {}))
+const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || '拓扑图'))
+
+const levelOrder = ['概念抽象层对象', '知识层对象', '状态层对象', '资源层对象']
+const layerY = {
+  概念抽象层对象: 90,
+  知识层对象: 250,
+  状态层对象: 410,
+  资源层对象: 590,
+}
+
+const colorByGroup = {
+  概念抽象层对象: 'l(0) 0:#9ca3af 1:#6b7280',
+  知识层对象: 'l(0) 0:#9ca3af 1:#6b7280',
+  状态层对象: 'l(0) 0:#94a3b8 1:#64748b',
+  资源层对象: 'l(0) 0:#9ca3af 1:#6b7280',
+}
+
+function normalizeGroup(viewGroup = '') {
+  if (String(viewGroup).startsWith('资源层对象')) return '资源层对象'
+  return viewGroup || '未分组对象'
+}
+
+function shortLabel(raw = '') {
+  const text = String(raw || '')
+  const last = text.split(':')[3] || text
+  return last.length > 16 ? `${last.slice(0, 16)}...` : last
+}
+
+function registerLaneNodeIfNeeded(G6) {
+  if (G6.__trapezoidLaneRegistered) return
+  G6.registerNode(
+    'trapezoid-lane',
+    {
+      draw(cfg, group) {
+        const width = Number(cfg?.size?.[0] ?? 920)
+        const height = Number(cfg?.size?.[1] ?? 82)
+        const skew = Number(cfg?.skew ?? 42)
+        const fill = String(cfg?.color ?? 'l(0) 0:#9ca3af 1:#6b7280')
+        const label = String(cfg?.label ?? '')
+        const path = [
+          ['M', -width / 2 + skew, -height / 2],
+          ['L', width / 2 - skew, -height / 2],
+          ['L', width / 2, height / 2],
+          ['L', -width / 2, height / 2],
+          ['Z'],
+        ]
+
+        const shape = group.addShape('path', {
+          attrs: {
+            path,
+            fill,
+            opacity: 0.9,
+            stroke: '#d1d5db',
+            lineWidth: 1.2,
+            shadowBlur: 8,
+            shadowColor: 'rgba(15, 23, 42, 0.12)',
+            shadowOffsetY: 2,
+          },
+          name: 'lane-bg',
+        })
+
+        group.addShape('text', {
+          attrs: {
+            x: -width / 2 + 14,
+            y: height / 2 - 8,
+            text: label,
+            fill: '#e5e7eb',
+            fontSize: 11,
+            textAlign: 'left',
+            textBaseline: 'middle',
+            fontWeight: 700,
+          },
+          name: 'lane-label',
+        })
+
+        return shape
+      },
+    },
+    'single-node',
+  )
+  G6.__trapezoidLaneRegistered = true
+}
+
+function normalizeObjects(specValue) {
+  if (Array.isArray(specValue?.objects)) return specValue.objects
+  if (Array.isArray(specValue?.nodes)) {
+    return specValue.nodes.map((node) => ({
+      id: node.id,
+      standardName: node.standardName || node.label || node.id,
+      viewGroup: node.viewGroup || node.group || '知识层对象',
+    }))
+  }
+  return []
+}
+
+function normalizeEdges(specValue) {
+  if (Array.isArray(specValue?.edges)) return specValue.edges
+  return []
+}
+
+async function ensureG6Loaded() {
+  if (G6Lib) return G6Lib
+  const module = await import('@antv/g6')
+  G6Lib = module.default || module
+  registerLaneNodeIfNeeded(G6Lib)
+  return G6Lib
+}
+
+function cleanupGraph() {
+  if (graph) {
+    graph.destroy()
+    graph = null
+  }
+}
+
+async function renderGraph() {
+  if (!containerRef.value || hidden.value) return
+  const objects = normalizeObjects(spec.value)
+  const edgesInput = normalizeEdges(spec.value)
+  if (!objects.length) {
+    cleanupGraph()
+    return
+  }
+
+  try {
+    graphError.value = ''
+    const G6 = await ensureG6Loaded()
+    cleanupGraph()
+
+    const width = Math.max(containerRef.value.clientWidth, 760)
+    const height = 760
+
+    const groups = new Map()
+    objects.forEach((obj) => {
+      const group = normalizeGroup(obj.viewGroup)
+      if (!groups.has(group)) groups.set(group, [])
+      groups.get(group).push(obj)
+    })
+
+    const laneNodes = levelOrder.map((group) => ({
+      id: `layer-${group}`,
+      type: 'trapezoid-lane',
+      x: Math.round(width / 2),
+      y: layerY[group],
+      label: group,
+      size: [Math.max(width - 60, 560), 86],
+      color: colorByGroup[group] || '#475569',
+      skew: 48,
+      isLayer: true,
+    }))
+
+    const dataNodes = Array.from(groups.entries()).flatMap(([group, items]) => {
+      const sorted = [...items].sort((a, b) => String(a.standardName || '').localeCompare(String(b.standardName || '')))
+      const spacing = width / (sorted.length + 1)
+      const y = layerY[group] || 680
+
+      return sorted.map((item, index) => ({
+        id: item.id,
+        label: shortLabel(item.standardName || item.id),
+        fullLabel: item.standardName || item.id,
+        group,
+        type: 'circle',
+        x: Math.round((index + 1) * spacing),
+        y,
+        size: 30,
+        style: {
+          fill: '#f8fafc',
+          stroke: '#334155',
+          lineWidth: 1.2,
+        },
+        isLayer: false,
+        labelCfg: {
+          style: {
+            fontSize: 10,
+            fill: '#f8fafc',
+            fontWeight: 600,
+          },
+          position: 'bottom',
+          offset: 8,
+        },
+      }))
+    })
+
+    const edges = edgesInput
+      .map((edge, index) => {
+        const source = edge.srcVid || edge.source || edge.from || edge.from_id
+        const target = edge.dstVid || edge.target || edge.to || edge.to_id
+        if (!source || !target) return null
+
+        const isThreshold = edge.function?.type === 'Threshold'
+        const label = isThreshold
+          ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
+          : edge.bizSemanticRel || edge.label || ''
+        const isAffect = edge.bizSemanticRel === 'affect' || edge.kind === 'affect'
+
+        return {
+          id: `e-${index}`,
+          source,
+          target,
+          label,
+          style: {
+            stroke: isAffect ? '#ef4444' : '#0ea5e9',
+            lineWidth: isAffect ? 2.6 : 2.1,
+            endArrow: true,
+            lineDash: isAffect ? undefined : [8, 4],
+            opacity: 1,
+          },
+          labelCfg: {
+            autoRotate: true,
+            style: {
+              fill: '#0f172a',
+              fontSize: 11,
+              fontWeight: 600,
+              background: {
+                fill: '#f8fafce6',
+                radius: 2,
+                padding: [2, 4, 2, 4],
+              },
+            },
+          },
+        }
+      })
+      .filter(Boolean)
+
+    graph = new G6.Graph({
+      container: containerRef.value,
+      width,
+      height,
+      modes: { default: ['drag-canvas', 'zoom-canvas'] },
+      defaultNode: { type: 'circle' },
+      defaultEdge: { type: 'cubic-horizontal' },
+      edgeStateStyles: {
+        active: {
+          stroke: '#facc15',
+          lineWidth: 3.2,
+          shadowBlur: 10,
+          shadowColor: 'rgba(250, 204, 21, 0.6)',
+          opacity: 1,
+        },
+        inactive: { opacity: 0.12 },
+      },
+    })
+
+    graph.data({ nodes: [...laneNodes, ...dataNodes], edges })
+    graph.render()
+
+    graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
+    graph.getNodes().forEach((nodeItem) => {
+      const model = nodeItem.getModel()
+      if (!model.isLayer) nodeItem.toFront()
+    })
+
+    graph.on('node:click', (evt) => {
+      const currentNode = evt.item
+      if (!currentNode) return
+      const currentModel = currentNode.getModel()
+      if (currentModel.isLayer) return
+
+      graph.getEdges().forEach((edge) => {
+        const model = edge.getModel()
+        const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
+        graph.setItemState(edge, 'active', connected)
+        graph.setItemState(edge, 'inactive', !connected)
+      })
+    })
+
+    graph.on('canvas:click', () => {
+      graph.getEdges().forEach((edge) => {
+        graph.clearItemStates(edge, ['active', 'inactive'])
+      })
+    })
+  } catch (error) {
+    cleanupGraph()
+    graphError.value = `拓扑组件渲染失败：${error?.message || '未知错误'}`
+  }
+}
+
+function onResize() {
+  if (!graph || !containerRef.value) return
+  graph.changeSize(Math.max(containerRef.value.clientWidth, 760), 760)
+}
+
+onMounted(() => {
+  renderGraph()
+  window.addEventListener('resize', onResize)
+})
+
+watch([spec, hidden], () => {
+  renderGraph()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+  cleanupGraph()
+})
+</script>
+
+<template>
+  <div v-if="!hidden" class="a2-topology-wrap" :class="customClasses" :style="styleObject">
+    <div class="a2-topology-title">{{ title }}</div>
+    <div ref="containerRef" class="a2-topology-graph" />
+    <div v-if="graphError" class="a2-topology-error">{{ graphError }}</div>
+  </div>
+</template>
+
+<style scoped>
+.a2-topology-wrap {
+  width: 100%;
+  min-width: 680px;
+  max-width: 100%;
+  border: 1px solid var(--n-20, #dbeafe);
+  border-radius: 12px;
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 20px rgba(148, 163, 184, 0.16);
+}
+
+.a2-topology-title {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--n-90, #0f172a);
+}
+
+.a2-topology-graph {
+  width: 100%;
+  height: 760px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.a2-topology-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #dc2626;
+}
+</style>
