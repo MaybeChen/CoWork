@@ -21,6 +21,7 @@ const rawSpec = computed(() => resolveValue(props.dataModel, props.payload?.spec
 
 function parseJsonLike(value, fallback) {
   if (value == null || value === '') return fallback
+
   if (typeof value === 'string') {
     try {
       return JSON.parse(value)
@@ -28,7 +29,20 @@ function parseJsonLike(value, fallback) {
       return fallback
     }
   }
-  return typeof value === 'object' ? value : fallback
+
+  if (typeof value === 'object') {
+    const wrapped = value.valueString ?? value.stringData ?? value.valueJson ?? value.jsonData
+    if (typeof wrapped === 'string') {
+      try {
+        return JSON.parse(wrapped)
+      } catch {
+        return fallback
+      }
+    }
+    return value
+  }
+
+  return fallback
 }
 
 const spec = computed(() => parseJsonLike(rawSpec.value, {}))
@@ -296,10 +310,12 @@ async function renderGraph() {
         const { source, target } = edgeEndpoints(edge)
         if (!source || !target) return null
 
+        const functionDescription = edge.function?.description || edge.function?.desc || ''
         const isThreshold = edge.function?.type === 'Threshold'
-        const label = isThreshold
-          ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
-          : edge.bizSemanticRel || edge.label || ''
+        const label = functionDescription
+          || (isThreshold
+            ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
+            : edge.bizSemanticRel || edge.label || '')
         const isAffect = edge.bizSemanticRel === 'affect' || edge.kind === 'affect'
 
         return {

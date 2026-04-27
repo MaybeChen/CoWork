@@ -42,6 +42,7 @@ export const defaultRegistry = createComponentRegistry({
   LineChart: LineChartComponent,
   PieChart: PieChartComponent,
   Topology: TopologyComponent,
+  TopologyGraph: TopologyComponent,
 
   Row: RowComponent,
   Column: ColumnComponent,
