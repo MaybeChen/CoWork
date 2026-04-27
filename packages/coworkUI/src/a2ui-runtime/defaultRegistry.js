@@ -11,6 +11,7 @@ import MermaidComponent from './components/content/MermaidComponent.vue'
 import TableComponent from './components/content/TableComponent.vue'
 import LineChartComponent from './components/content/LineChartComponent.vue'
 import PieChartComponent from './components/content/PieChartComponent.vue'
+import TopologyComponent from './components/content/TopologyComponent.vue'
 
 import RowComponent from './components/layout/RowComponent.vue'
 import ColumnComponent from './components/layout/ColumnComponent.vue'
@@ -40,6 +41,8 @@ export const defaultRegistry = createComponentRegistry({
   Table: TableComponent,
   LineChart: LineChartComponent,
   PieChart: PieChartComponent,
+  Topology: TopologyComponent,
+  TopologyGraph: TopologyComponent,
 
   Row: RowComponent,
   Column: ColumnComponent,
