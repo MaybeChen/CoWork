@@ -36,7 +36,7 @@ const title = computed(() => resolveText(props.dataModel, spec.value?.title || p
 
 const alarmIcon = new URL('../../assets/alarm.svg', import.meta.url).href
 const kpiIcon = new URL('../../assets/kpi.svg', import.meta.url).href
-const normalIcon = new URL('../../assets/normal.svg', import.meta.url).href
+const normalIcon = new URL('../../assets/normal.png', import.meta.url).href
 
 const laneColorPalette = [
   'l(0) 0:#9ca3af 1:#6b7280',
@@ -49,16 +49,19 @@ const laneColorPalette = [
 function normalizeGroup(viewGroup = '') {
   const text = String(viewGroup || '').trim()
   if (!text) return '未分组对象'
-  if (text.startsWith('资源层对象')) return '资源层对象'
-  return text
+  const cleaned = text
+    .replace(/[：:]/g, '-')
+    .split('-')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  return cleaned[0] || text
 }
 
-function groupRank(groupName = '') {
-  if (groupName.includes('概念抽象层')) return 10
-  if (groupName.includes('知识层')) return 20
-  if (groupName.includes('状态层')) return 30
-  if (groupName.includes('资源层')) return 40
-  return 90
+function edgeEndpoints(edge = {}) {
+  return {
+    source: edge.srcVid || edge.source || edge.from || edge.from_id,
+    target: edge.dstVid || edge.target || edge.to || edge.to_id,
+  }
 }
 
 function shortLabel(raw = '') {
@@ -146,12 +149,46 @@ function normalizeEdges(specValue) {
   return []
 }
 
-function deriveGroupMeta(objects = []) {
-  const groups = [...new Set(objects.map((item) => normalizeGroup(item.viewGroup)))]
-  const orderedGroups = groups.sort((a, b) => {
-    const rankDiff = groupRank(a) - groupRank(b)
-    if (rankDiff !== 0) return rankDiff
-    return a.localeCompare(b)
+function deriveGroupMeta(objects = [], edges = []) {
+  const nodeGroupById = new Map()
+  const firstSeenGroups = []
+
+  objects.forEach((item) => {
+    const groupName = normalizeGroup(item.viewGroup)
+    nodeGroupById.set(item.id, groupName)
+    if (!firstSeenGroups.includes(groupName)) firstSeenGroups.push(groupName)
+  })
+
+  const graph = new Map(firstSeenGroups.map((name) => [name, new Set()]))
+  const indegree = new Map(firstSeenGroups.map((name) => [name, 0]))
+
+  edges.forEach((edge) => {
+    const { source, target } = edgeEndpoints(edge)
+    if (!source || !target) return
+    const srcGroup = nodeGroupById.get(source)
+    const dstGroup = nodeGroupById.get(target)
+    if (!srcGroup || !dstGroup || srcGroup === dstGroup) return
+    const set = graph.get(srcGroup)
+    if (!set || set.has(dstGroup)) return
+    set.add(dstGroup)
+    indegree.set(dstGroup, (indegree.get(dstGroup) || 0) + 1)
+  })
+
+  const queue = firstSeenGroups.filter((name) => (indegree.get(name) || 0) === 0)
+  const orderedGroups = []
+
+  while (queue.length) {
+    const current = queue.shift()
+    orderedGroups.push(current)
+    const neighbors = graph.get(current) || new Set()
+    neighbors.forEach((next) => {
+      indegree.set(next, (indegree.get(next) || 0) - 1)
+      if ((indegree.get(next) || 0) === 0) queue.push(next)
+    })
+  }
+
+  firstSeenGroups.forEach((name) => {
+    if (!orderedGroups.includes(name)) orderedGroups.push(name)
   })
 
   const laneStart = 90
@@ -169,9 +206,11 @@ function deriveGroupMeta(objects = []) {
   return {
     orderedGroups,
     groupMetaMap,
+    nodeGroupById,
     totalHeight: Math.max(760, laneStart + Math.max(orderedGroups.length - 1, 0) * laneGap + 180),
   }
 }
+
 
 async function ensureG6Loaded() {
   if (G6Lib) return G6Lib
@@ -203,7 +242,7 @@ async function renderGraph() {
     cleanupGraph()
 
     const width = Math.max(containerRef.value.clientWidth, 760)
-    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects)
+    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects, edgesInput)
 
     const groups = new Map()
     objects.forEach((obj) => {
@@ -254,8 +293,7 @@ async function renderGraph() {
 
     const edges = edgesInput
       .map((edge, index) => {
-        const source = edge.srcVid || edge.source || edge.from || edge.from_id
-        const target = edge.dstVid || edge.target || edge.to || edge.to_id
+        const { source, target } = edgeEndpoints(edge)
         if (!source || !target) return null
 
         const isThreshold = edge.function?.type === 'Threshold'
