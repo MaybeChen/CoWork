@@ -416,6 +416,7 @@ async function handleAction(nodeId, action) {
 .data-pane { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding-right: 6px; }
 .render-pane { overflow: auto; }
 .io-card, .render-card { border: 1px solid #dbe4f3; border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 2px; }
+.io-card { margin-top: 20px; }
 .io-card.active, .render-card.active { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.2); }
 .io-card { font-size: 12px; }
 .io-head { display: flex; align-items: baseline; margin-bottom: 8px; }
