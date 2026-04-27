@@ -34,30 +34,44 @@ function parseJsonLike(value, fallback) {
 const spec = computed(() => parseJsonLike(rawSpec.value, {}))
 const title = computed(() => resolveText(props.dataModel, spec.value?.title || props.payload?.title || '拓扑图'))
 
-const levelOrder = ['概念抽象层对象', '知识层对象', '状态层对象', '资源层对象']
-const layerY = {
-  概念抽象层对象: 90,
-  知识层对象: 250,
-  状态层对象: 410,
-  资源层对象: 590,
-}
+const alarmIcon = new URL('../../assets/alarm.svg', import.meta.url).href
+const kpiIcon = new URL('../../assets/kpi.svg', import.meta.url).href
+const normalIcon = new URL('../../assets/normal.svg', import.meta.url).href
 
-const colorByGroup = {
-  概念抽象层对象: 'l(0) 0:#9ca3af 1:#6b7280',
-  知识层对象: 'l(0) 0:#9ca3af 1:#6b7280',
-  状态层对象: 'l(0) 0:#94a3b8 1:#64748b',
-  资源层对象: 'l(0) 0:#9ca3af 1:#6b7280',
-}
+const laneColorPalette = [
+  'l(0) 0:#9ca3af 1:#6b7280',
+  'l(0) 0:#94a3b8 1:#64748b',
+  'l(0) 0:#818cf8 1:#6366f1',
+  'l(0) 0:#60a5fa 1:#2563eb',
+  'l(0) 0:#34d399 1:#059669',
+]
 
 function normalizeGroup(viewGroup = '') {
-  if (String(viewGroup).startsWith('资源层对象')) return '资源层对象'
-  return viewGroup || '未分组对象'
+  const text = String(viewGroup || '').trim()
+  if (!text) return '未分组对象'
+  if (text.startsWith('资源层对象')) return '资源层对象'
+  return text
+}
+
+function groupRank(groupName = '') {
+  if (groupName.includes('概念抽象层')) return 10
+  if (groupName.includes('知识层')) return 20
+  if (groupName.includes('状态层')) return 30
+  if (groupName.includes('资源层')) return 40
+  return 90
 }
 
 function shortLabel(raw = '') {
   const text = String(raw || '')
   const last = text.split(':')[3] || text
   return last.length > 16 ? `${last.slice(0, 16)}...` : last
+}
+
+function pickNodeIcon(name = '') {
+  const text = String(name || '')
+  if (text.includes('Alarm') || text.includes('告警')) return alarmIcon
+  if (text.includes('KPI')) return kpiIcon
+  return normalIcon
 }
 
 function registerLaneNodeIfNeeded(G6) {
@@ -69,7 +83,7 @@ function registerLaneNodeIfNeeded(G6) {
         const width = Number(cfg?.size?.[0] ?? 920)
         const height = Number(cfg?.size?.[1] ?? 82)
         const skew = Number(cfg?.skew ?? 42)
-        const fill = String(cfg?.color ?? 'l(0) 0:#9ca3af 1:#6b7280')
+        const fill = String(cfg?.color ?? laneColorPalette[0])
         const label = String(cfg?.label ?? '')
         const path = [
           ['M', -width / 2 + skew, -height / 2],
@@ -132,6 +146,33 @@ function normalizeEdges(specValue) {
   return []
 }
 
+function deriveGroupMeta(objects = []) {
+  const groups = [...new Set(objects.map((item) => normalizeGroup(item.viewGroup)))]
+  const orderedGroups = groups.sort((a, b) => {
+    const rankDiff = groupRank(a) - groupRank(b)
+    if (rankDiff !== 0) return rankDiff
+    return a.localeCompare(b)
+  })
+
+  const laneStart = 90
+  const laneGap = 160
+  const groupMetaMap = new Map()
+
+  orderedGroups.forEach((groupName, index) => {
+    groupMetaMap.set(groupName, {
+      y: laneStart + index * laneGap,
+      color: laneColorPalette[index % laneColorPalette.length],
+      index,
+    })
+  })
+
+  return {
+    orderedGroups,
+    groupMetaMap,
+    totalHeight: Math.max(760, laneStart + Math.max(orderedGroups.length - 1, 0) * laneGap + 180),
+  }
+}
+
 async function ensureG6Loaded() {
   if (G6Lib) return G6Lib
   const module = await import('@antv/g6')
@@ -162,7 +203,7 @@ async function renderGraph() {
     cleanupGraph()
 
     const width = Math.max(containerRef.value.clientWidth, 760)
-    const height = 760
+    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects)
 
     const groups = new Map()
     objects.forEach((obj) => {
@@ -171,14 +212,14 @@ async function renderGraph() {
       groups.get(group).push(obj)
     })
 
-    const laneNodes = levelOrder.map((group) => ({
+    const laneNodes = orderedGroups.map((group) => ({
       id: `layer-${group}`,
       type: 'trapezoid-lane',
       x: Math.round(width / 2),
-      y: layerY[group],
+      y: groupMetaMap.get(group).y,
       label: group,
       size: [Math.max(width - 60, 560), 86],
-      color: colorByGroup[group] || '#475569',
+      color: groupMetaMap.get(group).color,
       skew: 48,
       isLayer: true,
     }))
@@ -186,22 +227,18 @@ async function renderGraph() {
     const dataNodes = Array.from(groups.entries()).flatMap(([group, items]) => {
       const sorted = [...items].sort((a, b) => String(a.standardName || '').localeCompare(String(b.standardName || '')))
       const spacing = width / (sorted.length + 1)
-      const y = layerY[group] || 680
+      const y = groupMetaMap.get(group)?.y ?? totalHeight - 120
 
       return sorted.map((item, index) => ({
         id: item.id,
         label: shortLabel(item.standardName || item.id),
         fullLabel: item.standardName || item.id,
         group,
-        type: 'circle',
+        type: 'image',
+        img: pickNodeIcon(item.standardName || item.id),
         x: Math.round((index + 1) * spacing),
         y,
-        size: 30,
-        style: {
-          fill: '#f8fafc',
-          stroke: '#334155',
-          lineWidth: 1.2,
-        },
+        size: 32,
         isLayer: false,
         labelCfg: {
           style: {
@@ -259,7 +296,7 @@ async function renderGraph() {
     graph = new G6.Graph({
       container: containerRef.value,
       width,
-      height,
+      height: totalHeight,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
       defaultEdge: { type: 'cubic-horizontal' },
@@ -311,7 +348,7 @@ async function renderGraph() {
 
 function onResize() {
   if (!graph || !containerRef.value) return
-  graph.changeSize(Math.max(containerRef.value.clientWidth, 760), 760)
+  graph.changeSize(Math.max(containerRef.value.clientWidth, 760), graph.get('height'))
 }
 
 onMounted(() => {
@@ -357,7 +394,7 @@ onUnmounted(() => {
 
 .a2-topology-graph {
   width: 100%;
-  height: 760px;
+  min-height: 760px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
