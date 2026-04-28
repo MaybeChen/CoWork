@@ -254,34 +254,20 @@ function deriveGroupMeta(objects = [], edges = []) {
 
 function arrangeGraphLayers() {
   if (!graph) return
+  const laneNodes = []
+  const dataNodes = []
   graph.getNodes().forEach((nodeItem) => {
     const model = nodeItem.getModel()
-    if (model.isLayer) nodeItem.toBack()
+    if (model.isLayer) laneNodes.push(nodeItem)
+    else dataNodes.push(nodeItem)
   })
+
+  laneNodes
+    .sort((a, b) => (a.getModel().zIndex || 0) - (b.getModel().zIndex || 0))
+    .forEach((nodeItem) => nodeItem.toFront())
+
   graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
-  graph.getNodes().forEach((nodeItem) => {
-    const model = nodeItem.getModel()
-    if (!model.isLayer) nodeItem.toFront()
-  })
-}
-
-function applyZoom(nextZoom) {
-  if (!graph || !containerRef.value) return
-  const value = Math.max(0.4, Math.min(2.5, nextZoom))
-  graph.zoomTo(value, {
-    x: Math.max(containerRef.value.clientWidth, 760) / 2,
-    y: graphHeight.value / 2,
-  })
-}
-
-function zoomIn() {
-  if (!graph) return
-  applyZoom(graph.getZoom() + 0.1)
-}
-
-function zoomOut() {
-  if (!graph) return
-  applyZoom(graph.getZoom() - 0.1)
+  dataNodes.forEach((nodeItem) => nodeItem.toFront())
 }
 
 async function ensureG6Loaded() {
@@ -314,7 +300,7 @@ async function renderGraph() {
     cleanupGraph()
 
     const width = Math.max(containerRef.value.clientWidth, 760)
-    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects, edgesInput)
+    const { orderedGroups, groupMetaMap, nodeGroupById, totalHeight } = deriveGroupMeta(objects, edgesInput)
     graphHeight.value = totalHeight
 
     const groups = new Map()
@@ -333,6 +319,7 @@ async function renderGraph() {
       size: [Math.max(width - 60, 560), groupMetaMap.get(group)?.laneHeight || 86],
       color: groupMetaMap.get(group).color,
       skew: 24,
+      zIndex: 200 - (groupMetaMap.get(group)?.index || 0) * 20,
       isLayer: true,
     }))
 
@@ -386,6 +373,19 @@ async function renderGraph() {
             : edge.bizSemanticRel || edge.label || '')
 
         return {
+          ...(function edgeLayer() {
+            const sourceGroup = nodeGroupById.get(source)
+            const targetGroup = nodeGroupById.get(target)
+            const sourceIndex = groupMetaMap.get(sourceGroup)?.index ?? 0
+            const targetIndex = groupMetaMap.get(targetGroup)?.index ?? sourceIndex
+            const upperIndex = Math.min(sourceIndex, targetIndex)
+            const lowerIndex = Math.max(sourceIndex, targetIndex)
+            const upperLayerZ = 200 - upperIndex * 20
+            const lowerLayerZ = 200 - lowerIndex * 20
+            return {
+              zIndex: lowerLayerZ + Math.max(Math.floor((upperLayerZ - lowerLayerZ) / 2), 1),
+            }
+          })(),
           id: `e-${index}`,
           source,
           target,
@@ -517,10 +517,6 @@ onUnmounted(() => {
 <template>
   <div v-if="!hidden" class="a2-topology-wrap" :class="customClasses" :style="styleObject">
     <div class="a2-topology-title">{{ title }}</div>
-    <div class="a2-topology-toolbar">
-      <button type="button" class="a2-topology-btn" @click="zoomOut">-</button>
-      <button type="button" class="a2-topology-btn" @click="zoomIn">+</button>
-    </div>
     <div ref="containerRef" class="a2-topology-graph" :style="{ minHeight: `${graphHeight}px` }" />
     <div v-if="graphError" class="a2-topology-error">{{ graphError }}</div>
   </div>
