@@ -475,6 +475,7 @@ async function renderGraph() {
           source,
           target,
           label,
+          type: 'cubic',
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
