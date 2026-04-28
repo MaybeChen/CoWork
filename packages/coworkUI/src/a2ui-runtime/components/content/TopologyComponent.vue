@@ -551,6 +551,19 @@ async function renderGraph() {
       })
     })
 
+    graph.on('edge:mouseenter', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', true)
+      edge.toFront()
+    })
+
+    graph.on('edge:mouseleave', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', false)
+    })
+
     graph.on('canvas:click', () => {
       runWithBatchPaint(() => {
         graph.getNodes().forEach((node) => {
@@ -560,6 +573,7 @@ async function renderGraph() {
           graph.clearItemStates(edge, ['active', 'hover'])
         })
       })
+      arrangeGraphLayers()
     })
   } catch (error) {
     cleanupGraph()
@@ -610,6 +624,23 @@ onUnmounted(() => {
   margin-bottom: 8px;
   font-weight: 600;
   color: var(--n-90, #0f172a);
+}
+
+.a2-topology-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.a2-topology-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .a2-topology-graph {
