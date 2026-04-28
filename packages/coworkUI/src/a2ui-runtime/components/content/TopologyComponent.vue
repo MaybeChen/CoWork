@@ -540,6 +540,23 @@ onUnmounted(() => {
   color: var(--n-90, #0f172a);
 }
 
+.a2-topology-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.a2-topology-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .a2-topology-graph {
   width: 100%;
   min-height: 320px;
