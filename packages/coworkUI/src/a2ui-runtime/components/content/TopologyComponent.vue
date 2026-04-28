@@ -526,6 +526,10 @@ async function renderGraph() {
 
     graph.data({ nodes: dataNodes, edges })
     graph.render()
+    graph.getEdges().forEach((edgeItem) => {
+      if (edgeItem.getType?.() === 'line') return
+      graph.updateItem(edgeItem, { type: 'line' })
+    })
     drawLaneDecorations(width, orderedGroups, groupMetaMap)
 
     arrangeGraphLayers()
