@@ -200,8 +200,8 @@ function deriveGroupMeta(objects = [], edges = []) {
   edges.forEach((edge) => {
     const { source, target } = edgeEndpoints(edge)
     if (!source || !target) return
-    const srcGroup = nodeGroupById.get(source)
-    const dstGroup = nodeGroupById.get(target)
+    const srcGroup = groupByObjectId.get(source)
+    const dstGroup = groupByObjectId.get(target)
     if (!srcGroup || !dstGroup || srcGroup === dstGroup) return
     const set = graph.get(srcGroup)
     if (!set || set.has(dstGroup)) return
@@ -418,6 +418,19 @@ async function renderGraph() {
             : edge.bizSemanticRel || edge.label || '')
 
         return {
+          ...(function edgeLayer() {
+            const sourceGroup = nodeGroupById.get(source)
+            const targetGroup = nodeGroupById.get(target)
+            const sourceIndex = groupMetaMap.get(sourceGroup)?.index ?? 0
+            const targetIndex = groupMetaMap.get(targetGroup)?.index ?? sourceIndex
+            const upperIndex = Math.min(sourceIndex, targetIndex)
+            const lowerIndex = Math.max(sourceIndex, targetIndex)
+            const upperLayerZ = 200 - upperIndex * 20
+            const lowerLayerZ = 200 - lowerIndex * 20
+            return {
+              zIndex: lowerLayerZ + Math.max(Math.floor((upperLayerZ - lowerLayerZ) / 2), 1),
+            }
+          })(),
           id: `e-${index}`,
           source,
           target,
@@ -569,6 +582,23 @@ onUnmounted(() => {
   margin-bottom: 8px;
   font-weight: 600;
   color: var(--n-90, #0f172a);
+}
+
+.a2-topology-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.a2-topology-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .a2-topology-graph {
