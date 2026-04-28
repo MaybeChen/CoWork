@@ -20,6 +20,8 @@ const nodeGroupById = objectGroupMap
 let graph = null
 let G6Lib = null
 let laneDecorations = []
+let selectedNodeId = null
+const activeEdgeIds = new Set()
 
 const rawSpec = computed(() => resolveValue(props.dataModel, props.payload?.spec ?? props.payload?.topologySpec))
 
@@ -271,7 +273,13 @@ function deriveGroupMeta(objects = [], edges = []) {
 }
 
 function arrangeGraphLayers() {
-  // zIndex-driven layering handles ordering when groupByTypes is disabled.
+  if (!graph) return
+  const laneShapes = laneDecorations.filter(Boolean)
+  laneShapes.forEach((shape) => shape.toBack())
+
+  const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
+  const layeredItems = [...graph.getNodes(), ...graph.getEdges()].sort(sortByZIndex)
+  layeredItems.forEach((item) => item.toFront())
 }
 
 function runWithBatchPaint(task) {
@@ -299,6 +307,8 @@ function cleanupGraph() {
     graph = null
   }
   laneDecorations = []
+  selectedNodeId = null
+  activeEdgeIds.clear()
 }
 
 function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
@@ -444,6 +454,8 @@ async function renderGraph() {
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
 
+        const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
+
         return {
           ...(function edgeDepth() {
             const sourceGroup = objectGroupMap.get(source)
@@ -458,10 +470,17 @@ async function renderGraph() {
           source,
           target,
           label,
+          type: 'cubic',
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
-            endArrow: true,
+            endArrow: {
+              path: simpleArrowPath,
+              d: 8,
+              fill: 'none',
+              stroke: '#9ca3af',
+              lineWidth: 1.2,
+            },
             lineDash: undefined,
             opacity: 1,
           },
@@ -484,7 +503,7 @@ async function renderGraph() {
       groupByTypes: false,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
-      defaultEdge: { type: 'cubic-horizontal' },
+      defaultEdge: { type: 'cubic' },
       nodeStateStyles: {
         selected: {
           lineWidth: 3,
@@ -520,19 +539,35 @@ async function renderGraph() {
     graph.on('node:click', (evt) => {
       const currentNode = evt.item
       if (!currentNode) return
+      const currentNodeId = currentNode.getID()
 
       runWithBatchPaint(() => {
-        graph.getNodes().forEach((nodeItem) => {
-          graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
-        })
+        if (selectedNodeId && selectedNodeId !== currentNodeId) {
+          const previousNode = graph.findById(selectedNodeId)
+          if (previousNode) graph.clearItemStates(previousNode, ['selected'])
+        }
+        graph.setItemState(currentNode, 'selected', true)
+        selectedNodeId = currentNodeId
 
+        const nextActiveEdgeIds = new Set()
         graph.getEdges().forEach((edge) => {
           const model = edge.getModel()
-          const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
-          graph.setItemState(edge, 'active', connected)
-          if (!connected) graph.clearItemStates(edge, ['hover'])
+          const connected = model.source === currentNodeId || model.target === currentNodeId
+          if (!connected) return
+          nextActiveEdgeIds.add(model.id)
+          if (!edge.hasState('active')) graph.setItemState(edge, 'active', true)
         })
+
+        activeEdgeIds.forEach((edgeId) => {
+          if (nextActiveEdgeIds.has(edgeId)) return
+          const staleEdge = graph.findById(edgeId)
+          if (!staleEdge) return
+          graph.clearItemStates(staleEdge, ['active', 'hover'])
+        })
+        activeEdgeIds.clear()
+        nextActiveEdgeIds.forEach((edgeId) => activeEdgeIds.add(edgeId))
       })
+      arrangeGraphLayers()
     })
 
     graph.on('edge:mouseenter', (evt) => {
@@ -551,26 +586,21 @@ async function renderGraph() {
       })
     })
 
-    graph.on('edge:mouseenter', (evt) => {
-      const edge = evt.item
-      if (!edge || edge.hasState('active')) return
-      graph.setItemState(edge, 'hover', true)
-      edge.toFront()
-    })
-
-    graph.on('edge:mouseleave', (evt) => {
-      const edge = evt.item
-      if (!edge || edge.hasState('active')) return
-      graph.setItemState(edge, 'hover', false)
-    })
-
     graph.on('canvas:click', () => {
       runWithBatchPaint(() => {
-        graph.getNodes().forEach((node) => {
-          graph.clearItemStates(node, ['selected'])
+        if (selectedNodeId) {
+          const selectedNode = graph.findById(selectedNodeId)
+          if (selectedNode) graph.clearItemStates(selectedNode, ['selected'])
+          selectedNodeId = null
+        }
+        activeEdgeIds.forEach((edgeId) => {
+          const edge = graph.findById(edgeId)
+          if (edge) graph.clearItemStates(edge, ['active', 'hover'])
         })
+        activeEdgeIds.clear()
+
         graph.getEdges().forEach((edge) => {
-          graph.clearItemStates(edge, ['active', 'hover'])
+          if (edge.hasState('hover')) graph.clearItemStates(edge, ['hover'])
         })
       })
       arrangeGraphLayers()
