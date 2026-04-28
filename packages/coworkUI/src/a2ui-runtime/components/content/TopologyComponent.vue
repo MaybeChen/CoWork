@@ -332,14 +332,9 @@ async function renderGraph() {
           labelCfg: {
             autoRotate: true,
             style: {
-              fill: '#0f172a',
-              fontSize: 11,
-              fontWeight: 600,
-              background: {
-                fill: '#f8fafce6',
-                radius: 2,
-                padding: [2, 4, 2, 4],
-              },
+              fill: '#6b7280',
+              fontSize: 10,
+              fontWeight: 400,
             },
           },
         }
@@ -409,13 +404,13 @@ async function renderGraph() {
 
     graph.on('edge:mouseenter', (evt) => {
       const edge = evt.item
-      if (!edge || graph.hasItemState(edge, 'active')) return
+      if (!edge || edge.hasState('active')) return
       graph.setItemState(edge, 'hover', true)
     })
 
     graph.on('edge:mouseleave', (evt) => {
       const edge = evt.item
-      if (!edge || graph.hasItemState(edge, 'active')) return
+      if (!edge || edge.hasState('active')) return
       graph.setItemState(edge, 'hover', false)
     })
 
