@@ -14,6 +14,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 
 const containerRef = ref(null)
 const graphError = ref('')
+const graphHeight = ref(420)
 let graph = null
 let G6Lib = null
 
@@ -99,7 +100,7 @@ function registerLaneNodeIfNeeded(G6) {
       draw(cfg, group) {
         const width = Number(cfg?.size?.[0] ?? 920)
         const height = Number(cfg?.size?.[1] ?? 82)
-        const skew = Number(cfg?.skew ?? 42)
+        const skew = Number(cfg?.skew ?? 24)
         const fill = String(cfg?.color ?? laneColorPalette[0])
         const label = String(cfg?.label ?? '')
         const path = [
@@ -124,12 +125,28 @@ function registerLaneNodeIfNeeded(G6) {
           name: 'lane-bg',
         })
 
+        const labelWidth = Math.max(72, label.length * 11 + 16)
+        const labelHeight = 20
+        group.addShape('rect', {
+          attrs: {
+            x: -width / 2 + 10,
+            y: height / 2 - 18 - labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight,
+            radius: 4,
+            fill: 'rgba(255, 255, 255, 0.18)',
+            stroke: '#cbd5e1',
+            lineWidth: 1,
+          },
+          name: 'lane-label-bg',
+        })
+
         group.addShape('text', {
           attrs: {
-            x: -width / 2 + 14,
-            y: height / 2 - 8,
+            x: -width / 2 + 18,
+            y: height / 2 - 18,
             text: label,
-            fill: '#e5e7eb',
+            fill: '#f8fafc',
             fontSize: 11,
             textAlign: 'left',
             textBaseline: 'middle',
@@ -165,11 +182,13 @@ function normalizeEdges(specValue) {
 
 function deriveGroupMeta(objects = [], edges = []) {
   const nodeGroupById = new Map()
+  const groupCountMap = new Map()
   const firstSeenGroups = []
 
   objects.forEach((item) => {
     const groupName = normalizeGroup(item.viewGroup)
     nodeGroupById.set(item.id, groupName)
+    groupCountMap.set(groupName, (groupCountMap.get(groupName) || 0) + 1)
     if (!firstSeenGroups.includes(groupName)) firstSeenGroups.push(groupName)
   })
 
@@ -205,26 +224,51 @@ function deriveGroupMeta(objects = [], edges = []) {
     if (!orderedGroups.includes(name)) orderedGroups.push(name)
   })
 
-  const laneStart = 90
-  const laneGap = 160
+  const laneStart = 48
+  const laneGap = 38
   const groupMetaMap = new Map()
+  let currentTop = laneStart
 
   orderedGroups.forEach((groupName, index) => {
+    const count = groupCountMap.get(groupName) || 1
+    const rows = Math.max(1, Math.ceil(count / 4))
+    const laneHeight = Math.max(86, 86 + Math.max(rows - 1, 0) * 78)
+    const centerY = currentTop + laneHeight / 2
     groupMetaMap.set(groupName, {
-      y: laneStart + index * laneGap,
+      y: centerY,
       color: laneColorPalette[index % laneColorPalette.length],
       index,
+      rows,
+      laneHeight,
     })
+    currentTop += laneHeight + laneGap
   })
 
   return {
     orderedGroups,
     groupMetaMap,
     nodeGroupById,
-    totalHeight: Math.max(760, laneStart + Math.max(orderedGroups.length - 1, 0) * laneGap + 180),
+    totalHeight: Math.max(300, currentTop + 16),
   }
 }
 
+function arrangeGraphLayers() {
+  if (!graph) return
+  const laneNodes = []
+  const dataNodes = []
+  graph.getNodes().forEach((nodeItem) => {
+    const model = nodeItem.getModel()
+    if (model.isLayer) laneNodes.push(nodeItem)
+    else dataNodes.push(nodeItem)
+  })
+
+  laneNodes
+    .sort((a, b) => (a.getModel().zIndex || 0) - (b.getModel().zIndex || 0))
+    .forEach((nodeItem) => nodeItem.toFront())
+
+  graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
+  dataNodes.forEach((nodeItem) => nodeItem.toFront())
+}
 
 async function ensureG6Loaded() {
   if (G6Lib) return G6Lib
@@ -256,7 +300,8 @@ async function renderGraph() {
     cleanupGraph()
 
     const width = Math.max(containerRef.value.clientWidth, 760)
-    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects, edgesInput)
+    const { orderedGroups, groupMetaMap, nodeGroupById, totalHeight } = deriveGroupMeta(objects, edgesInput)
+    graphHeight.value = totalHeight
 
     const groups = new Map()
     objects.forEach((obj) => {
@@ -271,36 +316,46 @@ async function renderGraph() {
       x: Math.round(width / 2),
       y: groupMetaMap.get(group).y,
       label: group,
-      size: [Math.max(width - 60, 560), 86],
+      size: [Math.max(width - 60, 560), groupMetaMap.get(group)?.laneHeight || 86],
       color: groupMetaMap.get(group).color,
-      skew: 48,
+      skew: 24,
+      zIndex: 200 - (groupMetaMap.get(group)?.index || 0) * 20,
       isLayer: true,
     }))
 
     const dataNodes = Array.from(groups.entries()).flatMap(([group, items]) => {
       const sorted = [...items].sort((a, b) => String(a.standardName || '').localeCompare(String(b.standardName || '')))
-      const spacing = width / (sorted.length + 1)
-      const y = groupMetaMap.get(group)?.y ?? totalHeight - 120
+      const groupMeta = groupMetaMap.get(group)
+      const rowGap = 78
+      const yStart = (groupMeta?.y ?? totalHeight - 120) - (Math.max((groupMeta?.rows ?? 1) - 1, 0) * rowGap) / 2
 
       return sorted.map((item, index) => ({
+        ...(function position() {
+          const rowIndex = Math.floor(index / 4)
+          const colIndex = index % 4
+          const rowCount = Math.min(4, sorted.length - rowIndex * 4)
+          const spacing = width / (rowCount + 1)
+          return {
+            x: Math.round((colIndex + 1) * spacing),
+            y: Math.round(yStart + rowIndex * rowGap),
+          }
+        })(),
         id: item.id,
         label: shortLabel(item.standardName || item.id),
         fullLabel: item.standardName || item.id,
         group,
         type: 'image',
         img: pickNodeIcon(item.standardName || item.id),
-        x: Math.round((index + 1) * spacing),
-        y,
         size: 32,
         isLayer: false,
         labelCfg: {
           style: {
-            fontSize: 10,
+            fontSize: 9,
             fill: '#f8fafc',
-            fontWeight: 600,
+            fontWeight: 400,
           },
           position: 'bottom',
-          offset: 8,
+          offset: 10,
         },
       }))
     })
@@ -316,31 +371,38 @@ async function renderGraph() {
           || (isThreshold
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
-        const isAffect = edge.bizSemanticRel === 'affect' || edge.kind === 'affect'
 
         return {
+          ...(function edgeLayer() {
+            const sourceGroup = nodeGroupById.get(source)
+            const targetGroup = nodeGroupById.get(target)
+            const sourceIndex = groupMetaMap.get(sourceGroup)?.index ?? 0
+            const targetIndex = groupMetaMap.get(targetGroup)?.index ?? sourceIndex
+            const upperIndex = Math.min(sourceIndex, targetIndex)
+            const lowerIndex = Math.max(sourceIndex, targetIndex)
+            const upperLayerZ = 200 - upperIndex * 20
+            const lowerLayerZ = 200 - lowerIndex * 20
+            return {
+              zIndex: lowerLayerZ + Math.max(Math.floor((upperLayerZ - lowerLayerZ) / 2), 1),
+            }
+          })(),
           id: `e-${index}`,
           source,
           target,
           label,
           style: {
-            stroke: isAffect ? '#ef4444' : '#0ea5e9',
-            lineWidth: isAffect ? 2.6 : 2.1,
+            stroke: '#9ca3af',
+            lineWidth: 1,
             endArrow: true,
-            lineDash: isAffect ? undefined : [8, 4],
+            lineDash: undefined,
             opacity: 1,
           },
           labelCfg: {
             autoRotate: true,
             style: {
-              fill: '#0f172a',
-              fontSize: 11,
-              fontWeight: 600,
-              background: {
-                fill: '#f8fafce6',
-                radius: 2,
-                padding: [2, 4, 2, 4],
-              },
+              fill: '#6b7280',
+              fontSize: 10,
+              fontWeight: 400,
             },
           },
         }
@@ -354,26 +416,36 @@ async function renderGraph() {
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
       defaultEdge: { type: 'cubic-horizontal' },
-      edgeStateStyles: {
-        active: {
+      nodeStateStyles: {
+        selected: {
+          lineWidth: 3,
           stroke: '#facc15',
-          lineWidth: 3.2,
-          shadowBlur: 10,
-          shadowColor: 'rgba(250, 204, 21, 0.6)',
+          shadowBlur: 14,
+          shadowColor: 'rgba(250, 204, 21, 0.95)',
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+        },
+      },
+      edgeStateStyles: {
+        hover: {
+          stroke: '#22c55e',
+          lineWidth: 3,
           opacity: 1,
         },
-        inactive: { opacity: 0.12 },
+        active: {
+          stroke: '#facc15',
+          lineWidth: 3,
+          shadowBlur: 14,
+          shadowColor: 'rgba(37, 99, 235, 0.85)',
+          opacity: 1,
+        },
       },
     })
 
     graph.data({ nodes: [...laneNodes, ...dataNodes], edges })
     graph.render()
 
-    graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
-    graph.getNodes().forEach((nodeItem) => {
-      const model = nodeItem.getModel()
-      if (!model.isLayer) nodeItem.toFront()
-    })
+    arrangeGraphLayers()
 
     graph.on('node:click', (evt) => {
       const currentNode = evt.item
@@ -381,18 +453,41 @@ async function renderGraph() {
       const currentModel = currentNode.getModel()
       if (currentModel.isLayer) return
 
+      graph.getNodes().forEach((nodeItem) => {
+        const model = nodeItem.getModel()
+        graph.setItemState(nodeItem, 'selected', !model.isLayer && nodeItem.getID() === currentNode.getID())
+      })
+
       graph.getEdges().forEach((edge) => {
         const model = edge.getModel()
         const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
         graph.setItemState(edge, 'active', connected)
-        graph.setItemState(edge, 'inactive', !connected)
+        if (!connected) graph.clearItemStates(edge, ['hover'])
+        if (connected) edge.toFront()
       })
     })
 
+    graph.on('edge:mouseenter', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', true)
+      edge.toFront()
+    })
+
+    graph.on('edge:mouseleave', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', false)
+    })
+
     graph.on('canvas:click', () => {
-      graph.getEdges().forEach((edge) => {
-        graph.clearItemStates(edge, ['active', 'inactive'])
+      graph.getNodes().forEach((node) => {
+        graph.clearItemStates(node, ['selected'])
       })
+      graph.getEdges().forEach((edge) => {
+        graph.clearItemStates(edge, ['active', 'hover'])
+      })
+      arrangeGraphLayers()
     })
   } catch (error) {
     cleanupGraph()
@@ -401,8 +496,7 @@ async function renderGraph() {
 }
 
 function onResize() {
-  if (!graph || !containerRef.value) return
-  graph.changeSize(Math.max(containerRef.value.clientWidth, 760), graph.get('height'))
+  renderGraph()
 }
 
 onMounted(() => {
@@ -423,7 +517,7 @@ onUnmounted(() => {
 <template>
   <div v-if="!hidden" class="a2-topology-wrap" :class="customClasses" :style="styleObject">
     <div class="a2-topology-title">{{ title }}</div>
-    <div ref="containerRef" class="a2-topology-graph" />
+    <div ref="containerRef" class="a2-topology-graph" :style="{ minHeight: `${graphHeight}px` }" />
     <div v-if="graphError" class="a2-topology-error">{{ graphError }}</div>
   </div>
 </template>
@@ -448,7 +542,7 @@ onUnmounted(() => {
 
 .a2-topology-graph {
   width: 100%;
-  min-height: 760px;
+  min-height: 320px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
