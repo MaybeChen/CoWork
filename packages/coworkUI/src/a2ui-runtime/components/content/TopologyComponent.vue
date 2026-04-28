@@ -276,6 +276,17 @@ function arrangeGraphLayers() {
   graph.getNodes().forEach((nodeItem) => nodeItem.toFront())
 }
 
+function runWithBatchPaint(task) {
+  if (!graph) return
+  graph.setAutoPaint(false)
+  try {
+    task()
+  } finally {
+    graph.paint()
+    graph.setAutoPaint(true)
+  }
+}
+
 async function ensureG6Loaded() {
   if (G6Lib) return G6Lib
   const module = await import('@antv/g6')
@@ -514,17 +525,35 @@ async function renderGraph() {
       const currentNode = evt.item
       if (!currentNode) return
 
-      graph.getNodes().forEach((nodeItem) => {
-        const model = nodeItem.getModel()
-        graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
-      })
+      runWithBatchPaint(() => {
+        graph.getNodes().forEach((nodeItem) => {
+          graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
+        })
 
-      graph.getEdges().forEach((edge) => {
-        const model = edge.getModel()
-        const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
-        graph.setItemState(edge, 'active', connected)
-        if (!connected) graph.clearItemStates(edge, ['hover'])
-        if (connected) edge.toFront()
+        graph.getEdges().forEach((edge) => {
+          const model = edge.getModel()
+          const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
+          graph.setItemState(edge, 'active', connected)
+          if (!connected) graph.clearItemStates(edge, ['hover'])
+          if (connected) edge.toFront()
+        })
+      })
+    })
+
+    graph.on('edge:mouseenter', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      runWithBatchPaint(() => {
+        graph.setItemState(edge, 'hover', true)
+        edge.toFront()
+      })
+    })
+
+    graph.on('edge:mouseleave', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      runWithBatchPaint(() => {
+        graph.setItemState(edge, 'hover', false)
       })
     })
 
@@ -542,11 +571,14 @@ async function renderGraph() {
     })
 
     graph.on('canvas:click', () => {
-      graph.getNodes().forEach((node) => {
-        graph.clearItemStates(node, ['selected'])
-      })
-      graph.getEdges().forEach((edge) => {
-        graph.clearItemStates(edge, ['active', 'hover'])
+      runWithBatchPaint(() => {
+        graph.getNodes().forEach((node) => {
+          graph.clearItemStates(node, ['selected'])
+        })
+        graph.getEdges().forEach((edge) => {
+          graph.clearItemStates(edge, ['active', 'hover'])
+        })
+        arrangeGraphLayers()
       })
       arrangeGraphLayers()
     })
