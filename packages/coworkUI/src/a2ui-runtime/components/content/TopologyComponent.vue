@@ -324,10 +324,10 @@ async function renderGraph() {
           target,
           label,
           style: {
-            stroke: isAffect ? '#ef4444' : '#0ea5e9',
-            lineWidth: isAffect ? 2.6 : 2.1,
+            stroke: isAffect ? '#b91c1c' : '#0369a1',
+            lineWidth: isAffect ? 3 : 2.5,
             endArrow: true,
-            lineDash: isAffect ? undefined : [8, 4],
+            lineDash: isAffect ? undefined : [6, 3],
             opacity: 1,
           },
           labelCfg: {
