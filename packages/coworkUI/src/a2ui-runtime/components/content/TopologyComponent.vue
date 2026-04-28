@@ -15,7 +15,6 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 const containerRef = ref(null)
 const graphError = ref('')
 const graphHeight = ref(420)
-const zoomPercent = ref(100)
 let graph = null
 let G6Lib = null
 
@@ -273,7 +272,6 @@ function applyZoom(nextZoom) {
     x: Math.max(containerRef.value.clientWidth, 760) / 2,
     y: graphHeight.value / 2,
   })
-  zoomPercent.value = Math.round(value * 100)
 }
 
 function zoomIn() {
@@ -285,13 +283,6 @@ function zoomOut() {
   if (!graph) return
   applyZoom(graph.getZoom() - 0.1)
 }
-
-function resetZoom() {
-  if (!graph) return
-  applyZoom(1)
-  graph.fitCenter()
-}
-
 
 async function ensureG6Loaded() {
   if (G6Lib) return G6Lib
@@ -325,7 +316,6 @@ async function renderGraph() {
     const width = Math.max(containerRef.value.clientWidth, 760)
     const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects, edgesInput)
     graphHeight.value = totalHeight
-    zoomPercent.value = 100
 
     const groups = new Map()
     objects.forEach((obj) => {
@@ -529,9 +519,7 @@ onUnmounted(() => {
     <div class="a2-topology-title">{{ title }}</div>
     <div class="a2-topology-toolbar">
       <button type="button" class="a2-topology-btn" @click="zoomOut">-</button>
-      <span class="a2-topology-zoom">{{ zoomPercent }}%</span>
       <button type="button" class="a2-topology-btn" @click="zoomIn">+</button>
-      <button type="button" class="a2-topology-reset" @click="resetZoom">重置</button>
     </div>
     <div ref="containerRef" class="a2-topology-graph" :style="{ minHeight: `${graphHeight}px` }" />
     <div v-if="graphError" class="a2-topology-error">{{ graphError }}</div>
@@ -563,8 +551,7 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 
-.a2-topology-btn,
-.a2-topology-reset {
+.a2-topology-btn {
   border: 1px solid #cbd5e1;
   background: #fff;
   color: #0f172a;
@@ -572,13 +559,6 @@ onUnmounted(() => {
   padding: 2px 10px;
   font-size: 12px;
   cursor: pointer;
-}
-
-.a2-topology-zoom {
-  min-width: 46px;
-  text-align: center;
-  color: #475569;
-  font-size: 12px;
 }
 
 .a2-topology-graph {
