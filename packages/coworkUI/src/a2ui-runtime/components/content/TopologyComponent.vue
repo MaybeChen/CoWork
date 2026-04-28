@@ -248,7 +248,6 @@ function deriveGroupMeta(objects = [], edges = []) {
   return {
     orderedGroups,
     groupMetaMap,
-    nodeGroupById,
     totalHeight: Math.max(300, currentTop + 16),
   }
 }
@@ -500,11 +499,6 @@ async function renderGraph() {
       graph.getNodes().forEach((nodeItem) => {
         const model = nodeItem.getModel()
         graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
-      })
-
-      graph.getNodes().forEach((nodeItem) => {
-        const model = nodeItem.getModel()
-        graph.setItemState(nodeItem, 'selected', !model.isLayer && nodeItem.getID() === currentNode.getID())
       })
 
       graph.getEdges().forEach((edge) => {
