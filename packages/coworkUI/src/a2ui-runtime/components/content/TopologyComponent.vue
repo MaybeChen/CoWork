@@ -441,8 +441,6 @@ async function renderGraph() {
         },
       }))
     })
-    const nodePositionMap = new Map(dataNodes.map((node) => [node.id, { x: node.x, y: node.y }]))
-
     const edges = edgesInput
       .map((edge, index) => {
         const { source, target } = edgeEndpoints(edge)
@@ -458,13 +456,7 @@ async function renderGraph() {
         const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
 
         return {
-          ...(function edgeTypeByGeometry() {
-            const sourcePoint = nodePositionMap.get(source)
-            const targetPoint = nodePositionMap.get(target)
-            const isAligned = sourcePoint && targetPoint
-              && (Math.abs(sourcePoint.x - targetPoint.x) <= 1 || Math.abs(sourcePoint.y - targetPoint.y) <= 1)
-            return { type: isAligned ? 'line' : 'cubic' }
-          })(),
+          type: 'line',
           ...(function edgeDepth() {
             const sourceGroup = objectGroupMap.get(source)
             const targetGroup = objectGroupMap.get(target)
@@ -505,7 +497,7 @@ async function renderGraph() {
       groupByTypes: false,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
-      defaultEdge: { type: 'cubic' },
+      defaultEdge: { type: 'line' },
       nodeStateStyles: {
         selected: {
           lineWidth: 3,
