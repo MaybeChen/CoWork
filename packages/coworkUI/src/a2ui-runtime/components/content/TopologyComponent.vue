@@ -276,7 +276,9 @@ function deriveGroupMeta(objects = [], edges = []) {
 
 function arrangeGraphLayers() {
   if (!graph) return
-  const laneShapes = laneDecorations.filter(Boolean)
+  const laneShapes = laneDecorations
+    .filter(Boolean)
+    .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
   laneShapes.forEach((shape) => shape.toBack())
 
   const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
@@ -345,7 +347,9 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         shadowOffsetY: 2,
       },
       name: `lane-bg-${group}`,
+      zIndex: meta.zIndex,
     })
+    lane.set('topologyZIndex', meta.zIndex)
     const labelWidth = Math.max(72, String(group).length * 11 + 16)
     const labelHeight = 20
     const labelBg = rootGroup.addShape('rect', {
@@ -360,7 +364,9 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         lineWidth: 1,
       },
       name: `lane-label-bg-${group}`,
+      zIndex: meta.zIndex + 1,
     })
+    labelBg.set('topologyZIndex', meta.zIndex + 1)
     const label = rootGroup.addShape('text', {
       attrs: {
         x: centerX - laneWidth / 2 + 18,
@@ -373,10 +379,12 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         fontWeight: 700,
       },
       name: `lane-label-${group}`,
+      zIndex: meta.zIndex + 2,
     })
-    lane.toBack()
-    laneDecorations.push(lane)
+    label.set('topologyZIndex', meta.zIndex + 2)
+    laneDecorations.push(lane, labelBg, label)
   })
+  rootGroup.sort()
 }
 
 async function renderGraph() {
