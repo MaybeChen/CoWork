@@ -316,7 +316,6 @@ async function renderGraph() {
           || (isThreshold
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
-        const isAffect = edge.bizSemanticRel === 'affect' || edge.kind === 'affect'
 
         return {
           id: `e-${index}`,
@@ -324,23 +323,18 @@ async function renderGraph() {
           target,
           label,
           style: {
-            stroke: isAffect ? '#ef4444' : '#0ea5e9',
-            lineWidth: isAffect ? 2.6 : 2.1,
+            stroke: '#9ca3af',
+            lineWidth: 1,
             endArrow: true,
-            lineDash: isAffect ? undefined : [8, 4],
+            lineDash: undefined,
             opacity: 1,
           },
           labelCfg: {
             autoRotate: true,
             style: {
-              fill: '#0f172a',
-              fontSize: 11,
-              fontWeight: 600,
-              background: {
-                fill: '#f8fafce6',
-                radius: 2,
-                padding: [2, 4, 2, 4],
-              },
+              fill: '#6b7280',
+              fontSize: 10,
+              fontWeight: 400,
             },
           },
         }
@@ -354,15 +348,29 @@ async function renderGraph() {
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
       defaultEdge: { type: 'cubic-horizontal' },
-      edgeStateStyles: {
-        active: {
+      nodeStateStyles: {
+        selected: {
+          lineWidth: 3,
           stroke: '#facc15',
-          lineWidth: 3.2,
-          shadowBlur: 10,
-          shadowColor: 'rgba(250, 204, 21, 0.6)',
+          shadowBlur: 14,
+          shadowColor: 'rgba(250, 204, 21, 0.95)',
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+        },
+      },
+      edgeStateStyles: {
+        hover: {
+          stroke: '#22c55e',
+          lineWidth: 3,
           opacity: 1,
         },
-        inactive: { opacity: 0.12 },
+        active: {
+          stroke: '#facc15',
+          lineWidth: 3,
+          shadowBlur: 14,
+          shadowColor: 'rgba(37, 99, 235, 0.85)',
+          opacity: 1,
+        },
       },
     })
 
@@ -381,17 +389,37 @@ async function renderGraph() {
       const currentModel = currentNode.getModel()
       if (currentModel.isLayer) return
 
+      graph.getNodes().forEach((nodeItem) => {
+        const model = nodeItem.getModel()
+        graph.setItemState(nodeItem, 'selected', !model.isLayer && nodeItem.getID() === currentNode.getID())
+      })
+
       graph.getEdges().forEach((edge) => {
         const model = edge.getModel()
         const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
         graph.setItemState(edge, 'active', connected)
-        graph.setItemState(edge, 'inactive', !connected)
+        if (!connected) graph.clearItemStates(edge, ['hover'])
       })
     })
 
+    graph.on('edge:mouseenter', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', true)
+    })
+
+    graph.on('edge:mouseleave', (evt) => {
+      const edge = evt.item
+      if (!edge || edge.hasState('active')) return
+      graph.setItemState(edge, 'hover', false)
+    })
+
     graph.on('canvas:click', () => {
+      graph.getNodes().forEach((node) => {
+        graph.clearItemStates(node, ['selected'])
+      })
       graph.getEdges().forEach((edge) => {
-        graph.clearItemStates(edge, ['active', 'inactive'])
+        graph.clearItemStates(edge, ['active', 'hover'])
       })
     })
   } catch (error) {
