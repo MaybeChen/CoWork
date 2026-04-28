@@ -16,6 +16,7 @@ const containerRef = ref(null)
 const graphError = ref('')
 const graphHeight = ref(420)
 const objectGroupMap = new Map()
+const nodeGroupById = objectGroupMap
 let graph = null
 let G6Lib = null
 let laneDecorations = []
