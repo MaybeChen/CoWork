@@ -15,6 +15,7 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 const containerRef = ref(null)
 const graphError = ref('')
 const graphHeight = ref(420)
+const nodeGroupById = new Map()
 let graph = null
 let G6Lib = null
 let laneDecorations = []
@@ -182,13 +183,13 @@ function normalizeEdges(specValue) {
 }
 
 function deriveGroupMeta(objects = [], edges = []) {
-  const groupByObjectId = new Map()
+  nodeGroupById.clear()
   const groupCountMap = new Map()
   const firstSeenGroups = []
 
   objects.forEach((item) => {
     const groupName = normalizeGroup(item.viewGroup)
-    groupByObjectId.set(item.id, groupName)
+    nodeGroupById.set(item.id, groupName)
     groupCountMap.set(groupName, (groupCountMap.get(groupName) || 0) + 1)
     if (!firstSeenGroups.includes(groupName)) firstSeenGroups.push(groupName)
   })
