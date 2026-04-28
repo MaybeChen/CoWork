@@ -251,6 +251,7 @@ function deriveGroupMeta(objects = [], edges = []) {
   let currentTop = laneStart
 
   prioritizedGroups.forEach((groupName, index) => {
+    const totalGroups = prioritizedGroups.length
     const count = groupCountMap.get(groupName) || 1
     const rows = Math.max(1, Math.ceil(count / 4))
     const laneHeight = Math.max(86, 86 + Math.max(rows - 1, 0) * 78)
@@ -259,6 +260,7 @@ function deriveGroupMeta(objects = [], edges = []) {
       y: centerY,
       color: laneColorPalette[index % laneColorPalette.length],
       index,
+      zIndex: 10 * (totalGroups - index + 1),
       rows,
       laneHeight,
     })
@@ -373,9 +375,7 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
       name: `lane-label-${group}`,
     })
     lane.toBack()
-    labelBg.toBack()
-    label.toBack()
-    laneDecorations.push(lane, labelBg, label)
+    laneDecorations.push(lane)
   })
 }
 
@@ -425,7 +425,7 @@ async function renderGraph() {
         label: shortLabel(item.standardName || item.id),
         fullLabel: item.standardName || item.id,
         group,
-        zIndex: 300 - (groupMeta?.index || 0) * 10,
+        zIndex: (groupMeta?.zIndex || 10) + 5,
         type: 'image',
         img: pickNodeIcon(item.standardName || item.id),
         size: 32,
@@ -454,10 +454,8 @@ async function renderGraph() {
             : edge.bizSemanticRel || edge.label || '')
         const sourceGroup = objectGroupMap.get(source)
         const targetGroup = objectGroupMap.get(target)
-        const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
-        const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
-
-        const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
+        const sourceZ = groupMetaMap.get(sourceGroup)?.zIndex || 10
+        const targetZ = groupMetaMap.get(targetGroup)?.zIndex || 10
 
         return {
           type: 'line',
