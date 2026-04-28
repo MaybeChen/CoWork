@@ -20,6 +20,7 @@ const nodeGroupById = objectGroupMap
 let graph = null
 let G6Lib = null
 let laneDecorations = []
+let laneLabelDecorations = []
 let selectedNodeId = null
 const activeEdgeIds = new Set()
 
@@ -280,6 +281,10 @@ function arrangeGraphLayers() {
     .filter(Boolean)
     .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
   laneShapes.forEach((shape) => shape.toBack())
+  laneLabelDecorations
+    .filter(Boolean)
+    .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
+    .forEach((shape) => shape.toFront())
 
   const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
   const layeredItems = [...graph.getNodes(), ...graph.getEdges()].sort(sortByZIndex)
@@ -311,6 +316,7 @@ function cleanupGraph() {
     graph = null
   }
   laneDecorations = []
+  laneLabelDecorations = []
   selectedNodeId = null
   activeEdgeIds.clear()
 }
@@ -318,6 +324,7 @@ function cleanupGraph() {
 function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
   if (!graph) return
   laneDecorations = []
+  laneLabelDecorations = []
   const rootGroup = graph.get('group')
   orderedGroups.forEach((group) => {
     const meta = groupMetaMap.get(group)
@@ -382,7 +389,8 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
       zIndex: meta.zIndex + 2,
     })
     label.set('topologyZIndex', meta.zIndex + 2)
-    laneDecorations.push(lane, labelBg, label)
+    laneDecorations.push(lane)
+    laneLabelDecorations.push(labelBg, label)
   })
   rootGroup.sort()
 }
