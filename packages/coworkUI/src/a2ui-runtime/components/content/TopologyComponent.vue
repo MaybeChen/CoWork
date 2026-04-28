@@ -452,20 +452,16 @@ async function renderGraph() {
           || (isThreshold
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
+        const sourceGroup = objectGroupMap.get(source)
+        const targetGroup = objectGroupMap.get(target)
+        const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
+        const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
 
         const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
 
         return {
           type: 'line',
-          ...(function edgeDepth() {
-            const sourceGroup = objectGroupMap.get(source)
-            const targetGroup = objectGroupMap.get(target)
-            const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
-            const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
-            return {
-              zIndex: Math.round((sourceZ + targetZ) / 2),
-            }
-          })(),
+          zIndex: Math.round((sourceZ + targetZ) / 2),
           id: `e-${index}`,
           source,
           target,
