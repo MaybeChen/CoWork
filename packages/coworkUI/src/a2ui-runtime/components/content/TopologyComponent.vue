@@ -209,6 +209,7 @@ function deriveGroupMeta(objects = [], edges = []) {
     set.add(dstGroup)
     indegree.set(dstGroup, (indegree.get(dstGroup) || 0) + 1)
   })
+  const initialIndegree = new Map(indegree)
 
   const queue = firstSeenGroups.filter((name) => (indegree.get(name) || 0) === 0)
   const orderedGroups = []
@@ -226,13 +227,23 @@ function deriveGroupMeta(objects = [], edges = []) {
   firstSeenGroups.forEach((name) => {
     if (!orderedGroups.includes(name)) orderedGroups.push(name)
   })
+  const isolatedGroups = firstSeenGroups.filter((name) => {
+    const incoming = initialIndegree.get(name) || 0
+    const outgoing = graph.get(name)?.size || 0
+    return incoming === 0 && outgoing === 0
+  })
+  const isolatedSet = new Set(isolatedGroups)
+  const prioritizedGroups = [
+    ...isolatedGroups,
+    ...orderedGroups.filter((name) => !isolatedSet.has(name)),
+  ]
 
   const laneStart = 48
   const laneGap = 38
   const groupMetaMap = new Map()
   let currentTop = laneStart
 
-  orderedGroups.forEach((groupName, index) => {
+  prioritizedGroups.forEach((groupName, index) => {
     const count = groupCountMap.get(groupName) || 1
     const rows = Math.max(1, Math.ceil(count / 4))
     const laneHeight = Math.max(86, 86 + Math.max(rows - 1, 0) * 78)
@@ -248,7 +259,7 @@ function deriveGroupMeta(objects = [], edges = []) {
   })
 
   return {
-    orderedGroups,
+    orderedGroups: prioritizedGroups,
     groupMetaMap,
     totalHeight: Math.max(300, currentTop + 16),
   }
