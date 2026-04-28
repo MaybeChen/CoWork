@@ -121,7 +121,7 @@ function registerLaneNodeIfNeeded(G6) {
           attrs: {
             path,
             fill,
-            opacity: 0.9,
+            opacity: 0.72,
             stroke: '#d1d5db',
             lineWidth: 1.2,
             shadowBlur: 8,
@@ -344,7 +344,7 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
       attrs: {
         path,
         fill: meta.color,
-        opacity: 0.9,
+        opacity: 0.72,
         stroke: '#d1d5db',
         lineWidth: 1.2,
         shadowBlur: 8,
