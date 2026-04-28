@@ -271,9 +271,7 @@ function deriveGroupMeta(objects = [], edges = []) {
 }
 
 function arrangeGraphLayers() {
-  if (!graph) return
-  graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
-  graph.getNodes().forEach((nodeItem) => nodeItem.toFront())
+  // zIndex-driven layering handles ordering when groupByTypes is disabled.
 }
 
 function runWithBatchPaint(task) {
@@ -346,7 +344,7 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         height: labelHeight,
         radius: 4,
         fill: 'rgba(255, 255, 255, 0.18)',
-        stroke: '#cbd5e1',
+        stroke: 'rgba(255, 255, 255, 0.45)',
         lineWidth: 1,
       },
       name: `lane-label-bg-${group}`,
@@ -417,6 +415,7 @@ async function renderGraph() {
         label: shortLabel(item.standardName || item.id),
         fullLabel: item.standardName || item.id,
         group,
+        zIndex: 300 - (groupMeta?.index || 0) * 10,
         type: 'image',
         img: pickNodeIcon(item.standardName || item.id),
         size: 32,
@@ -446,17 +445,13 @@ async function renderGraph() {
             : edge.bizSemanticRel || edge.label || '')
 
         return {
-          ...(function edgeLayer() {
-            const sourceGroup = nodeGroupById.get(source)
-            const targetGroup = nodeGroupById.get(target)
-            const sourceIndex = groupMetaMap.get(sourceGroup)?.index ?? 0
-            const targetIndex = groupMetaMap.get(targetGroup)?.index ?? sourceIndex
-            const upperIndex = Math.min(sourceIndex, targetIndex)
-            const lowerIndex = Math.max(sourceIndex, targetIndex)
-            const upperLayerZ = 200 - upperIndex * 20
-            const lowerLayerZ = 200 - lowerIndex * 20
+          ...(function edgeDepth() {
+            const sourceGroup = objectGroupMap.get(source)
+            const targetGroup = objectGroupMap.get(target)
+            const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
+            const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
             return {
-              zIndex: lowerLayerZ + Math.max(Math.floor((upperLayerZ - lowerLayerZ) / 2), 1),
+              zIndex: Math.round((sourceZ + targetZ) / 2),
             }
           })(),
           id: `e-${index}`,
@@ -486,6 +481,7 @@ async function renderGraph() {
       container: containerRef.value,
       width,
       height: totalHeight,
+      groupByTypes: false,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
       defaultEdge: { type: 'cubic-horizontal' },
@@ -535,7 +531,6 @@ async function renderGraph() {
           const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
           graph.setItemState(edge, 'active', connected)
           if (!connected) graph.clearItemStates(edge, ['hover'])
-          if (connected) edge.toFront()
         })
       })
     })
@@ -545,7 +540,6 @@ async function renderGraph() {
       if (!edge || edge.hasState('active')) return
       runWithBatchPaint(() => {
         graph.setItemState(edge, 'hover', true)
-        edge.toFront()
       })
     })
 
@@ -578,7 +572,6 @@ async function renderGraph() {
         graph.getEdges().forEach((edge) => {
           graph.clearItemStates(edge, ['active', 'hover'])
         })
-        arrangeGraphLayers()
       })
       arrangeGraphLayers()
     })
