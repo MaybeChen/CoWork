@@ -277,18 +277,16 @@ function deriveGroupMeta(objects = [], edges = []) {
 
 function arrangeGraphLayers() {
   if (!graph) return
-  const laneShapes = laneDecorations
-    .filter(Boolean)
-    .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
-  laneShapes.forEach((shape) => shape.toBack())
-  laneLabelDecorations
-    .filter(Boolean)
-    .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
-    .forEach((shape) => shape.toFront())
+  const layeredShapes = [
+    ...laneDecorations.map((shape) => ({ shape, zIndex: shape.get('topologyZIndex') || 0 })),
+    ...laneLabelDecorations.map((shape) => ({ shape, zIndex: shape.get('topologyZIndex') || 0 })),
+    ...graph.getEdges().map((edge) => ({ shape: edge, zIndex: edge.getModel()?.zIndex || 0 })),
+    ...graph.getNodes().map((node) => ({ shape: node, zIndex: node.getModel()?.zIndex || 0 })),
+  ]
+    .filter((item) => Boolean(item.shape))
+    .sort((a, b) => a.zIndex - b.zIndex)
 
-  const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
-  const layeredItems = [...graph.getNodes(), ...graph.getEdges()].sort(sortByZIndex)
-  layeredItems.forEach((item) => item.toFront())
+  layeredShapes.forEach(({ shape }) => shape.toFront())
 }
 
 function runWithBatchPaint(task) {
