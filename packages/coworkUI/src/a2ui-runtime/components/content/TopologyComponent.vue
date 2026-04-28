@@ -453,6 +453,8 @@ async function renderGraph() {
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
 
+        const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
+
         return {
           type: 'line',
           ...(function edgeDepth() {
@@ -468,6 +470,7 @@ async function renderGraph() {
           source,
           target,
           label,
+          type: 'cubic',
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
