@@ -126,12 +126,28 @@ function registerLaneNodeIfNeeded(G6) {
           name: 'lane-bg',
         })
 
+        const labelWidth = Math.max(72, label.length * 11 + 16)
+        const labelHeight = 20
+        group.addShape('rect', {
+          attrs: {
+            x: -width / 2 + 10,
+            y: height / 2 - 18 - labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight,
+            radius: 4,
+            fill: 'rgba(255, 255, 255, 0.18)',
+            stroke: '#cbd5e1',
+            lineWidth: 1,
+          },
+          name: 'lane-label-bg',
+        })
+
         group.addShape('text', {
           attrs: {
-            x: -width / 2 + 14,
-            y: height / 2 - 8,
+            x: -width / 2 + 18,
+            y: height / 2 - 18,
             text: label,
-            fill: '#e5e7eb',
+            fill: '#f8fafc',
             fontSize: 11,
             textAlign: 'left',
             textBaseline: 'middle',
@@ -235,6 +251,19 @@ function deriveGroupMeta(objects = [], edges = []) {
     nodeGroupById,
     totalHeight: Math.max(300, currentTop + 16),
   }
+}
+
+function arrangeGraphLayers() {
+  if (!graph) return
+  graph.getNodes().forEach((nodeItem) => {
+    const model = nodeItem.getModel()
+    if (model.isLayer) nodeItem.toBack()
+  })
+  graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
+  graph.getNodes().forEach((nodeItem) => {
+    const model = nodeItem.getModel()
+    if (!model.isLayer) nodeItem.toFront()
+  })
 }
 
 function applyZoom(nextZoom) {
@@ -426,11 +455,7 @@ async function renderGraph() {
     graph.data({ nodes: [...laneNodes, ...dataNodes], edges })
     graph.render()
 
-    graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
-    graph.getNodes().forEach((nodeItem) => {
-      const model = nodeItem.getModel()
-      if (!model.isLayer) nodeItem.toFront()
-    })
+    arrangeGraphLayers()
 
     graph.on('node:click', (evt) => {
       const currentNode = evt.item
@@ -448,6 +473,7 @@ async function renderGraph() {
         const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
         graph.setItemState(edge, 'active', connected)
         if (!connected) graph.clearItemStates(edge, ['hover'])
+        if (connected) edge.toFront()
       })
     })
 
@@ -455,6 +481,7 @@ async function renderGraph() {
       const edge = evt.item
       if (!edge || edge.hasState('active')) return
       graph.setItemState(edge, 'hover', true)
+      edge.toFront()
     })
 
     graph.on('edge:mouseleave', (evt) => {
@@ -470,6 +497,7 @@ async function renderGraph() {
       graph.getEdges().forEach((edge) => {
         graph.clearItemStates(edge, ['active', 'hover'])
       })
+      arrangeGraphLayers()
     })
   } catch (error) {
     cleanupGraph()
