@@ -446,12 +446,7 @@ async function renderGraph() {
         const { source, target } = edgeEndpoints(edge)
         if (!source || !target) return null
 
-        const functionDescription = edge.function?.description || edge.function?.desc || ''
-        const isThreshold = edge.function?.type === 'Threshold'
-        const label = functionDescription
-          || (isThreshold
-            ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
-            : edge.bizSemanticRel || edge.label || '')
+        const label = edge.function?.description
         const sourceGroup = objectGroupMap.get(source)
         const targetGroup = objectGroupMap.get(target)
         const sourceZ = groupMetaMap.get(sourceGroup)?.zIndex || 10
@@ -472,14 +467,18 @@ async function renderGraph() {
             lineDash: undefined,
             opacity: 1,
           },
-          labelCfg: {
-            autoRotate: true,
-            style: {
-              fill: '#6b7280',
-              fontSize: 10,
-              fontWeight: 400,
-            },
-          },
+          ...(label
+            ? {
+                labelCfg: {
+                  autoRotate: true,
+                  style: {
+                    fill: '#6b7280',
+                    fontSize: 10,
+                    fontWeight: 400,
+                  },
+                },
+              }
+            : {}),
         }
       })
       .filter(Boolean)
