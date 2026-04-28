@@ -233,10 +233,16 @@ function deriveGroupMeta(objects = [], edges = []) {
     return incoming === 0 && outgoing === 0
   })
   const isolatedSet = new Set(isolatedGroups)
-  const prioritizedGroups = [
-    ...isolatedGroups,
-    ...orderedGroups.filter((name) => !isolatedSet.has(name)),
-  ]
+  const prioritizedGroups = isolatedGroups.length === firstSeenGroups.length
+    ? [...firstSeenGroups].sort((a, b) => {
+      const countDiff = (groupCountMap.get(a) || 0) - (groupCountMap.get(b) || 0)
+      if (countDiff !== 0) return countDiff
+      return firstSeenGroups.indexOf(a) - firstSeenGroups.indexOf(b)
+    })
+    : [
+      ...isolatedGroups,
+      ...orderedGroups.filter((name) => !isolatedSet.has(name)),
+    ]
 
   const laneStart = 48
   const laneGap = 38
