@@ -20,6 +20,8 @@ const nodeGroupById = objectGroupMap
 let graph = null
 let G6Lib = null
 let laneDecorations = []
+let selectedNodeId = null
+const activeEdgeIds = new Set()
 
 const rawSpec = computed(() => resolveValue(props.dataModel, props.payload?.spec ?? props.payload?.topologySpec))
 
@@ -249,6 +251,7 @@ function deriveGroupMeta(objects = [], edges = []) {
   let currentTop = laneStart
 
   prioritizedGroups.forEach((groupName, index) => {
+    const totalGroups = prioritizedGroups.length
     const count = groupCountMap.get(groupName) || 1
     const rows = Math.max(1, Math.ceil(count / 4))
     const laneHeight = Math.max(86, 86 + Math.max(rows - 1, 0) * 78)
@@ -257,6 +260,7 @@ function deriveGroupMeta(objects = [], edges = []) {
       y: centerY,
       color: laneColorPalette[index % laneColorPalette.length],
       index,
+      zIndex: 10 * (totalGroups - index + 1),
       rows,
       laneHeight,
     })
@@ -271,7 +275,15 @@ function deriveGroupMeta(objects = [], edges = []) {
 }
 
 function arrangeGraphLayers() {
-  // zIndex-driven layering handles ordering when groupByTypes is disabled.
+  if (!graph) return
+  const laneShapes = laneDecorations
+    .filter(Boolean)
+    .sort((a, b) => (a.get('topologyZIndex') || 0) - (b.get('topologyZIndex') || 0))
+  laneShapes.forEach((shape) => shape.toBack())
+
+  const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
+  const layeredItems = [...graph.getNodes(), ...graph.getEdges()].sort(sortByZIndex)
+  layeredItems.forEach((item) => item.toFront())
 }
 
 function runWithBatchPaint(task) {
@@ -299,6 +311,8 @@ function cleanupGraph() {
     graph = null
   }
   laneDecorations = []
+  selectedNodeId = null
+  activeEdgeIds.clear()
 }
 
 function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
@@ -333,7 +347,9 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         shadowOffsetY: 2,
       },
       name: `lane-bg-${group}`,
+      zIndex: meta.zIndex,
     })
+    lane.set('topologyZIndex', meta.zIndex)
     const labelWidth = Math.max(72, String(group).length * 11 + 16)
     const labelHeight = 20
     const labelBg = rootGroup.addShape('rect', {
@@ -348,7 +364,9 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         lineWidth: 1,
       },
       name: `lane-label-bg-${group}`,
+      zIndex: meta.zIndex + 1,
     })
+    labelBg.set('topologyZIndex', meta.zIndex + 1)
     const label = rootGroup.addShape('text', {
       attrs: {
         x: centerX - laneWidth / 2 + 18,
@@ -361,12 +379,12 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         fontWeight: 700,
       },
       name: `lane-label-${group}`,
+      zIndex: meta.zIndex + 2,
     })
-    lane.toBack()
-    labelBg.toBack()
-    label.toBack()
+    label.set('topologyZIndex', meta.zIndex + 2)
     laneDecorations.push(lane, labelBg, label)
   })
+  rootGroup.sort()
 }
 
 async function renderGraph() {
@@ -415,7 +433,7 @@ async function renderGraph() {
         label: shortLabel(item.standardName || item.id),
         fullLabel: item.standardName || item.id,
         group,
-        zIndex: 300 - (groupMeta?.index || 0) * 10,
+        zIndex: (groupMeta?.zIndex || 10) + 5,
         type: 'image',
         img: pickNodeIcon(item.standardName || item.id),
         size: 32,
@@ -431,29 +449,20 @@ async function renderGraph() {
         },
       }))
     })
-
     const edges = edgesInput
       .map((edge, index) => {
         const { source, target } = edgeEndpoints(edge)
         if (!source || !target) return null
 
-        const functionDescription = edge.function?.description || edge.function?.desc || ''
-        const isThreshold = edge.function?.type === 'Threshold'
-        const label = functionDescription
-          || (isThreshold
-            ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
-            : edge.bizSemanticRel || edge.label || '')
+        const label = edge.function?.description
+        const sourceGroup = objectGroupMap.get(source)
+        const targetGroup = objectGroupMap.get(target)
+        const sourceZ = groupMetaMap.get(sourceGroup)?.zIndex || 10
+        const targetZ = groupMetaMap.get(targetGroup)?.zIndex || 10
 
         return {
-          ...(function edgeDepth() {
-            const sourceGroup = objectGroupMap.get(source)
-            const targetGroup = objectGroupMap.get(target)
-            const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
-            const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
-            return {
-              zIndex: Math.round((sourceZ + targetZ) / 2),
-            }
-          })(),
+          type: 'line',
+          zIndex: Math.round((sourceZ + targetZ) / 2),
           id: `e-${index}`,
           source,
           target,
@@ -461,18 +470,22 @@ async function renderGraph() {
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
-            endArrow: true,
+            endArrow: false,
             lineDash: undefined,
             opacity: 1,
           },
-          labelCfg: {
-            autoRotate: true,
-            style: {
-              fill: '#6b7280',
-              fontSize: 10,
-              fontWeight: 400,
-            },
-          },
+          ...(label
+            ? {
+                labelCfg: {
+                  autoRotate: true,
+                  style: {
+                    fill: '#6b7280',
+                    fontSize: 10,
+                    fontWeight: 400,
+                  },
+                },
+              }
+            : {}),
         }
       })
       .filter(Boolean)
@@ -484,7 +497,7 @@ async function renderGraph() {
       groupByTypes: false,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
-      defaultEdge: { type: 'cubic-horizontal' },
+      defaultEdge: { type: 'line' },
       nodeStateStyles: {
         selected: {
           lineWidth: 3,
@@ -513,6 +526,10 @@ async function renderGraph() {
 
     graph.data({ nodes: dataNodes, edges })
     graph.render()
+    graph.getEdges().forEach((edgeItem) => {
+      if (edgeItem.getType?.() === 'line') return
+      graph.updateItem(edgeItem, { type: 'line' })
+    })
     drawLaneDecorations(width, orderedGroups, groupMetaMap)
 
     arrangeGraphLayers()
@@ -520,19 +537,35 @@ async function renderGraph() {
     graph.on('node:click', (evt) => {
       const currentNode = evt.item
       if (!currentNode) return
+      const currentNodeId = currentNode.getID()
 
       runWithBatchPaint(() => {
-        graph.getNodes().forEach((nodeItem) => {
-          graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
-        })
+        if (selectedNodeId && selectedNodeId !== currentNodeId) {
+          const previousNode = graph.findById(selectedNodeId)
+          if (previousNode) graph.clearItemStates(previousNode, ['selected'])
+        }
+        graph.setItemState(currentNode, 'selected', true)
+        selectedNodeId = currentNodeId
 
+        const nextActiveEdgeIds = new Set()
         graph.getEdges().forEach((edge) => {
           const model = edge.getModel()
-          const connected = model.source === currentNode.getID() || model.target === currentNode.getID()
-          graph.setItemState(edge, 'active', connected)
-          if (!connected) graph.clearItemStates(edge, ['hover'])
+          const connected = model.source === currentNodeId || model.target === currentNodeId
+          if (!connected) return
+          nextActiveEdgeIds.add(model.id)
+          if (!edge.hasState('active')) graph.setItemState(edge, 'active', true)
         })
+
+        activeEdgeIds.forEach((edgeId) => {
+          if (nextActiveEdgeIds.has(edgeId)) return
+          const staleEdge = graph.findById(edgeId)
+          if (!staleEdge) return
+          graph.clearItemStates(staleEdge, ['active', 'hover'])
+        })
+        activeEdgeIds.clear()
+        nextActiveEdgeIds.forEach((edgeId) => activeEdgeIds.add(edgeId))
       })
+      arrangeGraphLayers()
     })
 
     graph.on('edge:mouseenter', (evt) => {
@@ -551,26 +584,21 @@ async function renderGraph() {
       })
     })
 
-    graph.on('edge:mouseenter', (evt) => {
-      const edge = evt.item
-      if (!edge || edge.hasState('active')) return
-      graph.setItemState(edge, 'hover', true)
-      edge.toFront()
-    })
-
-    graph.on('edge:mouseleave', (evt) => {
-      const edge = evt.item
-      if (!edge || edge.hasState('active')) return
-      graph.setItemState(edge, 'hover', false)
-    })
-
     graph.on('canvas:click', () => {
       runWithBatchPaint(() => {
-        graph.getNodes().forEach((node) => {
-          graph.clearItemStates(node, ['selected'])
+        if (selectedNodeId) {
+          const selectedNode = graph.findById(selectedNodeId)
+          if (selectedNode) graph.clearItemStates(selectedNode, ['selected'])
+          selectedNodeId = null
+        }
+        activeEdgeIds.forEach((edgeId) => {
+          const edge = graph.findById(edgeId)
+          if (edge) graph.clearItemStates(edge, ['active', 'hover'])
         })
+        activeEdgeIds.clear()
+
         graph.getEdges().forEach((edge) => {
-          graph.clearItemStates(edge, ['active', 'hover'])
+          if (edge.hasState('hover')) graph.clearItemStates(edge, ['hover'])
         })
       })
       arrangeGraphLayers()
