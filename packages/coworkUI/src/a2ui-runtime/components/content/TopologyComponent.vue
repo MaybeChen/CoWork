@@ -457,6 +457,8 @@ async function renderGraph() {
         const sourceZ = 300 - (groupMetaMap.get(sourceGroup)?.index || 0) * 10
         const targetZ = 300 - (groupMetaMap.get(targetGroup)?.index || 0) * 10
 
+        const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
+
         return {
           type: 'line',
           zIndex: Math.round((sourceZ + targetZ) / 2),
@@ -464,6 +466,7 @@ async function renderGraph() {
           source,
           target,
           label,
+          type: 'cubic',
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
