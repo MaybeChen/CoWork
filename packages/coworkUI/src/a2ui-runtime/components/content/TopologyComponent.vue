@@ -182,13 +182,13 @@ function normalizeEdges(specValue) {
 }
 
 function deriveGroupMeta(objects = [], edges = []) {
-  const nodeGroupById = new Map()
+  const groupByObjectId = new Map()
   const groupCountMap = new Map()
   const firstSeenGroups = []
 
   objects.forEach((item) => {
     const groupName = normalizeGroup(item.viewGroup)
-    nodeGroupById.set(item.id, groupName)
+    groupByObjectId.set(item.id, groupName)
     groupCountMap.set(groupName, (groupCountMap.get(groupName) || 0) + 1)
     if (!firstSeenGroups.includes(groupName)) firstSeenGroups.push(groupName)
   })
@@ -199,8 +199,8 @@ function deriveGroupMeta(objects = [], edges = []) {
   edges.forEach((edge) => {
     const { source, target } = edgeEndpoints(edge)
     if (!source || !target) return
-    const srcGroup = nodeGroupById.get(source)
-    const dstGroup = nodeGroupById.get(target)
+    const srcGroup = groupByObjectId.get(source)
+    const dstGroup = groupByObjectId.get(target)
     if (!srcGroup || !dstGroup || srcGroup === dstGroup) return
     const set = graph.get(srcGroup)
     if (!set || set.has(dstGroup)) return
