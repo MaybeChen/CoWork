@@ -474,13 +474,7 @@ async function renderGraph() {
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
-            endArrow: {
-              path: simpleArrowPath,
-              d: 8,
-              fill: 'none',
-              stroke: '#9ca3af',
-              lineWidth: 1.2,
-            },
+            endArrow: false,
             lineDash: undefined,
             opacity: 1,
           },
