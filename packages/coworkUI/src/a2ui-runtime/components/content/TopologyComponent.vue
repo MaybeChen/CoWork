@@ -278,8 +278,8 @@ function arrangeGraphLayers() {
   laneShapes.forEach((shape) => shape.toBack())
 
   const sortByZIndex = (a, b) => (a.getModel()?.zIndex || 0) - (b.getModel()?.zIndex || 0)
-  graph.getEdges().sort(sortByZIndex).forEach((edge) => edge.toFront())
-  graph.getNodes().sort(sortByZIndex).forEach((node) => node.toFront())
+  const layeredItems = [...graph.getNodes(), ...graph.getEdges()].sort(sortByZIndex)
+  layeredItems.forEach((item) => item.toFront())
 }
 
 function runWithBatchPaint(task) {
@@ -454,6 +454,8 @@ async function renderGraph() {
             ? `${edge.function?.operator || ''} ${edge.function?.value ?? ''}`.trim()
             : edge.bizSemanticRel || edge.label || '')
 
+        const simpleArrowPath = G6?.Arrow?.vee ? G6.Arrow.vee(8, 8, 0) : 'M 0,0 L 8,4 M 0,0 L 8,-4'
+
         return {
           ...(function edgeDepth() {
             const sourceGroup = objectGroupMap.get(source)
@@ -468,17 +470,17 @@ async function renderGraph() {
           source,
           target,
           label,
-          type: 'polyline',
+          type: 'cubic',
           style: {
             stroke: '#9ca3af',
             lineWidth: 1,
             endArrow: {
-              path: 'M 0,0 L 9,4.5 L 9,-4.5 Z',
-              d: 9,
-              fill: '#9ca3af',
+              path: simpleArrowPath,
+              d: 8,
+              fill: 'none',
+              stroke: '#9ca3af',
+              lineWidth: 1.2,
             },
-            radius: 8,
-            offset: 16,
             lineDash: undefined,
             opacity: 1,
           },
@@ -501,7 +503,7 @@ async function renderGraph() {
       groupByTypes: false,
       modes: { default: ['drag-canvas', 'zoom-canvas'] },
       defaultNode: { type: 'circle' },
-      defaultEdge: { type: 'polyline' },
+      defaultEdge: { type: 'cubic' },
       nodeStateStyles: {
         selected: {
           lineWidth: 3,
