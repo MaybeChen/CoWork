@@ -17,6 +17,7 @@ const graphError = ref('')
 const graphHeight = ref(420)
 let graph = null
 let G6Lib = null
+let laneDecorations = []
 
 const rawSpec = computed(() => resolveValue(props.dataModel, props.payload?.spec ?? props.payload?.topologySpec))
 
@@ -254,20 +255,8 @@ function deriveGroupMeta(objects = [], edges = []) {
 
 function arrangeGraphLayers() {
   if (!graph) return
-  const laneNodes = []
-  const dataNodes = []
-  graph.getNodes().forEach((nodeItem) => {
-    const model = nodeItem.getModel()
-    if (model.isLayer) laneNodes.push(nodeItem)
-    else dataNodes.push(nodeItem)
-  })
-
-  laneNodes
-    .sort((a, b) => (a.getModel().zIndex || 0) - (b.getModel().zIndex || 0))
-    .forEach((nodeItem) => nodeItem.toFront())
-
   graph.getEdges().forEach((edgeItem) => edgeItem.toFront())
-  dataNodes.forEach((nodeItem) => nodeItem.toFront())
+  graph.getNodes().forEach((nodeItem) => nodeItem.toFront())
 }
 
 async function ensureG6Loaded() {
@@ -283,6 +272,75 @@ function cleanupGraph() {
     graph.destroy()
     graph = null
   }
+  laneDecorations = []
+}
+
+function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
+  if (!graph) return
+  laneDecorations = []
+  const rootGroup = graph.get('group')
+  orderedGroups.forEach((group) => {
+    const meta = groupMetaMap.get(group)
+    if (!meta) return
+    const laneWidth = Math.max(width - 60, 560)
+    const laneHeight = meta.laneHeight || 86
+    const centerX = Math.round(width / 2)
+    const centerY = meta.y
+    const skew = 24
+    const path = [
+      ['M', centerX - laneWidth / 2 + skew, centerY - laneHeight / 2],
+      ['L', centerX + laneWidth / 2 - skew, centerY - laneHeight / 2],
+      ['L', centerX + laneWidth / 2, centerY + laneHeight / 2],
+      ['L', centerX - laneWidth / 2, centerY + laneHeight / 2],
+      ['Z'],
+    ]
+
+    const lane = rootGroup.addShape('path', {
+      attrs: {
+        path,
+        fill: meta.color,
+        opacity: 0.9,
+        stroke: '#d1d5db',
+        lineWidth: 1.2,
+        shadowBlur: 8,
+        shadowColor: 'rgba(15, 23, 42, 0.12)',
+        shadowOffsetY: 2,
+      },
+      name: `lane-bg-${group}`,
+    })
+    const labelWidth = Math.max(72, String(group).length * 11 + 16)
+    const labelHeight = 20
+    const labelBg = rootGroup.addShape('rect', {
+      attrs: {
+        x: centerX - laneWidth / 2 + 10,
+        y: centerY + laneHeight / 2 - 18 - labelHeight / 2,
+        width: labelWidth,
+        height: labelHeight,
+        radius: 4,
+        fill: 'rgba(255, 255, 255, 0.18)',
+        stroke: '#cbd5e1',
+        lineWidth: 1,
+      },
+      name: `lane-label-bg-${group}`,
+    })
+    const label = rootGroup.addShape('text', {
+      attrs: {
+        x: centerX - laneWidth / 2 + 18,
+        y: centerY + laneHeight / 2 - 18,
+        text: group,
+        fill: '#f8fafc',
+        fontSize: 11,
+        textAlign: 'left',
+        textBaseline: 'middle',
+        fontWeight: 700,
+      },
+      name: `lane-label-${group}`,
+    })
+    lane.toBack()
+    labelBg.toBack()
+    label.toBack()
+    laneDecorations.push(lane, labelBg, label)
+  })
 }
 
 async function renderGraph() {
@@ -300,7 +358,7 @@ async function renderGraph() {
     cleanupGraph()
 
     const width = Math.max(containerRef.value.clientWidth, 760)
-    const { orderedGroups, groupMetaMap, nodeGroupById, totalHeight } = deriveGroupMeta(objects, edgesInput)
+    const { orderedGroups, groupMetaMap, totalHeight } = deriveGroupMeta(objects, edgesInput)
     graphHeight.value = totalHeight
 
     const groups = new Map()
@@ -309,19 +367,6 @@ async function renderGraph() {
       if (!groups.has(group)) groups.set(group, [])
       groups.get(group).push(obj)
     })
-
-    const laneNodes = orderedGroups.map((group) => ({
-      id: `layer-${group}`,
-      type: 'trapezoid-lane',
-      x: Math.round(width / 2),
-      y: groupMetaMap.get(group).y,
-      label: group,
-      size: [Math.max(width - 60, 560), groupMetaMap.get(group)?.laneHeight || 86],
-      color: groupMetaMap.get(group).color,
-      skew: 24,
-      zIndex: 200 - (groupMetaMap.get(group)?.index || 0) * 20,
-      isLayer: true,
-    }))
 
     const dataNodes = Array.from(groups.entries()).flatMap(([group, items]) => {
       const sorted = [...items].sort((a, b) => String(a.standardName || '').localeCompare(String(b.standardName || '')))
@@ -442,16 +487,20 @@ async function renderGraph() {
       },
     })
 
-    graph.data({ nodes: [...laneNodes, ...dataNodes], edges })
+    graph.data({ nodes: dataNodes, edges })
     graph.render()
+    drawLaneDecorations(width, orderedGroups, groupMetaMap)
 
     arrangeGraphLayers()
 
     graph.on('node:click', (evt) => {
       const currentNode = evt.item
       if (!currentNode) return
-      const currentModel = currentNode.getModel()
-      if (currentModel.isLayer) return
+
+      graph.getNodes().forEach((nodeItem) => {
+        const model = nodeItem.getModel()
+        graph.setItemState(nodeItem, 'selected', nodeItem.getID() === currentNode.getID())
+      })
 
       graph.getNodes().forEach((nodeItem) => {
         const model = nodeItem.getModel()
