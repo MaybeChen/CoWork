@@ -1,30 +1,14 @@
 <script setup>
-import { inject, provide, ref } from 'vue'
+import { inject, provide } from 'vue'
 import { createHostThemeCenter } from './theme/themeCenter'
 
 const coworkUI = inject('demo:coworkui')
 const libraryStore = coworkUI?.getThemeStore?.()
 const center = createHostThemeCenter()
-const independentLibraryTheme = ref(false)
-
-function toggleAllTheme() {
-  center.toggleTheme(libraryStore)
-}
-
-function toggleLibraryMode() {
-  independentLibraryTheme.value = !independentLibraryTheme.value
-  const follow = !independentLibraryTheme.value
-  center.setLibraryFollowHost(follow)
-  libraryStore?.setFollowExternal?.(follow)
-  if (follow) center.syncLibraryTheme(libraryStore)
-}
-
-function toggleLibraryTheme() {
-  if (!libraryStore) return
-  libraryStore.toggleTheme()
-}
+center.syncLibraryTheme(libraryStore)
 
 provide('demo:themeCenter', center)
+provide('demo:libraryThemeStore', libraryStore)
 </script>
 
 <template>

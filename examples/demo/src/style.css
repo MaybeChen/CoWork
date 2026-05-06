@@ -37,6 +37,3 @@ textarea {
 }
 
 
-.theme-header {display:flex; gap:8px; padding:10px; background:var(--app-surface-1); border-bottom:1px solid var(--app-surface-2); position:sticky; top:0; z-index:10;}
-.theme-btn {background:var(--app-surface-1); color:var(--app-text); border:1px solid var(--app-surface-2); border-radius:8px; padding:6px 10px; cursor:pointer;}
-.theme-btn:disabled {opacity:.5; cursor:not-allowed;}

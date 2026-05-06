@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { streamChatByWs } from './modules/network/chatWsStreamClient'
@@ -38,6 +38,17 @@ const parsedContentRef = ref(null)
 const outputSnapshots = reactive({})
 
 const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
+
+const themeCenter = inject('demo:themeCenter', null)
+const libraryThemeStore = inject('demo:libraryThemeStore', null)
+const availableThemes = computed(() => themeCenter?.hostStore?.themes || ['light', 'dark'])
+const activeTheme = computed(() => themeCenter?.hostTheme?.value || 'light')
+
+function onThemeChange(event) {
+  const nextTheme = event?.target?.value
+  if (!nextTheme || !themeCenter) return
+  themeCenter.setTheme(nextTheme, libraryThemeStore)
+}
 
 function onModelChange() {
   saveModelLabel(selectedModelLabel.value || DEFAULT_MODEL_LABEL)
@@ -241,6 +252,12 @@ async function handleAction(turn, action) {
     <header class="global-header">
       <div class="brand">CoWorker</div>
       <div class="header-actions">
+        <label class="theme-picker">
+          <span>主题</span>
+          <select :value="activeTheme" class="theme-select" @change="onThemeChange">
+            <option v-for="item in availableThemes" :key="`theme-${item}`" :value="item">{{ item }}</option>
+          </select>
+        </label>
         <label class="model-picker">
           <span>模型</span>
           <select v-model="selectedModelLabel" class="model-select" @change="onModelChange">
@@ -429,4 +446,8 @@ async function handleAction(turn, action) {
 .sending { display: inline-flex; align-items: center; gap: 6px; }
 .sending-dot { width: 8px; height: 8px; border-radius: 999px; background: #3b82f6; animation: sending-pulse 1s ease-in-out infinite; }
 @keyframes sending-pulse { 0%,100%{opacity:.35;transform:scale(.85);}50%{opacity:1;transform:scale(1);} }
+
+.theme-picker { display: inline-flex; align-items: center; gap: 8px; }
+.theme-select { min-width: 110px; }
 </style>
+
