@@ -22,3 +22,8 @@ function onThemeChange(event) {
     </select>
   </label>
 </template>
+
+<style scoped>
+.model-picker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #1e3a8a; }
+.model-select { height: 30px; border-radius: 8px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; padding: 0 8px; }
+</style>
