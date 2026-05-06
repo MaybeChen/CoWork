@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import Root from './Root.vue'
 import './style.css'
+import './theme/themeVars.css'
 import sweetBase from '@hw-seq/sweet-ui-base'
 import '@hw-seq/sweet-ui-base/dist/sweet-ui-base.css'
 import { createCoworkUI } from 'coworkUI'
@@ -15,6 +16,7 @@ const coworkUI = createCoworkUI({
   installSweetBase: true,
 })
 
+app.provide('demo:coworkui', coworkUI)
 app.use(coworkUI)
 app.use(router)
 app.mount('#app')
