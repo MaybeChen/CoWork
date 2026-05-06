@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { streamChat } from './modules/network/chatStreamClient'
 import { streamChatByWs } from './modules/network/chatWsStreamClient'
