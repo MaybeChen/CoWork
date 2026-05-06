@@ -1,0 +1,12 @@
+:root[data-theme='dark'] .coworkui-workspace,
+.coworkui-workspace[data-theme='dark'] {
+  --n-0: #0f172a;
+  --n-10: #111827;
+  --n-20: #334155;
+  --n-70: #94a3b8;
+  --n-90: #e2e8f0;
+  --n-100: #ffffff;
+  --p-30: #60a5fa;
+  --a2-code-fg: #e2e8f0;
+  --a2-code-bg: #020617;
+}
