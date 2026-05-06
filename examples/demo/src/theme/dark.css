@@ -1,0 +1,14 @@
+:root[data-theme='dark'] {
+  --app-bg: #0f172a;
+  --app-text: #e2e8f0;
+  --app-surface-1: #111827;
+  --app-surface-2: #334155;
+
+  --app-page-bg: linear-gradient(180deg, #0f172a, #111827);
+  --app-body-radial-1: #1e293b;
+  --app-body-radial-2: #0f172a;
+
+  --hero-slogan-gradient: linear-gradient(90deg, #93c5fd 0%, #67e8f9 48%, #22d3ee 100%);
+  --hero-subtitle-color: #94a3b8;
+  --base-content-color: #cbd5e1;
+}
