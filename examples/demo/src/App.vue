@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, reactive, ref } from 'vue'
+import ThemePicker from './components/ThemePicker.vue'
 import { A2UIRenderer } from 'coworkUI'
 import FlowNodeGraph from './components/FlowNodeGraph.vue'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
@@ -267,6 +268,7 @@ async function handleAction(nodeId, action) {
     <header class="global-header">
       <button type="button" class="brand" @click="backToHome">COWORKER</button>
       <div class="header-actions">
+        <ThemePicker />
         <label class="model-picker">
           <span>模型</span>
           <select v-model="selectedModelLabel" class="model-select" @change="onModelChange">
