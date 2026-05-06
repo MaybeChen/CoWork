@@ -24,6 +24,7 @@ function onThemeChange(event) {
 </template>
 
 <style scoped>
-.model-picker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #1e3a8a; }
-.model-select { height: 30px; border-radius: 8px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; padding: 0 8px; }
+.model-picker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--app-accent-text); }
+.model-select { height: 30px; border-radius: 8px; border: 1px solid var(--app-accent-border); background: var(--app-accent-bg); color: var(--app-accent-text); padding: 0 8px; }
+.model-select option { color: var(--app-text); background: var(--app-surface-1); }
 </style>
