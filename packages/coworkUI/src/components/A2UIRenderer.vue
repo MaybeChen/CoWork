@@ -26,7 +26,7 @@ const resolvedTheme = computed(() => props.theme || injectedTheme?.value || defa
 </script>
 
 <template>
-  <div v-if="surface?.root" class="a2ui-surface">
+  <div v-if="surface?.root" class="coworkui-workspace a2ui-surface">
     <A2UIComponentRenderer
       :node-id="surface.root"
       :components-by-id="surface.componentsById || {}"
