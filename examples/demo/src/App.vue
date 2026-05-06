@@ -387,7 +387,7 @@ async function handleAction(nodeId, action) {
 </template>
 
 <style scoped>
-.page { height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8fbff, #eef3fa); color: #334155; }
+.page { height: 100vh; display: flex; flex-direction: column; background: var(--app-page-bg); color: var(--base-content-color); }
 .global-header { height: 52px; border-bottom: 1px solid #d7e3f3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(8px); }
 .brand { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: none; background: linear-gradient(90deg, #2563eb, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; padding: 0; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
@@ -398,8 +398,8 @@ async function handleAction(nodeId, action) {
 .workspace { flex: 1; padding: 16px; min-height: 0; }
 .panel { border: none; border-radius: 0; background: transparent; box-shadow: none; }
 .hero { height: 100%; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
-.hero-brand { margin: 0; font-size: 34px; background: linear-gradient(90deg, #60a5fa 0%, #38bdf8 48%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.hero-subtitle { margin: 0; color: #64748b; }
+.hero-brand { margin: 0; font-size: 34px; background: var(--hero-slogan-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-subtitle { margin: 0; color: var(--hero-subtitle-color); }
 .example-list { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 12px; max-width: 1080px; }
 .example-btn { border: 1px solid #d5e5fb; background: #ffffff; color: #1e3a8a; border-radius: 14px; padding: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 86px; }
 .example-btn:hover { background: #f8fbff; border-color: #93c5fd; box-shadow: 0 8px 16px rgba(148,163,184,.16); }
@@ -411,7 +411,7 @@ async function handleAction(nodeId, action) {
 .example-text { line-height: 1.4; }
 .flow-layout { height: 100%; display: grid; grid-template-rows: 160px 1fr auto; gap: 12px; }
 .graph { padding: 10px 0; overflow: hidden; }
-.graph h3 { margin: 0 0 10px; font-size: 14px; color: #334155; }
+.graph h3 { margin: 0 0 10px; font-size: 14px; color: var(--base-content-color); }
 
 .result-stage { min-height: 0; padding: 0; }
 .result-dual-pane { height: 100%; display: grid; grid-template-columns: 1fr 2fr; gap: 12px; min-height: 0; }
