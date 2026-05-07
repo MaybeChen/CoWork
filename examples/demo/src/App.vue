@@ -245,10 +245,8 @@ function selectNode(nodeId) {
 
 function onRendererProgress(result, payload) {
   if (!result || !payload) return
-  if (payload.raw) {
-    const line = typeof payload.raw === 'string' ? payload.raw : JSON.stringify(payload.raw)
-    if (line) result.rawLines.push(line)
-  }
+  if (payload.rawLine) result.rawLines.push(payload.rawLine)
+  if (payload.parsedText) result.parsedText = payload.parsedText
 }
 
 function onRendererError(e) {

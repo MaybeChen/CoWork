@@ -236,10 +236,8 @@ async function submit() {
 
 function onRendererProgress(turn, payload) {
   if (!turn || !payload) return
-  if (payload.raw) {
-    const line = typeof payload.raw === 'string' ? payload.raw : JSON.stringify(payload.raw)
-    if (line) turn.rawLines.push(line)
-  }
+  if (payload.rawLine) turn.rawLines.push(payload.rawLine)
+  if (payload.parsedText) turn.parsedText = payload.parsedText
 }
 
 function onRendererError(e) {
