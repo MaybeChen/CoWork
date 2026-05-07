@@ -2,6 +2,7 @@
 import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
 import { createRequestEngine } from '../core/requestEngine'
+import { normalizeRendererPayload } from '../core/responseParser'
 import '../a2ui-runtime/style/common.css'
 import '../a2ui-runtime/style/light.css'
 import '../a2ui-runtime/style/dark.css'
@@ -18,7 +19,7 @@ const props = defineProps({
   isStream: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['request-finish', 'request-error'])
+const emit = defineEmits(['request-start', 'request-progress', 'request-finish', 'request-error'])
 
 const injectedTheme = inject('coworkui:theme', null)
 const resolvedTheme = computed(() => props.theme || injectedTheme?.value || defaultTheme)
@@ -33,9 +34,10 @@ const resolvedSurface = computed(() => requestSurface.value || props.surface)
 const resolvedDataModel = computed(() => ({ ...(props.dataModel || {}), ...(requestDataModel.value || {}) }))
 
 function applyResponse(payload) {
-  if (!payload || typeof payload !== 'object') return
-  if (payload.surface?.root) requestSurface.value = payload.surface
-  if (payload.dataModel && typeof payload.dataModel === 'object') requestDataModel.value = payload.dataModel
+  const normalized = normalizeRendererPayload(payload)
+  if (normalized.surface?.root) requestSurface.value = normalized.surface
+  if (normalized.dataModel && typeof normalized.dataModel === 'object') requestDataModel.value = normalized.dataModel
+  emit('request-progress', normalized)
 }
 
 watch(
@@ -43,6 +45,8 @@ watch(
   ([input, isStream]) => {
     const hasInput = typeof input === 'string' && input.trim().length > 0
     if (!hasInput) return
+
+    emit('request-start', { mode: isStream ? 'ws' : 'http' })
 
     if (!isStream) {
       requestSurface.value = null

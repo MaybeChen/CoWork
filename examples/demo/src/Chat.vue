@@ -233,6 +233,19 @@ async function submit() {
   message.value = ''
 }
 
+
+function onRendererProgress(turn, payload) {
+  if (!turn || !payload) return
+  if (payload.raw) {
+    const line = typeof payload.raw === 'string' ? payload.raw : JSON.stringify(payload.raw)
+    if (line) turn.rawLines.push(line)
+  }
+}
+
+function onRendererError(e) {
+  error.value = e instanceof Error ? e.message : String(e || 'Unknown error')
+}
+
 async function handleAction(turn, action) {
   await send(turn, { message: JSON.stringify({ userAction: action }) })
 }
@@ -347,6 +360,8 @@ async function handleAction(turn, action) {
                       :is-stream="streamMode === 'ws_stream'"
                       :options="{ model: selectedModelLabel }"
                       :on-action="(action) => handleAction(turn, action)"
+                      @request-progress="(payload) => onRendererProgress(turn, payload)"
+                      @request-error="onRendererError"
                     />
                   </article>
                 </div>

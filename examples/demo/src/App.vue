@@ -242,6 +242,19 @@ function selectNode(nodeId) {
   scrollToNodeSections(nodeId)
 }
 
+
+function onRendererProgress(result, payload) {
+  if (!result || !payload) return
+  if (payload.raw) {
+    const line = typeof payload.raw === 'string' ? payload.raw : JSON.stringify(payload.raw)
+    if (line) result.rawLines.push(line)
+  }
+}
+
+function onRendererError(e) {
+  error.value = e instanceof Error ? e.message : String(e || 'Unknown error')
+}
+
 async function handleAction(nodeId, action) {
   const result = nodeResults[nodeId]
   if (!result) return
@@ -375,6 +388,8 @@ async function handleAction(nodeId, action) {
                       :is-stream="false"
                       :options="{ model: selectedModelLabel }"
                       :on-action="(action) => handleAction(result.nodeId, action)"
+                      @request-progress="(payload) => onRendererProgress(result, payload)"
+                      @request-error="onRendererError"
                     />
                   </article>
                 </div>
