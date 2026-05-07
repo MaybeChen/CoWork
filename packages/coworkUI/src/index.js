@@ -10,6 +10,9 @@ export { createComponentRegistry } from './a2ui-runtime/registry'
 export { A2UIComponentRenderer } from './a2ui-runtime'
 
 export function createCoworkUI(options = {}) {
+
+  const namespace = options.namespace || 'coworkui'
+  const workspaceClass = options.workspaceClass || `${namespace}-workspace`
   const store = createThemeStore({
     themeName: options.themeName || 'light',
     storageKey: options.storageKey || 'coworkui:theme',
@@ -48,11 +51,15 @@ export function createCoworkUI(options = {}) {
       app.provide('coworkui:setTheme', setTheme)
       app.provide('coworkui:theme', store.themeName)
       app.provide('coworkui:themeStore', store)
+      app.provide('coworkui:namespace', namespace)
+      app.provide('coworkui:workspaceClass', workspaceClass)
     },
     setTheme,
     toggleTheme: store.toggleTheme,
     getTheme: () => store.themeName.value,
     getThemeStore: () => store,
+    getNamespace: () => namespace,
+    getWorkspaceClass: () => workspaceClass,
   }
 }
 
