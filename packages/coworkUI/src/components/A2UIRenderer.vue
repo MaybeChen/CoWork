@@ -29,15 +29,16 @@ const surfaceClass = computed(() => ['a2ui-surface', 'coworkui-workspace', works
 const requestSurface = ref(null)
 const requestDataModel = ref({})
 const engine = createRequestEngine()
+let requestSeq = 0
 
 const resolvedSurface = computed(() => requestSurface.value || props.surface)
 const resolvedDataModel = computed(() => ({ ...(props.dataModel || {}), ...(requestDataModel.value || {}) }))
 
-function applyResponse(payload) {
+function applyResponse(payload, requestMeta = {}) {
   const normalized = normalizeRendererPayload(payload)
   if (normalized.surface?.root) requestSurface.value = normalized.surface
   if (normalized.dataModel && typeof normalized.dataModel === 'object') requestDataModel.value = normalized.dataModel
-  emit('request-progress', normalized)
+  emit('request-progress', { ...requestMeta, ...normalized })
 }
 
 watch(
@@ -46,7 +47,9 @@ watch(
     const hasInput = typeof input === 'string' && input.trim().length > 0
     if (!hasInput) return
 
-    emit('request-start', { mode: isStream ? 'ws' : 'http' })
+    const requestId = `${Date.now()}-${++requestSeq}`
+    const requestMeta = { requestId, input, mode: isStream ? 'ws' : 'http' }
+    emit('request-start', requestMeta)
 
     if (!isStream) {
       requestSurface.value = null
@@ -55,9 +58,9 @@ watch(
         url: props.url,
         input,
         options: props.options,
-        onData: applyResponse,
-        onDone: (meta) => emit('request-finish', meta),
-        onError: (error) => emit('request-error', error),
+        onData: (payload) => applyResponse(payload, requestMeta),
+        onDone: (meta) => emit('request-finish', { ...requestMeta, ...meta }),
+        onError: (error) => emit('request-error', { ...requestMeta, error }),
       })
       return
     }
@@ -66,9 +69,9 @@ watch(
       wsUrl: props.wsUrl,
       input,
       options: props.options,
-      onData: applyResponse,
-      onDone: (meta) => emit('request-finish', meta),
-      onError: (error) => emit('request-error', error),
+      onData: (payload) => applyResponse(payload, requestMeta),
+      onDone: (meta) => emit('request-finish', { ...requestMeta, ...meta }),
+      onError: (error) => emit('request-error', { ...requestMeta, error }),
     })
   },
   { deep: true },

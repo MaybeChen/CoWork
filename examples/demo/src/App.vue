@@ -249,7 +249,8 @@ function onRendererProgress(result, payload) {
   if (payload.parsedText) result.parsedText = payload.parsedText
 }
 
-function onRendererError(e) {
+function onRendererError(event) {
+  const e = event?.error || event
   error.value = e instanceof Error ? e.message : String(e || 'Unknown error')
 }
 
