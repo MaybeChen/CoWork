@@ -157,6 +157,65 @@ watch(
   { flush: 'post' },
 )
 
+async function send(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+
+  try {
+    await streamChat({
+    endpoint: streamEndpoint.value,
+    payload,
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      appendObjectsRawLines(turn, objects)
+      syncOutputPanel(turn)
+      openOutputPanel(turn)
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+    })
+  } finally {
+    turn.streaming = false
+    loading.value = false
+    closeOutputPanel()
+  }
+}
+
+async function sendByWsStream(turn, payload) {
+  loading.value = true
+  turn.streaming = true
+  error.value = ''
+  turn.streamPreviewText = ''
+
+  try {
+    await streamChatByWs({
+    endpoint: wsStreamEndpoint.value,
+    payload,
+    onPreview: (text) => {
+      turn.streamPreviewText = text
+      appendWsRawLine(turn, text)
+      syncOutputPanel(turn)
+      scheduleAutoScroll({ force: true })
+      scheduleQuestionAutoScroll({ force: true })
+    },
+    onObjects: async (objects) => {
+      await applyObjectsProgressively(turn, objects, { applyMessageFn })
+      syncOutputPanel(turn)
+      openOutputPanel(turn)
+    },
+    onError: (e) => {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+    },
+    })
+  } finally {
+    turn.streaming = false
+    loading.value = false
+    closeOutputPanel()
+  }
+}
+
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
@@ -249,7 +308,7 @@ async function handleAction() {
               placeholder="请输入问题，例如：查询故障工单并给出分析..."
               :disabled="loading"
             />
-            <button type="submit" :disabled="loading || !message.trim()">
+            <button type="submit" :disabled="loading || !message.trim()" @click.prevent="submit">
               <span v-if="loading" class="sending">
                 <span class="sending-dot" />
                 生成中
