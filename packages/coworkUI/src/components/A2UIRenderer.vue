@@ -77,7 +77,7 @@ watch(
       onError: (error) => emit('request-error', { ...requestMeta, error }),
     })
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 
 onBeforeUnmount(() => {
