@@ -1,6 +1,9 @@
 <script setup>
 import { computed, inject } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
+import '../a2ui-runtime/style/common.css'
+import '../a2ui-runtime/style/light.css'
+import '../a2ui-runtime/style/dark.css'
 
 const props = defineProps({
   surface: {
@@ -26,7 +29,7 @@ const resolvedTheme = computed(() => props.theme || injectedTheme?.value || defa
 </script>
 
 <template>
-  <div v-if="surface?.root" class="a2ui-surface">
+  <div v-if="surface?.root" class="coworkui-workspace a2ui-surface">
     <A2UIComponentRenderer
       :node-id="surface.root"
       :components-by-id="surface.componentsById || {}"
