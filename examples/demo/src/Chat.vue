@@ -339,7 +339,9 @@ async function handleAction(turn, action) {
                 <div class="bubble bubble-assistant">
                   <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
                     <A2UIRenderer
-                                            :input="turn.userText || turn.streamPreviewText || ''"
+                      :surface="surface"
+                      :data-model="turn.dataModels[surface.id] || {}"
+                      :input="turn.userText || turn.streamPreviewText || ''"
                       :url="streamEndpoint"
                       :ws-url="wsStreamEndpoint"
                       :is-stream="streamMode === 'ws_stream'"
