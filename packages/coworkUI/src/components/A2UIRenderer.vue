@@ -1,6 +1,9 @@
 <script setup>
 import { computed, inject } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
+import '../a2ui-runtime/style/common.css'
+import '../a2ui-runtime/style/light.css'
+import '../a2ui-runtime/style/dark.css'
 
 const props = defineProps({
   surface: {
