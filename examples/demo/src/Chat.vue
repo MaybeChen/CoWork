@@ -1,11 +1,10 @@
 <script setup>
-import { computed, inject, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
 import { DEFAULT_MODEL_LABEL, MODEL_OPTIONS, getSavedModelLabel, saveModelLabel, withModelParam } from './modules/network/modelConfig'
-import ThemePicker from './components/ThemePicker.vue'
 
 const endpoint = '/api/chat/stream'
 const wsEndpoint = '/api/chat/ws/stream'
@@ -37,7 +36,6 @@ const parsedContentRef = ref(null)
 const outputSnapshots = reactive({})
 
 const hasActiveOutput = computed(() => Boolean(activeOutputTurnId.value))
-
 
 function onModelChange() {
   saveModelLabel(selectedModelLabel.value || DEFAULT_MODEL_LABEL)
@@ -192,7 +190,6 @@ async function handleAction() {
     <header class="global-header">
       <div class="brand">CoWorker</div>
       <div class="header-actions">
-        <ThemePicker />
         <label class="model-picker">
           <span>模型</span>
           <select v-model="selectedModelLabel" class="model-select" @change="onModelChange">
@@ -388,6 +385,4 @@ async function handleAction() {
 .sending { display: inline-flex; align-items: center; gap: 6px; }
 .sending-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--app-info-dot); animation: sending-pulse 1s ease-in-out infinite; }
 @keyframes sending-pulse { 0%,100%{opacity:.35;transform:scale(.85);}50%{opacity:1;transform:scale(1);} }
-
 </style>
-
