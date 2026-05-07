@@ -1,7 +1,7 @@
-function toPayload(input) {
-  if (input == null) return null
-  if (typeof input === 'string') return { message: input }
-  return input
+function toPayload(input, options = {}) {
+  const payload = { message: input == null ? "" : String(input) }
+  if (options && typeof options === "object" && options.model) payload.model = options.model
+  return payload
 }
 
 export function createRequestEngine() {
@@ -19,7 +19,7 @@ export function createRequestEngine() {
     }
   }
 
-  const requestOnce = async ({ url, input, onData, onDone, onError }) => {
+  const requestOnce = async ({ url, input, options, onData, onDone, onError }) => {
     try {
       if (!url) throw new Error('url is required for non-stream request')
       if (abortController) abortController.abort()
@@ -27,7 +27,7 @@ export function createRequestEngine() {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(toPayload(input)),
+        body: JSON.stringify(toPayload(input, options)),
         signal: abortController.signal,
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -57,10 +57,10 @@ export function createRequestEngine() {
     return ws
   }
 
-  const sendMessage = ({ wsUrl, input, onData, onDone, onError }) => {
+  const sendMessage = ({ wsUrl, input, options, onData, onDone, onError }) => {
     try {
       const socket = ensureWs({ wsUrl, onData, onDone, onError })
-      const payload = JSON.stringify(toPayload(input))
+      const payload = JSON.stringify(toPayload(input, options))
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(payload)
       } else {

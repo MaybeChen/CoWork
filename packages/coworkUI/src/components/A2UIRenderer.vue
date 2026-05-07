@@ -11,7 +11,8 @@ const props = defineProps({
   dataModel: { type: Object, default: () => ({}) },
   onAction: { type: Function, default: null },
   theme: { type: Object, default: null },
-  input: { type: [String, Object], default: '' },
+  input: { type: String, default: '' },
+  options: { type: Object, default: () => ({}) },
   url: { type: String, default: '' },
   wsUrl: { type: String, default: '' },
   isStream: { type: Boolean, default: false },
@@ -40,7 +41,7 @@ function applyResponse(payload) {
 watch(
   () => [props.input, props.isStream, props.url, props.wsUrl],
   ([input, isStream]) => {
-    const hasInput = typeof input === 'string' ? input.trim().length > 0 : Boolean(input)
+    const hasInput = typeof input === 'string' && input.trim().length > 0
     if (!hasInput) return
 
     if (!isStream) {
@@ -49,6 +50,7 @@ watch(
       engine.requestOnce({
         url: props.url,
         input,
+        options: props.options,
         onData: applyResponse,
         onDone: (meta) => emit('request-finish', meta),
         onError: (error) => emit('request-error', error),
@@ -59,6 +61,7 @@ watch(
     engine.sendMessage({
       wsUrl: props.wsUrl,
       input,
+      options: props.options,
       onData: applyResponse,
       onDone: (meta) => emit('request-finish', meta),
       onError: (error) => emit('request-error', error),

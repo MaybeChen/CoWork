@@ -369,6 +369,11 @@ async function handleAction(nodeId, action) {
                     <A2UIRenderer
                       :surface="surface"
                       :data-model="result.turn.dataModels[surface.id] || {}"
+                      :input="result.inputText || ''"
+                      :url="streamEndpoint"
+                      :ws-url="wsStreamEndpoint"
+                      :is-stream="false"
+                      :options="{ model: selectedModelLabel }"
                       :on-action="(action) => handleAction(result.nodeId, action)"
                     />
                   </article>
