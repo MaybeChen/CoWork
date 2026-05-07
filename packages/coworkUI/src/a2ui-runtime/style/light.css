@@ -10,4 +10,15 @@
   --p-30: #2563eb;
   --a2-code-fg: #ffffff;
   --a2-code-bg: #000000;
+  --a2-warning-color: #facc15;
+  --a2-vw-6-bg: #B91C1C; --a2-vw-6-fg: #FFFFFF;
+  --a2-vw-5-bg: #F87171; --a2-vw-5-fg: #450A0A;
+  --a2-vw-4-bg: #D97706; --a2-vw-4-fg: #FFFFFF;
+  --a2-vw-3-bg: #FBBF24; --a2-vw-3-fg: #451A03;
+  --a2-vw-2-bg: #15803D; --a2-vw-2-fg: #FFFFFF;
+  --a2-vw-1-bg: #4ADE80; --a2-vw-1-fg: #064E3B;
+  --a2-card-shadow: 0 8px 20px rgba(148, 163, 184, 0.16);
+  --a2-card-inset: rgba(255, 255, 255, 0.5);
+  --a2-card-hover-shadow: 0 10px 24px rgba(59, 130, 246, 0.15);
+  --a2-detail-accent: #b7d1f0;
 }
