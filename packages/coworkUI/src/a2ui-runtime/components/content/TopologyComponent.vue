@@ -78,6 +78,14 @@ function normalizeGroup(viewGroup = '') {
   return cleaned[0] || text
 }
 
+
+function readThemeToken(name, fallback) {
+  if (typeof window === 'undefined') return fallback
+  const el = containerRef.value || document.documentElement
+  const raw = window.getComputedStyle(el).getPropertyValue(name)
+  return raw?.trim() || fallback
+}
+
 function edgeEndpoints(edge = {}) {
   return {
     source: edge.srcVid || edge.source || edge.from || edge.from_id,
@@ -152,7 +160,7 @@ function registerLaneNodeIfNeeded(G6) {
             x: -width / 2 + 18,
             y: height / 2 - 18,
             text: label,
-            fill: '#f8fafc',
+            fill: readThemeToken('--a2-topology-node-label', '#f8fafc'),
             fontSize: 11,
             textAlign: 'left',
             textBaseline: 'middle',
@@ -360,7 +368,7 @@ function drawLaneDecorations(width, orderedGroups, groupMetaMap) {
         x: centerX - laneWidth / 2 + 18,
         y: centerY + laneHeight / 2 - 18,
         text: group,
-        fill: '#f8fafc',
+        fill: readThemeToken('--a2-topology-node-label', '#f8fafc'),
         fontSize: 11,
         textAlign: 'left',
         textBaseline: 'middle',
@@ -430,7 +438,7 @@ async function renderGraph() {
         labelCfg: {
           style: {
             fontSize: 9,
-            fill: '#f8fafc',
+            fill: readThemeToken('--a2-topology-node-label', '#f8fafc'),
             fontWeight: 400,
           },
           position: 'bottom',
@@ -458,7 +466,7 @@ async function renderGraph() {
           label,
           type: 'cubic',
           style: {
-            stroke: '#9ca3af',
+            stroke: readThemeToken('--a2-topology-edge-stroke', '#9ca3af'),
             lineWidth: 1,
             endArrow: false,
             lineDash: undefined,
@@ -469,7 +477,7 @@ async function renderGraph() {
                 labelCfg: {
                   autoRotate: true,
                   style: {
-                    fill: '#6b7280',
+                    fill: readThemeToken('--a2-topology-edge-label', '#6b7280'),
                     fontSize: 10,
                     fontWeight: 400,
                   },

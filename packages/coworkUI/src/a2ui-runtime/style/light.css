@@ -29,4 +29,7 @@
   --a2-topology-btn-text: #0f172a;
   --a2-topology-graph-border: #e2e8f0;
   --a2-topology-graph-bg: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+  --a2-topology-node-label: #f8fafc;
+  --a2-topology-edge-stroke: #9ca3af;
+  --a2-topology-edge-label: #6b7280;
 }
