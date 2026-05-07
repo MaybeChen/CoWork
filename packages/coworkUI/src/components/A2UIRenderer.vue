@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
 import '../a2ui-runtime/style/common.css'
 import '../a2ui-runtime/style/light.css'
@@ -12,6 +12,8 @@ const props = defineProps({
   theme: { type: Object, default: null },
 })
 
+const emit = defineEmits(['request-start', 'request-progress', 'request-finish', 'request-error'])
+
 const injectedTheme = inject('coworkui:theme', null)
 const resolvedTheme = computed(() => props.theme || injectedTheme?.value || defaultTheme)
 const workspaceClass = inject('coworkui:workspaceClass', 'coworkui-workspace')
@@ -21,10 +23,10 @@ const surfaceClass = computed(() => ['a2ui-surface', 'coworkui-workspace', works
 <template>
   <div v-if="surface?.root" :class="surfaceClass">
     <A2UIComponentRenderer
-      :node-id="surface.root"
-      :components-by-id="surface.componentsById || {}"
-      :data-model="dataModel"
-      :surface-id="surface.id"
+      :node-id="resolvedSurface.root"
+      :components-by-id="resolvedSurface.componentsById || {}"
+      :data-model="resolvedDataModel"
+      :surface-id="resolvedSurface.id"
       :registry="defaultRegistry"
       :theme="resolvedTheme"
       :on-action="onAction"
