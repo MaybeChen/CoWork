@@ -1,8 +1,6 @@
 <script setup>
 import { computed, inject, nextTick, reactive, ref, watch } from 'vue'
 import { A2UIRenderer } from 'coworkUI'
-import { streamChat } from './modules/network/chatStreamClient'
-import { streamChatByWs } from './modules/network/chatWsStreamClient'
 import { createTurn, applyMessage } from './modules/message/messageApplier'
 import { applyObjectsProgressively } from './modules/message/progressiveScheduler'
 import { useAutoScroll } from './modules/ui/useAutoScroll'
@@ -161,61 +159,6 @@ watch(
   { flush: 'post' },
 )
 
-async function send(turn, payload) {
-  loading.value = true
-  turn.streaming = true
-  error.value = ''
-
-  await streamChat({
-    endpoint: streamEndpoint.value,
-    payload,
-    onObjects: async (objects) => {
-      await applyObjectsProgressively(turn, objects, { applyMessageFn })
-      appendObjectsRawLines(turn, objects)
-      syncOutputPanel(turn)
-      openOutputPanel(turn)
-    },
-    onError: (e) => {
-      error.value = e instanceof Error ? e.message : 'Unknown error'
-    },
-  })
-
-  turn.streaming = false
-  loading.value = false
-  closeOutputPanel()
-}
-
-async function sendByWsStream(turn, payload) {
-  loading.value = true
-  turn.streaming = true
-  error.value = ''
-  turn.streamPreviewText = ''
-
-  await streamChatByWs({
-    endpoint: wsStreamEndpoint.value,
-    payload,
-    onPreview: (text) => {
-      turn.streamPreviewText = text
-      appendWsRawLine(turn, text)
-      syncOutputPanel(turn)
-      scheduleAutoScroll({ force: true })
-      scheduleQuestionAutoScroll({ force: true })
-    },
-    onObjects: async (objects) => {
-      await applyObjectsProgressively(turn, objects, { applyMessageFn })
-      syncOutputPanel(turn)
-      openOutputPanel(turn)
-    },
-    onError: (e) => {
-      error.value = e instanceof Error ? e.message : 'Unknown error'
-    },
-  })
-
-  turn.streaming = false
-  loading.value = false
-  closeOutputPanel()
-}
-
 async function submit() {
   const text = message.value.trim()
   if (!text || loading.value) return
@@ -224,12 +167,6 @@ async function submit() {
   turns.value.push(turn)
   scheduleAutoScroll({ force: true })
   scheduleQuestionAutoScroll({ force: true })
-
-  if (streamMode.value === 'ws_stream') {
-    await sendByWsStream(turn, { message: text })
-  } else {
-    await send(turn, { message: text })
-  }
   message.value = ''
 }
 
@@ -245,8 +182,8 @@ function onRendererError(event) {
   error.value = e instanceof Error ? e.message : String(e || 'Unknown error')
 }
 
-async function handleAction(turn, action) {
-  await send(turn, { message: JSON.stringify({ userAction: action }) })
+async function handleAction() {
+  // action handling will be migrated to renderer-internal request flow
 }
 </script>
 
@@ -347,13 +284,11 @@ async function handleAction(turn, action) {
                 </span>
                 <span class="streaming-scanline" />
               </div>
-              <div v-if="Object.values(turn.surfaces).some((s) => s.ready)" class="turn-result">
+              <div class="turn-result">
                 <div class="bubble bubble-assistant">
-                  <article v-for="surface in Object.values(turn.surfaces).filter((s) => s.ready)" :key="surface.id" class="surface">
+                  <article :key="`surface-${turn.id}`" class="surface">
                     <A2UIRenderer
-                      :surface="surface"
-                      :data-model="turn.dataModels[surface.id] || {}"
-                      :input="turn.userText || turn.streamPreviewText || ''"
+                      :input="turn.mode === 'ws_stream' ? (turn.streamPreviewText || turn.userText || '') : (turn.userText || '')"
                       :url="streamEndpoint"
                       :ws-url="wsStreamEndpoint"
                       :is-stream="streamMode === 'ws_stream'"
@@ -364,10 +299,8 @@ async function handleAction(turn, action) {
                     />
                   </article>
                 </div>
-                <div v-if="!turn.streaming" class="result-toolbar">
-                  <button type="button" class="view-output-btn" @click="openOutputPanel(turn)">
-                    查看输出
-                  </button>
+                <div class="result-toolbar">
+                  <button type="button" class="view-output-btn" @click="openOutputPanel(turn)">查看输出</button>
                 </div>
               </div>
             </div>
