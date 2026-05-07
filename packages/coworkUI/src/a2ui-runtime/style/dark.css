@@ -20,4 +20,12 @@
   --a2-card-inset: rgba(148, 163, 184, 0.2);
   --a2-card-hover-shadow: 0 10px 24px rgba(96, 165, 250, 0.2);
   --a2-detail-accent: #334155;
+  --a2-danger: #f87171;
+  --a2-topology-wrap-bg: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  --a2-topology-wrap-shadow: 0 8px 20px rgba(2, 6, 23, 0.45);
+  --a2-topology-btn-border: #475569;
+  --a2-topology-btn-bg: #1f2937;
+  --a2-topology-btn-text: #e2e8f0;
+  --a2-topology-graph-border: #334155;
+  --a2-topology-graph-bg: linear-gradient(180deg, #1f2937 0%, #111827 100%);
 }

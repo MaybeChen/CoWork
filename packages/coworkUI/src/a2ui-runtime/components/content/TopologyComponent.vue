@@ -634,8 +634,8 @@ onUnmounted(() => {
   border: 1px solid var(--n-20, #dbeafe);
   border-radius: 12px;
   padding: 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  box-shadow: 0 8px 20px rgba(148, 163, 184, 0.16);
+  background: var(--a2-topology-wrap-bg, linear-gradient(180deg, #ffffff 0%, #f8fafc 100%));
+  box-shadow: var(--a2-topology-wrap-shadow, 0 8px 20px rgba(148, 163, 184, 0.16));
 }
 
 .a2-topology-title {
@@ -652,9 +652,9 @@ onUnmounted(() => {
 }
 
 .a2-topology-btn {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #0f172a;
+  border: 1px solid var(--a2-topology-btn-border, #cbd5e1);
+  background: var(--a2-topology-btn-bg, #fff);
+  color: var(--a2-topology-btn-text, #0f172a);
   border-radius: 6px;
   padding: 2px 10px;
   font-size: 12px;
@@ -664,14 +664,14 @@ onUnmounted(() => {
 .a2-topology-graph {
   width: 100%;
   min-height: 320px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--a2-topology-graph-border, #e2e8f0);
   border-radius: 10px;
-  background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+  background: var(--a2-topology-graph-bg, linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%));
 }
 
 .a2-topology-error {
   margin-top: 8px;
   font-size: 12px;
-  color: #dc2626;
+  color: var(--a2-danger, #dc2626);
 }
 </style>
