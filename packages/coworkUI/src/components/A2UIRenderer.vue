@@ -2,7 +2,7 @@
 import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
 import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-runtime'
 import { createRequestEngine } from '../core/requestEngine'
-import { normalizeRendererPayload } from '../core/responseParser'
+import { applyRendererPayloadToTurn, createRenderTurnState } from '../core/responseParser'
 import '../a2ui-runtime/style/common.css'
 import '../a2ui-runtime/style/light.css'
 import '../a2ui-runtime/style/dark.css'
@@ -29,13 +29,15 @@ const surfaceClass = computed(() => ['a2ui-surface', 'coworkui-workspace', works
 const requestSurface = ref(null)
 const requestDataModel = ref({})
 const engine = createRequestEngine()
+const renderTurnState = ref(createRenderTurnState())
 let requestSeq = 0
 
 const resolvedSurface = computed(() => requestSurface.value || props.surface)
 const resolvedDataModel = computed(() => ({ ...(props.dataModel || {}), ...(requestDataModel.value || {}) }))
 
 function applyResponse(payload, requestMeta = {}) {
-  const normalized = normalizeRendererPayload(payload)
+  const normalized = applyRendererPayloadToTurn(renderTurnState.value, payload)
+  if (!normalized) return
   if (normalized.surface?.root) requestSurface.value = normalized.surface
   if (normalized.dataModel && typeof normalized.dataModel === 'object') requestDataModel.value = normalized.dataModel
   emit('request-progress', { ...requestMeta, ...normalized })
@@ -54,6 +56,7 @@ watch(
     if (!isStream) {
       requestSurface.value = null
       requestDataModel.value = {}
+      renderTurnState.value = createRenderTurnState()
       engine.requestOnce({
         url: props.url,
         input,
