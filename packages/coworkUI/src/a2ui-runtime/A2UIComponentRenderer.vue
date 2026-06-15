@@ -104,9 +104,9 @@ const shouldUseLayoutPlaceholder = computed(() => {
 
 <style scoped>
 .fallback {
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 10px;
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px dashed var(--swt-color-gray11-opacity20);
+  border-radius: var(--swt-radius-size-medium);
+  padding: var(--swt-space-size-12);
+  color: var(--swt-color-text-secondary);
 }
 </style>

@@ -41,23 +41,30 @@ const isDragging = ref(false)
 const dragStartX = ref(0)
 const dragStartY = ref(0)
 
-mermaid.initialize({
-  startOnLoad: false,
-  suppressErrorRendering: true,
-  flowchart: { htmlLabels: false },
-  theme: 'base',
-  themeVariables: {
-    background: 'transparent',
-    primaryColor: '#e2e8f0',
-    primaryTextColor: '#0f172a',
-    primaryBorderColor: '#cbd5e1',
-    lineColor: '#94a3b8',
-    secondaryColor: '#f8fafc',
-    secondaryTextColor: '#1e293b',
-    tertiaryColor: '#eef2ff',
-    tertiaryTextColor: '#1e293b',
-  },
-})
+function readThemeToken(name, fallback) {
+  if (typeof window === 'undefined' || !diagramEl.value) return fallback
+  return window.getComputedStyle(diagramEl.value).getPropertyValue(name).trim() || fallback
+}
+
+function initializeMermaidTheme() {
+  mermaid.initialize({
+    startOnLoad: false,
+    suppressErrorRendering: true,
+    flowchart: { htmlLabels: false },
+    theme: 'base',
+    themeVariables: {
+      background: 'transparent',
+      primaryColor: readThemeToken('--swt-color-bg-selected', '#e9e9e9'),
+      primaryTextColor: readThemeToken('--swt-color-text-primary', '#1e1e1e'),
+      primaryBorderColor: readThemeToken('--swt-color-dividing-line-primary', '#c6c6c6'),
+      lineColor: readThemeToken('--swt-color-border', '#868686'),
+      secondaryColor: readThemeToken('--swt-color-bg-secondary', '#f5f5f5'),
+      secondaryTextColor: readThemeToken('--swt-color-text-secondary', '#626262'),
+      tertiaryColor: readThemeToken('--swt-color-overlay-gray1-and-accent-normal-opacity10', '#e6f0fa'),
+      tertiaryTextColor: readThemeToken('--swt-color-text-primary', '#1e1e1e'),
+    },
+  })
+}
 
 let renderSeq = 0
 
@@ -211,6 +218,8 @@ async function renderMermaid() {
     return
   }
 
+  initializeMermaidTheme()
+
   const seq = ++renderSeq
   const attempts = [
     { name: '原始输入', levels: [] },
@@ -296,15 +305,15 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   min-width: 500px;
   max-width: 100%;
   overflow: hidden;
-  border: 1px solid var(--n-20, #dbeafe);
-  border-radius: 10px;
-  padding: 10px;
-  background: linear-gradient(180deg, var(--n-0, #ffffff) 0%, var(--n-10, #f8fafc) 100%);
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-dividing-line-secondary);
+  border-radius: var(--swt-radius-size-medium);
+  padding: var(--swt-space-size-12);
+  background: linear-gradient(180deg, var(--n-0, var(--swt-color-white)) 0%, var(--n-10, var(--swt-color-bg-secondary)) 100%);
 }
 
 .a2-mermaid-title {
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: var(--swt-space-size-8);
+  font-weight: var(--swt-font-weight-bold);
   position: relative;
   z-index: 3;
 }
@@ -313,31 +322,31 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--swt-space-size-8);
+  margin-bottom: var(--swt-space-size-8);
   position: relative;
   z-index: 3;
 }
 
 .a2-mermaid-zoom {
-  color: var(--n-70, #475569);
-  font-size: 12px;
+  color: var(--swt-color-text-extra);
+  font-size: var(--swt-font-size-small);
   line-height: 1;
 }
 
 .a2-mermaid-btn {
-  border: 1px solid rgba(59, 130, 246, 0.45);
-  border-radius: 6px;
-  background: rgba(191, 219, 254, 0.45);
-  color: #1d4ed8;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 4px 10px;
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-accent-normal-opacity40);
+  border-radius: var(--swt-space-size-8);
+  background: var(--swt-color-overlay-gray1-and-accent-normal-opacity20);
+  color: var(--swt-color-accent-text-normal);
+  font-weight: var(--swt-font-weight-bold);
+  font-size: var(--swt-font-size-small);
+  padding: var(--swt-space-size-4) var(--swt-space-size-12);
   cursor: pointer;
 }
 
 .a2-mermaid-btn:hover {
-  background: rgba(191, 219, 254, 0.8);
+  background: var(--swt-color-accent-normal-opacity40);
 }
 
 .a2-mermaid-viewport {
@@ -361,23 +370,23 @@ watch(definition, () => { renderMermaid() }, { immediate: true })
 .a2-mermaid-toolbar {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--swt-space-size-8);
+  margin-bottom: var(--swt-space-size-8);
 }
 
 .a2-mermaid-btn {
-  border: 1px solid rgba(59, 130, 246, 0.45);
-  border-radius: 6px;
-  background: rgba(191, 219, 254, 0.45);
-  color: #1d4ed8;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 4px 10px;
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-accent-normal-opacity40);
+  border-radius: var(--swt-space-size-8);
+  background: var(--swt-color-overlay-gray1-and-accent-normal-opacity20);
+  color: var(--swt-color-accent-text-normal);
+  font-weight: var(--swt-font-weight-bold);
+  font-size: var(--swt-font-size-small);
+  padding: var(--swt-space-size-4) var(--swt-space-size-12);
   cursor: pointer;
 }
 
 .a2-mermaid-btn:hover {
-  background: rgba(191, 219, 254, 0.8);
+  background: var(--swt-color-accent-normal-opacity40);
 }
 
 .a2-mermaid-viewport {

@@ -43,8 +43,8 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
 .a2-timeline-item { width: 100%; }
 
 .timeline-dot {
-  width: 14px;
-  height: 14px;
+  width: var(--swt-space-size-16);
+  height: var(--swt-space-size-16);
   display: block;
 }
 </style>

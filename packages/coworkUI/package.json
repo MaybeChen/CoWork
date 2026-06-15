@@ -6,7 +6,8 @@
   "module": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./a2ui-runtime": "./dist/a2ui-runtime/index.js"
+    "./a2ui-runtime": "./dist/a2ui-runtime/index.js",
+    "./theme.css": "./dist/theme/udesign.css"
   },
   "files": [
     "dist"

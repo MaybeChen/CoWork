@@ -8,4 +8,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template><div v-if="!hidden" class="a2-modal" :class="customClasses" :style="styleObject"><div class="panel"><slot/></div></div></template>
-<style scoped>.a2-modal{border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px;background:rgba(0,0,0,.35)}.panel{display:flex;flex-direction:column;gap:10px}</style>
+<style scoped>.a2-modal{border:1px solid var(--swt-color-gray11-opacity20);border-radius: var(--swt-radius-size-big);padding:var(--swt-space-size-12);background:var(--swt-color-bg-mask)}.panel{display:flex;flex-direction:column;gap:var(--swt-space-size-12)}</style>
