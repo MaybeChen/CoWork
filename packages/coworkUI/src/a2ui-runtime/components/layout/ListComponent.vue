@@ -9,4 +9,4 @@ const direction = computed(() => (props.payload?.direction === 'horizontal' ? 'r
 const styleObject = computed(() => ({ flexDirection: direction.value, ...hostStyleFromNode(props.node, props.payload, props.payload?.usageHint) }))
 </script>
 <template><div v-if="!hidden" class="a2-list" :class="customClasses" :style="styleObject"><slot/></div></template>
-<style scoped>.a2-list{display:flex;gap:10px;width:100%}</style>
+<style scoped>.a2-list{display:flex;gap:var(--swt-space-size-12);width:100%}</style>

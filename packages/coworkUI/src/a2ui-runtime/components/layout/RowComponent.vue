@@ -22,4 +22,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 <template>
   <div v-if="!hidden" class="a2-row" :class="customClasses" :style="hostStyle" :data-alignment="alignment" :data-distribution="distribution"><slot/></div>
 </template>
-<style scoped>.a2-row{display:flex;flex-wrap:wrap;gap:12px;width:100%}</style>
+<style scoped>.a2-row{display:flex;flex-wrap:wrap;gap:var(--swt-space-size-12);width:100%}</style>

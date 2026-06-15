@@ -25,20 +25,29 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 .a2-timeline {
   width: fit-content;
   max-width: 100%;
+  color: var(--swt-color-text-primary);
 }
 
 .a2-timeline :deep(ul) {
-  padding-left: 5px;
+  padding-left: var(--swt-space-size-4);
+}
+
+.a2-timeline :deep(.el-timeline-item__content) {
+  color: var(--swt-color-text-primary);
+}
+
+.a2-timeline :deep(.el-timeline-item__timestamp) {
+  color: var(--swt-color-text-secondary);
 }
 
 .a2-timeline :deep(.el-timeline-item__tail) {
   display: block !important;
   border-left: none;
-  left: 4px;
+  left: var(--swt-space-size-4);
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 1) 50%, rgba(34, 197, 94, 0.3) 100%);
+  background: linear-gradient(180deg, var(--swt-color-function-success-background1) 0%, var(--swt-color-function-success-normal) 50%, var(--swt-color-function-success-background1) 100%);
 }
 
 .a2-timeline :deep(.a2ui-node .el-timeline-item__tail) {

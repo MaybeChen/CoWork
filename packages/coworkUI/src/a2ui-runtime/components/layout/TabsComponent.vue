@@ -21,4 +21,4 @@ function label(tab, idx) {
     <div class="tab-body"><slot/></div>
   </div>
 </template>
-<style scoped>.tab-head{display:flex;gap:8px;flex-wrap:wrap}.tab-head button{background:#1f2937;color:#fff;border:1px solid #374151;border-radius:8px;padding:4px 8px}.tab-head .active{border-color:#60a5fa}.tab-body{margin-top:10px}</style>
+<style scoped>.tab-head{display:flex;gap:var(--swt-space-size-8);flex-wrap:wrap}.tab-head button{background:var(--swt-color-bg-primary);color:var(--swt-color-white);border:1px solid var(--swt-color-border);border-radius: var(--swt-radius-size-medium);padding:var(--swt-space-size-4) var(--swt-space-size-8)}.tab-head .active{border-color:var(--swt-color-accent-text-normal)}.tab-body{margin-top:var(--swt-space-size-12)}</style>

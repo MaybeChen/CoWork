@@ -639,47 +639,47 @@ onUnmounted(() => {
   width: 100%;
   min-width: 680px;
   max-width: 100%;
-  border: 1px solid var(--n-20, #dbeafe);
-  border-radius: 12px;
-  padding: 16px;
-  background: var(--a2-topology-wrap-bg, linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)) !important;
-  box-shadow: var(--a2-topology-wrap-shadow, 0 8px 20px rgba(148, 163, 184, 0.16)) !important;
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-dividing-line-secondary);
+  border-radius: var(--swt-radius-size-big);
+  padding: var(--swt-space-size-16);
+  background: var(--a2-topology-wrap-bg, linear-gradient(180deg, var(--swt-color-white) 0%, var(--swt-color-bg-secondary) 100%)) !important;
+  box-shadow: var(--a2-topology-wrap-shadow, var(--swt-shadow2)) !important;
 }
 
 .a2-topology-title {
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--n-90, #0f172a);
+  margin-bottom: var(--swt-space-size-8);
+  font-weight: var(--swt-font-weight-bold);
+  color: var(--n-90, var(--swt-color-text-primary));
 }
 
 .a2-topology-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--swt-space-size-8);
+  margin-bottom: var(--swt-space-size-8);
 }
 
 .a2-topology-btn {
-  border: 1px solid var(--a2-topology-btn-border, #cbd5e1);
-  background: var(--a2-topology-btn-bg, #fff);
-  color: var(--a2-topology-btn-text, #0f172a);
-  border-radius: 6px;
-  padding: 2px 10px;
-  font-size: 12px;
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--a2-topology-btn-border, var(--swt-color-gray4));
+  background: var(--a2-topology-btn-bg, var(--swt-color-white));
+  color: var(--a2-topology-btn-text, var(--swt-color-text-primary));
+  border-radius: var(--swt-space-size-8);
+  padding: 2px var(--swt-space-size-12);
+  font-size: var(--swt-font-size-small);
   cursor: pointer;
 }
 
 .a2-topology-graph {
   width: 100%;
   min-height: 320px;
-  border: 1px solid var(--a2-topology-graph-border, #e2e8f0);
-  border-radius: 10px;
-  background: var(--a2-topology-graph-bg, linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%)) !important;
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--a2-topology-graph-border, var(--swt-color-gray3));
+  border-radius: var(--swt-radius-size-medium);
+  background: var(--a2-topology-graph-bg, linear-gradient(180deg, var(--swt-color-bg-secondary) 0%, var(--swt-color-gray3) 100%)) !important;
 }
 
 .a2-topology-error {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--a2-danger, #dc2626);
+  margin-top: var(--swt-space-size-8);
+  font-size: var(--swt-font-size-small);
+  color: var(--a2-danger, var(--swt-color-function-urgent-normal));
 }
 </style>

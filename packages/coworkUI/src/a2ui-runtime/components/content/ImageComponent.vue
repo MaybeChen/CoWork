@@ -9,4 +9,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template><img v-if="src && !hidden" class="a2-image" :class="customClasses" :style="styleObject" :src="src" :alt="alt" /></template>
-<style scoped>.a2-image{max-width:100%;border-radius:10px;display:block}</style>
+<style scoped>.a2-image{max-width:100%;border-radius: var(--swt-radius-size-medium);display:block}</style>

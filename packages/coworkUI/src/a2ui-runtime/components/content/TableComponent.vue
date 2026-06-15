@@ -88,11 +88,42 @@ function weightClass(cell) {
 </template>
 
 <style scoped>
-.a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
+.a2-table-wrap {
+  color: var(--swt-color-text-primary);
+  --el-table-bg-color: var(--swt-color-bg-primary);
+  --el-table-tr-bg-color: var(--swt-color-bg-primary);
+  --el-table-header-bg-color: var(--swt-color-bg-secondary);
+  --el-table-text-color: var(--swt-color-text-primary);
+  --el-table-header-text-color: var(--swt-color-text-primary);
+  --el-table-border-color: var(--swt-color-dividing-line-secondary);
+  --el-table-row-hover-bg-color: var(--swt-color-bg-selected);
+  --el-table-current-row-bg-color: var(--swt-color-bg-selected);
+  --el-fill-color-lighter: var(--swt-color-overlay-gray1-and-gray12-opacity5);
+}
+.a2-table-title {
+  margin-bottom: var(--swt-space-size-8);
+  font-weight: var(--swt-font-weight-bold);
+  color: var(--swt-color-text-primary);
+}
+.a2-table-wrap :deep(.el-table),
+.a2-table-wrap :deep(.el-table__inner-wrapper),
+.a2-table-wrap :deep(.el-table th.el-table__cell),
+.a2-table-wrap :deep(.el-table td.el-table__cell) {
+  background-color: var(--swt-color-bg-primary);
+  color: var(--swt-color-text-primary);
+  border-color: var(--swt-color-dividing-line-secondary);
+}
+.a2-table-wrap :deep(.el-table th.el-table__cell) {
+  background-color: var(--swt-color-bg-secondary);
+}
+.a2-table-wrap :deep(.el-table__body tr.el-table__row--striped td.el-table__cell) {
+  background-color: var(--swt-color-overlay-gray1-and-gray12-opacity5);
+}
 .a2-table-cell {
   margin: 0;
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: var(--swt-space-size-8);
+  padding: var(--swt-space-size-4) var(--swt-space-size-8);
+  color: inherit;
   white-space: normal;
   width: fit-content;
   max-width: 100%;

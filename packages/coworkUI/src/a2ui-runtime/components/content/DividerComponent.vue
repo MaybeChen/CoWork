@@ -8,4 +8,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template><hr v-if="!hidden" class="a2-divider" :class="customClasses" :style="styleObject" /></template>
-<style scoped>.a2-divider{border:none;border-top:1px solid rgba(255,255,255,.15);margin:8px 0}</style>
+<style scoped>.a2-divider{border:none;border-top:var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-gray11-opacity20);margin:var(--swt-space-size-8) 0}</style>

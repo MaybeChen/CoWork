@@ -41,6 +41,6 @@ function choose(opt) {
 </template>
 
 <style scoped>
-.a2-choices { display:flex; gap:8px; flex-wrap:wrap; }
-.a2-choices button { padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.05); color:#fff; }
+.a2-choices { display:flex; gap:var(--swt-space-size-8); flex-wrap:wrap; }
+.a2-choices button { padding:var(--swt-space-size-8) var(--swt-space-size-12); border-radius: var(--swt-radius-size-infinity); border:1px solid var(--swt-color-gray11-opacity20); background:var(--swt-color-overlay-gray1-and-gray12-opacity5); color:var(--swt-color-white); }
 </style>
