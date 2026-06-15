@@ -8,4 +8,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template><span v-if="!hidden" class="a2-icon" :class="customClasses" :style="styleObject">{{ name || '◎' }}</span></template>
-<style scoped>.a2-icon{display:inline-flex;align-items:center;justify-content:center;min-width:20px}</style>
+<style scoped>.a2-icon{display:inline-flex;align-items:center;justify-content:center;min-width:var(--swt-space-size-20)}</style>

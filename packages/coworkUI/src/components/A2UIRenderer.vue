@@ -48,7 +48,7 @@ const surfaceClass = computed(() => ['a2ui-surface', 'coworkui-workspace', works
 
 <style scoped>
 .empty-tip {
-  color: #64748b;
-  padding: 10px;
+  color: var(--swt-color-text-extra);
+  padding: var(--swt-space-size-12);
 }
 </style>

@@ -44,9 +44,9 @@ const renderedHtml = computed(() => md.render(markdownText.value || ''))
 .a2ui-text { width: 100%; }
 .a2-text :deep(p) { margin: 0; color: inherit; line-height:1.6; }
 .a2-text :deep(h1), .a2-text :deep(h2), .a2-text :deep(h3), .a2-text :deep(h4), .a2-text :deep(h5) { margin: 0.2em 0; line-height:1.3; }
-.a2-text :deep(code) { background: rgba(255,255,255,0.08); padding: 0 4px; border-radius: 4px; }
-.a2-text :deep(pre) { background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; overflow:auto; }
+.a2-text :deep(code) { background: var(--swt-color-overlay-gray1-and-gray12-opacity10); padding: 0 var(--swt-space-size-4); border-radius: var(--swt-radius-size-normal); }
+.a2-text :deep(pre) { background: var(--swt-color-bg-mask); padding: var(--swt-space-size-12); border-radius: var(--swt-radius-size-medium); overflow:auto; }
 .a2-text :deep(ul), .a2-text :deep(ol) { margin: 0.3em 0; padding-left: 1.2em; }
-.a2-text :deep(blockquote) { margin: 0.3em 0; padding-left: 10px; border-left: 3px solid rgba(255,255,255,0.25); color: rgba(229,231,235,.9); }
-.a2-text :deep(a) { color: #93c5fd; text-decoration: underline; }
+.a2-text :deep(blockquote) { margin: 0.3em 0; padding-left: var(--swt-space-size-12); border-left: var(--swt-border-width-thick) var(--swt-border-style-solid) var(--swt-color-gray11-opacity20); color: var(--swt-color-text-secondary); }
+.a2-text :deep(a) { color: var(--swt-color-accent-text-normal); text-decoration: underline; }
 </style>

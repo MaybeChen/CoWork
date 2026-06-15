@@ -17,4 +17,4 @@ watch(() => [props.payload?.checked, props.payload?.value, props.dataModel], () 
 function emit(){ props.onAction?.({ actionName: resolveActionName(action.value, 'toggle_checkbox'), componentId: props.node?.id, surfaceId: props.surfaceId, args:{ ...(action.value?.args || {}), checked: checked.value } }) }
 </script>
 <template><label v-if="!hidden" class="a2-cb" :class="customClasses" :style="styleObject"><input type="checkbox" v-model="checked" @change="emit"/> <span>{{ label }}</span></label></template>
-<style scoped>.a2-cb{display:flex;gap:8px;align-items:center}</style>
+<style scoped>.a2-cb{display:flex;gap:var(--swt-space-size-8);align-items:center}</style>

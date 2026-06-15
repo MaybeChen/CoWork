@@ -88,11 +88,11 @@ function weightClass(cell) {
 </template>
 
 <style scoped>
-.a2-table-title { margin-bottom: 8px; font-weight: 600; color: inherit; }
+.a2-table-title { margin-bottom: var(--swt-space-size-8); font-weight: var(--swt-font-weight-bold); color: inherit; }
 .a2-table-cell {
   margin: 0;
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: var(--swt-space-size-8);
+  padding: var(--swt-space-size-4) var(--swt-space-size-8);
   white-space: normal;
   width: fit-content;
   max-width: 100%;
