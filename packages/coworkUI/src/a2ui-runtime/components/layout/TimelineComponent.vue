@@ -25,10 +25,19 @@ const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, 
 .a2-timeline {
   width: fit-content;
   max-width: 100%;
+  color: var(--swt-color-text-primary);
 }
 
 .a2-timeline :deep(ul) {
   padding-left: var(--swt-space-size-4);
+}
+
+.a2-timeline :deep(.el-timeline-item__content) {
+  color: var(--swt-color-text-primary);
+}
+
+.a2-timeline :deep(.el-timeline-item__timestamp) {
+  color: var(--swt-color-text-secondary);
 }
 
 .a2-timeline :deep(.el-timeline-item__tail) {

@@ -7,8 +7,8 @@
   --n-90: var(--swt-color-text-primary);
   --n-100: var(--swt-color-gray12);
   --p-30: var(--swt-color-accent-normal);
-  --a2-code-fg: var(--swt-color-white);
-  --a2-code-bg: var(--swt-color-gray12);
+  --a2-code-fg: var(--swt-color-text-primary);
+  --a2-code-bg: var(--swt-color-bg-secondary);
   --a2-warning-color: var(--swt-color-function-warning-text-normal);
   --a2-vw-6-bg: var(--swt-color-function-urgent-normal);
   --a2-vw-6-fg: var(--swt-color-white);
