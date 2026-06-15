@@ -25,13 +25,18 @@ A2UI runtime CSS is scoped with workspace selector.
 
 ## uDesign 2.2 design tokens
 
-The package includes the complete uDesign 2.2 light and dark token sets. Set the
-`theme` attribute on `body` to activate one of them:
+The package includes the uDesign 2.2 token set and uses the existing CoworkUI
+theme names, `light` and `dark`. The default theme store applies them through the
+`data-theme` attribute:
 
 ```js
-document.body.setAttribute('theme', 'uDesign2.2-light')
-document.body.setAttribute('theme', 'uDesign2.2-dark')
+const coworkUI = createCoworkUI({ themeName: 'light' })
+coworkUI.setTheme('dark')
 ```
+
+For a standalone stylesheet integration, set `data-theme="light"` or
+`data-theme="dark"` on the CoworkUI workspace. A light token set is also
+available from `:root` as the fallback.
 
 The tokens use the `--swt-*` namespace and are loaded automatically with
 `A2UIRenderer`. Consumers that only need the token stylesheet can import it
