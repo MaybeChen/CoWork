@@ -63,16 +63,16 @@ const orderedNodes = computed(() =>
 .flow-wrap {
   width: 100%;
   max-width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-overlay-gray1-and-gray12-opacity10);
+  border-radius: var(--swt-radius-size-big);
+  padding: var(--swt-space-size-12);
+  background: var(--swt-color-gray6-opacity5);
   overflow: hidden;
 }
 
 .flow-title {
-  margin: 0 0 8px;
-  font-size: 16px;
+  margin: 0 0 var(--swt-space-size-8);
+  font-size: var(--swt-font-size-normal1);
   word-break: break-word;
 }
 
@@ -84,16 +84,16 @@ const orderedNodes = computed(() =>
 
 .flow-grid {
   display: grid;
-  gap: 10px;
+  gap: var(--swt-space-size-12);
   grid-template-columns: repeat(auto-fill, minmax(180px, 180px));
   justify-content: flex-start;
 }
 
 .flow-node {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-gray11-opacity20);
+  border-radius: var(--swt-radius-size-medium);
+  padding: var(--swt-space-size-8);
+  background: var(--swt-color-overlay-gray1-and-gray12-opacity5);
   min-height: 52px;
   width: 180px;
   max-width: 100%;
@@ -101,21 +101,21 @@ const orderedNodes = computed(() =>
   overflow-wrap: anywhere;
 }
 
-.flow-node.kind-start { border-color: #22c55e; }
-.flow-node.kind-end { border-color: #f59e0b; }
-.flow-node.kind-decision { border-color: #60a5fa; }
+.flow-node.kind-start { border-color: var(--swt-color-function-success-normal); }
+.flow-node.kind-end { border-color: var(--swt-color-function-important-normal); }
+.flow-node.kind-decision { border-color: var(--swt-color-accent-text-normal); }
 
 .flow-edges {
-  margin-top: 10px;
+  margin-top: var(--swt-space-size-12);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  color: rgba(255, 255, 255, 0.85);
+  gap: var(--swt-space-size-4);
+  color: var(--swt-color-text-primary);
   word-break: break-word;
 }
 
 .edge-item em {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--swt-color-text-secondary);
   font-style: normal;
 }
 </style>

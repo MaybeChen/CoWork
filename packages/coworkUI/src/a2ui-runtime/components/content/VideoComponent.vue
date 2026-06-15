@@ -8,4 +8,4 @@ const customClasses = computed(() => resolveComponentClasses(props.payload, prop
 const styleObject = computed(() => hostStyleFromNode(props.node, props.payload, props.payload?.usageHint))
 </script>
 <template><video v-if="src && !hidden" class="a2-video" :class="customClasses" :style="styleObject" :src="src" controls/></template>
-<style scoped>.a2-video{width:100%;border-radius:10px}</style>
+<style scoped>.a2-video{width:100%;border-radius: var(--swt-radius-size-medium)}</style>

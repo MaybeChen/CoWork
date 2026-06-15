@@ -42,5 +42,5 @@ function submit() {
 </template>
 
 <style scoped>
-.a2-tf input { width:100%; padding:8px 10px; border-radius:8px; background:#0f172a; color:#fff; border:1px solid rgba(255,255,255,.2); }
+.a2-tf input { width:100%; padding:var(--swt-space-size-8) var(--swt-space-size-12); border-radius: var(--swt-radius-size-medium); background:var(--swt-color-text-primary); color:var(--swt-color-white); border:1px solid var(--swt-color-gray11-opacity20); }
 </style>

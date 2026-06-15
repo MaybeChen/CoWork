@@ -4,6 +4,7 @@ import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-ru
 import '../a2ui-runtime/style/common.css'
 import '../a2ui-runtime/style/light.css'
 import '../a2ui-runtime/style/dark.css'
+import '../theme/udesign.css'
 
 const props = defineProps({
   surface: {
@@ -47,7 +48,7 @@ const surfaceClass = computed(() => ['a2ui-surface', 'coworkui-workspace', works
 
 <style scoped>
 .empty-tip {
-  color: #64748b;
-  padding: 10px;
+  color: var(--swt-color-text-extra);
+  padding: var(--swt-space-size-12);
 }
 </style>

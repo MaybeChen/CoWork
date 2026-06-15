@@ -75,18 +75,17 @@ const chartData = computed(() => {
   width: 100%;
   min-width: 500px;
   max-width: 600px;
-  border: 1px solid var(--n-20, #dbeafe);
-  border-radius: 8px;
-  padding: 22px 22px 18px;
-  background: linear-gradient(180deg, var(--n-0, #ffffff) 0%, var(--n-10, #f8fafc) 100%);
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-dividing-line-secondary);
+  border-radius: var(--swt-radius-size-medium);
+  padding: var(--swt-space-size-20);
+  background: linear-gradient(180deg, var(--n-0, var(--swt-color-white)) 0%, var(--n-10, var(--swt-color-bg-secondary)) 100%);
   box-shadow:
-    0 8px 20px rgba(148, 163, 184, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    var(--swt-shadow2);
 }
 
 .a2-pie-chart-title {
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: var(--swt-space-size-8);
+  font-weight: var(--swt-font-weight-bold);
   color: inherit;
 }
 </style>

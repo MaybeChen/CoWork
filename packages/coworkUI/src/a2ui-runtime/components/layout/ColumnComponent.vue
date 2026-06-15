@@ -15,4 +15,4 @@ const hostStyle = computed(() => ({
 const customClasses = computed(() => resolveComponentClasses(props.payload, props.payload?.usageHint))
 </script>
 <template><div v-if="!hidden" class="a2-column" :class="customClasses" :style="hostStyle" :data-alignment="alignment" :data-distribution="distribution"><slot/></div></template>
-<style scoped>.a2-column{display:flex;flex-direction:column;gap:12px}</style>
+<style scoped>.a2-column{display:flex;flex-direction:column;gap:var(--swt-space-size-12)}</style>

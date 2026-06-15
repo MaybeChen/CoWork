@@ -40,11 +40,22 @@ const hollow = computed(() => Boolean(resolveValue(props.dataModel, props.payloa
 </template>
 
 <style scoped>
-.a2-timeline-item { width: 100%; }
+.a2-timeline-item {
+  width: 100%;
+  color: var(--swt-color-text-primary);
+}
+
+.a2-timeline-item :deep(.el-timeline-item__content) {
+  color: var(--swt-color-text-primary);
+}
+
+.a2-timeline-item :deep(.el-timeline-item__timestamp) {
+  color: var(--swt-color-text-secondary);
+}
 
 .timeline-dot {
-  width: 14px;
-  height: 14px;
+  width: var(--swt-space-size-16);
+  height: var(--swt-space-size-16);
   display: block;
 }
 </style>

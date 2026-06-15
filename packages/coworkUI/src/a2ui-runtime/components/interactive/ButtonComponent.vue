@@ -36,14 +36,14 @@ function emitAction() {
 
 <style scoped>
 .a2-btn {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  padding: var(--swt-space-size-8) var(--swt-space-size-12);
+  border-radius: var(--swt-radius-size-medium);
+  border: var(--swt-border-width-thin) var(--swt-border-style-solid) var(--swt-color-gray11-opacity20);
+  background: var(--swt-color-overlay-gray1-and-gray12-opacity10);
+  color: var(--swt-color-white);
 }
 .a2-btn.primary {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--swt-color-accent-normal);
+  border-color: var(--swt-color-accent-normal);
 }
 </style>
