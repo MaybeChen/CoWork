@@ -4,6 +4,7 @@ import { A2UIComponentRenderer, defaultRegistry, defaultTheme } from '../a2ui-ru
 import '../a2ui-runtime/style/common.css'
 import '../a2ui-runtime/style/light.css'
 import '../a2ui-runtime/style/dark.css'
+import '../theme/udesign.css'
 
 const props = defineProps({
   surface: {
